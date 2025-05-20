@@ -39,8 +39,9 @@ const ParallaxContainerModular = () => {
 
             if (typeof current === 'number' && typeof total === 'number') {
                 // Nicht mehr auf 0-1 begrenzen, damit wir auch Werte über 100% erfassen können
-                const progress = current / total;
-                setScrollProgress(progress);
+                const rawProgress = current / total;
+                const slowedProgress = rawProgress * 0.2; // Anpassungsfaktor
+                setScrollProgress(slowedProgress);
             }
         } catch (error) {
             console.error('Error in scroll handler:', error);
@@ -161,7 +162,7 @@ const ParallaxContainerModular = () => {
                 </ErrorBoundary>
 
                 {/* Parallax nur für den Scrollbereich - keine Änderung */}
-                <Parallax pages={5} ref={parallaxRef} style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }}>
+                <Parallax pages={20} ref={parallaxRef} style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }}>
                     <ParallaxLayer offset={0} speed={0} factor={1} />
                     <ParallaxLayer offset={1} speed={0} factor={1} />
                     <ParallaxLayer offset={2} speed={0} factor={1} />
