@@ -1,6 +1,5 @@
 // src/components/Parallax/ParallaxContainerModular.jsx
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Parallax, ParallaxLayer } from '@react-spring/parallax';
 import { getConfig } from './config';
 import BackgroundLayer from './Elements/BackgroundLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
@@ -10,98 +9,286 @@ import TitleLayer from './Elements/TitleLayer';
 import NewsletterLayer from './Elements/NewsletterLayer';
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import './gsap-scroll.css';
+
+// GSAP-Plugins registrieren
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+// Wichtig: GSAP-Cache-Optionen setzen
+gsap.config({
+    autoSleep: 60,
+    force3D: "auto",
+    nullTargetWarn: false,
+});
+
+// Bekannte Probleme mit DevTools beheben
+if (typeof window !== 'undefined') {
+    // Scroll-Event-Listener bei Seiten-Reload entfernen
+    window.addEventListener('beforeunload', () => {
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+        gsap.killTweensOf(window);
+    });
+}
 
 const ParallaxContainerModular = () => {
-    const parallaxRef = useRef(null);
+    // Statusvariablen
     const [scrollProgress, setScrollProgress] = useState(0);
+    const [activeSection, setActiveSection] = useState(0);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const [resetCount, setResetCount] = useState(0);
+
+    // Refs
+    const containerRef = useRef(null);
+    const sectionsRef = useRef([]);
+    const observerRef = useRef(null);
+    const scrollTimeoutRef = useRef(null);
+
+    // Konfiguration
     const [config, setConfig] = useState(() => {
         try {
             return getConfig();
         } catch (error) {
             console.error('Failed to load configuration:', error);
-            // Grundlegende Fallback-Konfiguration
             return {
                 background: { startScale: 1.5, endScale: 1.0 },
                 logo: { segments: [{ scrollStart: 0, scrollEnd: 1, scaleStart: 1, scaleEnd: 1 }] },
                 leftCloud: { segments: [{ scrollStart: 0, scrollEnd: 1, posStart: 0, posEnd: 0 }] },
-                rightCloud: { segments: [{ scrollStart: 0, scrollEnd: 1, posStart: 0, posEnd: 0 }] }
+                rightCloud: { segments: [{ scrollStart: 0, scrollEnd: 1, posStart: 0, posEnd: 0 }] },
+                titles: []
             };
         }
     });
 
-    // Optimierter Scroll-Handler mit useCallback
-    const handleScroll = useCallback(() => {
-        if (!parallaxRef.current) return;
+    // ScrollTrigger komplett abbauen
+    const destroyScrollTrigger = useCallback(() => {
+        // Alle ScrollTrigger bereinigen
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
 
-        try {
-            const current = parallaxRef.current.current;
-            const total = parallaxRef.current.space;
+        // Alle GSAP-Animationen stoppen
+        gsap.killTweensOf(window);
 
-            if (typeof current === 'number' && typeof total === 'number') {
-                const rawProgress = current / total;
-                let slowedProgress;
+        // ScrollTrigger-Events vom Window entfernen
+        if (typeof window !== 'undefined') {
+            window.removeEventListener('scroll', ScrollTrigger.update);
+            window.removeEventListener('resize', ScrollTrigger.update);
+        }
 
-                if (rawProgress < 0.35) {
-                    // Erste 35%: Normal
-                    slowedProgress = rawProgress;
-                } else {
-                    // Rest: 100x langsamer
-                    // Offset berechnen: 0.35 (normaler Bereich endet hier)
-                    slowedProgress = 0.35 + (rawProgress - 0.35) * 0.05; // Faktor 0.01 = 100x langsamer
+        console.log("ScrollTrigger abgebaut");
+    }, []);
+
+    // Manuelles Update des Scroll-Fortschritts ohne GSAP
+    const manualUpdateScrollProgress = useCallback(() => {
+        if (!containerRef.current || typeof window === 'undefined') return;
+
+        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const currentScroll = window.scrollY;
+        const progress = Math.max(0, Math.min(1, currentScroll / totalHeight));
+
+        setScrollProgress(progress);
+
+        // Aktiven Abschnitt berechnen
+        const sectionCount = sectionsRef.current.length;
+        if (sectionCount > 0) {
+            const newSectionIndex = Math.round(progress * (sectionCount - 1));
+            setActiveSection(newSectionIndex);
+        }
+    }, []);
+
+    // Alternative Implementierung ohne GSAP ScrollTrigger
+    const setupManualScrollHandler = useCallback(() => {
+        // Bereinige vorherige Handler
+        if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+        }
+
+        // Handler für Scroll-Events
+        const handleScroll = () => {
+            // Debounce für bessere Performance
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+
+            // Direkt aktualisieren für flüssiges Gefühl
+            requestAnimationFrame(manualUpdateScrollProgress);
+
+            // Verzögert nochmal aktualisieren für akkurate End-Position
+            scrollTimeoutRef.current = setTimeout(manualUpdateScrollProgress, 50);
+        };
+
+        // Resize-Handler für Aktualisierungen bei Größenänderungen
+        const handleResize = () => {
+            manualUpdateScrollProgress();
+        };
+
+        // Event-Listener registrieren
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleResize, { passive: true });
+
+        // Initiale Aktualisierung
+        manualUpdateScrollProgress();
+
+        console.log("Manueller Scroll-Handler eingerichtet");
+
+        // Aufräumen
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleResize);
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+        };
+    }, [manualUpdateScrollProgress]);
+
+    // Intersection Observer für das Snap-Verhalten
+    const setupSectionObserver = useCallback(() => {
+        if (typeof IntersectionObserver === 'undefined' || !containerRef.current) return;
+
+        // Bestehenden Observer bereinigen
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        // Optionen für den Observer
+        const options = {
+            root: null, // Viewport
+            rootMargin: '0px',
+            threshold: 0.5, // 50% des Elements im Viewport
+        };
+
+        // Intersection Observer erstellen
+        observerRef.current = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const sectionIndex = parseInt(entry.target.dataset.sectionIndex, 10);
+                    // Nur aktiven Abschnitt setzen, kein automatisches Scrollen
+                    setActiveSection(sectionIndex);
                 }
+            });
+        }, options);
 
-                console.log(`Raw: ${rawProgress.toFixed(3)}, Slowed: ${slowedProgress.toFixed(3)}`);
-                setScrollProgress(slowedProgress);
+        // Alle Abschnitte beobachten
+        sectionsRef.current.forEach(section => {
+            if (section) {
+                observerRef.current.observe(section);
             }
-        } catch (error) {
-            console.error('Error in scroll handler:', error);
-        }
+        });
+
+        console.log("Section Observer eingerichtet");
+
+        // Aufräumen
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
     }, []);
 
-    // Optimierter Resize-Handler mit useCallback
-    const handleResize = useCallback(() => {
-        try {
-            setConfig(getConfig());
-        } catch (error) {
-            console.error('Error updating configuration on resize:', error);
-        }
-    }, []);
-
-    // Optimierte Scroll-Event-Registrierung
+    // Komponenten-Initialisierung
     useEffect(() => {
-        try {
-            const container = parallaxRef.current?.container?.current;
-            if (container) {
-                container.addEventListener('scroll', handleScroll, { passive: true });
-                handleScroll(); // Initial call
-            }
+        // Nur einmal initialisieren
+        if (isInitialized) return;
 
+        // Verzögerte Initialisierung für bessere Zuverlässigkeit
+        const initTimer = setTimeout(() => {
+            // ScrollTrigger bereinigen und manuelle Handler einrichten
+            destroyScrollTrigger();
+            const cleanupScrollHandler = setupManualScrollHandler();
+            const cleanupSectionObserver = setupSectionObserver();
+
+            setIsInitialized(true);
+            console.log("Parallax-Container initialisiert");
+
+            // Aufräumen bei Komponenten-Unmount
             return () => {
-                if (container) {
-                    container.removeEventListener('scroll', handleScroll);
-                }
+                cleanupScrollHandler();
+                cleanupSectionObserver();
+                destroyScrollTrigger();
             };
-        } catch (error) {
-            console.error('Error setting up scroll listener:', error);
+        }, 200);
+
+        return () => clearTimeout(initTimer);
+    }, [destroyScrollTrigger, setupManualScrollHandler, setupSectionObserver, isInitialized]);
+
+    // Kompletter Reset der Komponente
+    const resetComponent = useCallback(() => {
+        // Aktuellen Zustand speichern
+        const currentSection = activeSection;
+
+        // Komponente zurücksetzen
+        destroyScrollTrigger();
+        setIsInitialized(false);
+
+        // Force reflow
+        if (containerRef.current) {
+            containerRef.current.style.display = 'none';
+            void containerRef.current.offsetHeight;
+            containerRef.current.style.display = '';
         }
-    }, [handleScroll]);
 
-    // Optimierte Resize-Event-Registrierung
+        // Zähler erhöhen, um einen Re-Mount zu erzwingen
+        setResetCount(prev => prev + 1);
+
+        // Nach einer kurzen Verzögerung neu initialisieren
+        setTimeout(() => {
+            setupManualScrollHandler();
+            setupSectionObserver();
+
+            // Zur vorherigen Sektion zurückkehren
+            const sectionHeight = window.innerHeight;
+            window.scrollTo(0, currentSection * sectionHeight);
+
+            setIsInitialized(true);
+        }, 100);
+    }, [activeSection, destroyScrollTrigger, setupManualScrollHandler, setupSectionObserver]);
+
+    // Keyboard-Shortcut für Reset
     useEffect(() => {
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [handleResize]);
+        const handleKeyDown = (e) => {
+            // Alt+R für Komponenten-Reset
+            if (e.altKey && e.key === 'r') {
+                e.preventDefault();
+                resetComponent();
+                console.log("Komponenten-Reset durchgeführt");
+            }
+        };
 
-    // Formatierter Scroll-Progress mit useMemo
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [resetComponent]);
+
+    // Funktion zum Scrollen zu einer bestimmten Sektion
+    const scrollToSection = useCallback((index) => {
+        if (typeof window === 'undefined') return;
+
+        const sectionHeight = window.innerHeight;
+        const y = index * sectionHeight;
+
+        // Sanftes Scrollen zur Sektion
+        window.scrollTo({
+            top: y,
+            behavior: 'smooth'
+        });
+
+        // Nach dem Scrollen manuell den aktiven Abschnitt setzen
+        setTimeout(() => {
+            setActiveSection(index);
+        }, 800);
+    }, []);
+
+    // Referenzen für die Abschnitte einrichten
+    const setSectionRef = (el, index) => {
+        sectionsRef.current[index] = el;
+    };
+
+    // Formatierter Scroll-Progress
     const formattedScrollProgress = useMemo(() => {
-        // Normalisierter Wert für Komponenten (0-100%)
         const normalizedProgress = Math.min(1, Math.max(0, scrollProgress)) * 100;
-        // Absoluter Seitenwert (kann über 100% gehen)
-        const absolutePageValue = (scrollProgress * 100);
-
         return {
             normalized: normalizedProgress.toFixed(0),
-            absolute: absolutePageValue.toFixed(0)
+            absolute: normalizedProgress.toFixed(0)
         };
     }, [scrollProgress]);
 
@@ -111,72 +298,117 @@ const ParallaxContainerModular = () => {
                 <div>
                     <h2>Es gab ein Problem beim Laden der Parallax-Effekte</h2>
                     <p>Bitte versuche die Seite neu zu laden</p>
+                    <button
+                        onClick={resetComponent}
+                        style={{
+                            padding: '10px 15px',
+                            margin: '10px',
+                            background: '#4a90e2',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Animations neu laden
+                    </button>
                 </div>
             </div>
         }>
-            <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
-                {/* Debug-Anzeige - Jetzt mit memoisiertem Wert */}
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    right: 0,
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                    color: 'white',
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    zIndex: 1000
-                }}>
-                    Scroll: {formattedScrollProgress.absolute}% | Seite: {(parseFloat(formattedScrollProgress.absolute) / 100 + 1).toFixed(2)}
+            <div className="gsap-parallax-container" ref={containerRef} key={`container-${resetCount}`}>
+                {/* Debug-Anzeige */}
+                <div className="debug-indicator">
+                    Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/7
+                    <button
+                        onClick={resetComponent}
+                        style={{
+                            marginLeft: '10px',
+                            padding: '2px 8px',
+                            fontSize: '12px',
+                            background: '#555',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        ↻
+                    </button>
+                    <span style={{ marginLeft: '10px', fontSize: '11px', color: '#aaa' }}>
+                        Mode: Manual
+                    </span>
                 </div>
 
-                {/* Einzelne Komponenten mit ErrorBoundary */}
-                <ErrorBoundary>
-                    <BackgroundLayer
-                        scrollProgress={Math.min(1, Math.max(0, scrollProgress))}
-                        config={config.background}
-                    />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <StarfieldLayer scrollProgress={Math.min(1, Math.max(0, scrollProgress))} />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <LogoLayer
-                        scrollProgress={Math.min(1, Math.max(0, scrollProgress))}
-                        config={config.logo}
-                    />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <CloudLayer
-                        scrollProgress={Math.min(1, Math.max(0, scrollProgress))}
-                        leftConfig={config.leftCloud}
-                        rightConfig={config.rightCloud}
-                    />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <TitleLayer
-                        scrollProgress={Math.min(1, Math.max(0, scrollProgress))}
-                        titles={config.titles}
-                    />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <NewsletterLayer scrollProgress={Math.min(1, Math.max(0, scrollProgress))} />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <ScrollIndicator scrollProgress={Math.min(1, Math.max(0, scrollProgress))} />
-                </ErrorBoundary>
-
-                {/* Parallax nur für den Scrollbereich - keine Änderung */}
-                <Parallax pages={20} ref={parallaxRef} style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }}>
-                    {Array.from({ length: 20 }).map((_, index) => (
-                        <ParallaxLayer key={index} offset={index} speed={0} factor={1} />
+                {/* Section-Indikatoren (Navigation) */}
+                <div className="section-indicators">
+                    {[0, 1, 2, 3, 4, 5, 6].map((index) => (
+                        <button
+                            key={index}
+                            className={`section-indicator ${activeSection === index ? 'active' : ''}`}
+                            onClick={() => scrollToSection(index)}
+                            aria-label={`Go to section ${index + 1}`}
+                        />
                     ))}
-                </Parallax>
+                </div>
+
+                {/* Hintergrund-Layer (fixiert) */}
+                <div className="fixed-layers">
+                    <ErrorBoundary>
+                        <BackgroundLayer
+                            scrollProgress={scrollProgress}
+                            config={config.background}
+                        />
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <StarfieldLayer scrollProgress={scrollProgress} />
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <LogoLayer
+                            scrollProgress={scrollProgress}
+                            config={config.logo}
+                        />
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <CloudLayer
+                            scrollProgress={scrollProgress}
+                            leftConfig={config.leftCloud}
+                            rightConfig={config.rightCloud}
+                        />
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <TitleLayer
+                            scrollProgress={scrollProgress}
+                            titles={config.titles}
+                            activeSection={activeSection}
+                        />
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <NewsletterLayer scrollProgress={scrollProgress} />
+                    </ErrorBoundary>
+
+                    {activeSection === 0 && (
+                        <ErrorBoundary>
+                            <ScrollIndicator scrollProgress={scrollProgress} />
+                        </ErrorBoundary>
+                    )}
+                </div>
+
+                {/* Scroll-Abschnitte */}
+                <div className="gsap-sections-container">
+                    {[0, 1, 2, 3, 4, 5, 6].map((index) => (
+                        <section
+                            key={`section-${index}-${resetCount}`}
+                            ref={(el) => setSectionRef(el, index)}
+                            className="gsap-section"
+                            data-section-index={index}
+                        ></section>
+                    ))}
+                </div>
             </div>
         </ErrorBoundary>
     );

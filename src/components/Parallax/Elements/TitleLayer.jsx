@@ -1,24 +1,21 @@
 // src/components/Parallax/Elements/TitleLayer.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import ErrorBoundary from '../../ErrorBoundary';
 import './TitleLayer.css';
 
-const TitleLayer = ({ scrollProgress, titles = [] }) => {
+const TitleLayer = ({ scrollProgress, titles = [], activeSection }) => {
     if (!titles || titles.length === 0) return null;
-
-    // Stelle sicher, dass scrollProgress ein gültiger Wert ist
-    const safeScrollProgress = typeof scrollProgress === 'number' && !isNaN(scrollProgress)
-        ? scrollProgress
-        : 0;
 
     return (
         <ErrorBoundary>
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 5, pointerEvents: 'none' }}>
-                {titles.map((title) => (
+                {titles.map((title, index) => (
                     <Title
                         key={title.id}
                         title={title}
-                        scrollProgress={safeScrollProgress}
+                        isActive={activeSection === index + 1} // +1 weil der erste Abschnitt die Intro-Sektion ist
+                        sectionIndex={index + 1}
                     />
                 ))}
             </div>
@@ -26,51 +23,120 @@ const TitleLayer = ({ scrollProgress, titles = [] }) => {
     );
 };
 
-const Title = ({ title, scrollProgress }) => {
-    const [animationState, setAnimationState] = useState('hidden');
-    const [prevScrollProgress, setPrevScrollProgress] = useState(scrollProgress);
-
+const Title = ({ title, isActive, sectionIndex }) => {
+    const titleRef = useRef(null);
+    const animationTypeRef = useRef(title.animation?.type || 'fade-scale');
+    
+    // GSAP Animation für die Titel
     useEffect(() => {
-        const { scrollStart, scrollEnd, animation } = title;
-        const inDuration = animation?.inDuration || 0.2;
-        const outDuration = animation?.outDuration || 0.2;
-
-        // Berechne die prozentualen Grenzen für Ein- und Ausblenden
-        const fadeInStart = scrollStart;
-        const fadeInEnd = scrollStart + inDuration;
-        const fadeOutStart = scrollEnd - outDuration;
-        const fadeOutEnd = scrollEnd;
-
-        let newState = 'hidden';
-
-        if (scrollProgress >= fadeInStart && scrollProgress <= fadeOutEnd) {
-            if (scrollProgress >= fadeInStart && scrollProgress < fadeInEnd) {
-                newState = 'title-fade-in';
-            } else if (scrollProgress >= fadeInEnd && scrollProgress <= fadeOutStart) {
-                newState = 'visible';
-            } else if (scrollProgress > fadeOutStart && scrollProgress <= fadeOutEnd) {
-                newState = 'title-fade-out';
+        if (!titleRef.current) return;
+        
+        const animationType = animationTypeRef.current;
+        
+        // Animation basierend auf dem aktiven Status
+        if (isActive) {
+            // Einblende-Animation
+            if (animationType.includes('scale')) {
+                gsap.fromTo(titleRef.current, 
+                    { 
+                        opacity: 0, 
+                        scale: 0.8,
+                        filter: 'blur(5px)'
+                    },
+                    { 
+                        opacity: 1, 
+                        scale: 1,
+                        filter: 'blur(0px)',
+                        duration: 0.6,
+                        ease: 'power2.out'
+                    }
+                );
+            } else if (animationType.includes('slide')) {
+                gsap.fromTo(titleRef.current, 
+                    { 
+                        opacity: 0, 
+                        y: 20,
+                        filter: 'blur(5px)'
+                    },
+                    { 
+                        opacity: 1, 
+                        y: 0,
+                        filter: 'blur(0px)',
+                        duration: 0.6,
+                        ease: 'power2.out'
+                    }
+                );
+            } else {
+                gsap.fromTo(titleRef.current, 
+                    { 
+                        opacity: 0,
+                        filter: 'blur(5px)'
+                    },
+                    { 
+                        opacity: 1,
+                        filter: 'blur(0px)',
+                        duration: 0.6,
+                        ease: 'power2.out'
+                    }
+                );
+            }
+        } else {
+            // Ausblende-Animation
+            if (titleRef.current.style.opacity !== '0') {
+                if (animationType.includes('scale')) {
+                    gsap.to(titleRef.current, { 
+                        opacity: 0, 
+                        scale: 0.8,
+                        filter: 'blur(5px)',
+                        duration: 0.4,
+                        ease: 'power2.in'
+                    });
+                } else if (animationType.includes('slide')) {
+                    gsap.to(titleRef.current, { 
+                        opacity: 0, 
+                        y: -20,
+                        filter: 'blur(5px)',
+                        duration: 0.4,
+                        ease: 'power2.in'
+                    });
+                } else {
+                    gsap.to(titleRef.current, { 
+                        opacity: 0,
+                        filter: 'blur(5px)',
+                        duration: 0.4,
+                        ease: 'power2.in'
+                    });
+                }
             }
         }
+    }, [isActive]);
 
-        setAnimationState(newState);
-        setPrevScrollProgress(scrollProgress);
-    }, [title, scrollProgress]);
-
-    // Wenn versteckt, nicht rendern
-    if (animationState === 'hidden') return null;
-
-    // Klassenname für die Animation basierend auf dem Typ
-    const animationClass = title.animation?.type || 'fade';
+    // Transformations-Styles für den Titel
+    const getTransformStyle = () => {
+        const baseTransform = 'translate(-50%, -50%)';
+        
+        if (!isActive) {
+            if (animationTypeRef.current.includes('scale')) {
+                return `${baseTransform} scale(0.8)`;
+            } else if (animationTypeRef.current.includes('slide')) {
+                return `${baseTransform} translateY(20px)`;
+            }
+        }
+        
+        return baseTransform;
+    };
 
     return (
         <div
-            className={`title-element ${animationState} ${animationClass}`}
+            ref={titleRef}
+            className={`title-element gsap-title section-${sectionIndex} ${animationTypeRef.current}`}
             style={{
                 position: 'absolute',
                 top: title.position.top,
                 left: title.position.left,
-                ...title.style
+                opacity: 0, // Start unsichtbar, GSAP wird es animieren
+                transform: getTransformStyle(),
+                ...title.style,
             }}
         >
             {title.text}

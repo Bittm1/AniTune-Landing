@@ -1,0 +1,70 @@
+/* src/components/Parallax/gsap-scroll.css */
+.gsap-parallax-container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* Container für GSAP-Abschnitte */
+.gsap-sections-container {
+    width: 100%;
+    height: 700vh;
+}
+
+/* Einzelne GSAP-Abschnitte */
+.gsap-section {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+}
+
+/* Debug-Anzeige */
+.debug-indicator {
+    position: fixed;
+    top: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    z-index: 1000;
+}
+
+/* Section-Indikatoren (Navigation dots) */
+.section-indicators {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+}
+
+.section-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.section-indicator.active {
+    background-color: white;
+    transform: scale(1.2);
+}
+
+/* Fixierte Layer-Container */
+.fixed-layers {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
