@@ -14,7 +14,7 @@ const TitleLayer = ({ scrollProgress, titles = [], activeSection }) => {
                     <Title
                         key={title.id}
                         title={title}
-                        isActive={activeSection === index + 1} // +1 weil der erste Abschnitt die Intro-Sektion ist
+                        isActive={activeSection === index + 1} // Jeder Titel erscheint in einem anderen Abschnitt
                         sectionIndex={index + 1}
                     />
                 ))}
@@ -26,25 +26,25 @@ const TitleLayer = ({ scrollProgress, titles = [], activeSection }) => {
 const Title = ({ title, isActive, sectionIndex }) => {
     const titleRef = useRef(null);
     const animationTypeRef = useRef(title.animation?.type || 'fade-scale');
-    
+
     // GSAP Animation für die Titel
     useEffect(() => {
         if (!titleRef.current) return;
-        
+
         const animationType = animationTypeRef.current;
-        
+
         // Animation basierend auf dem aktiven Status
         if (isActive) {
             // Einblende-Animation
             if (animationType.includes('scale')) {
-                gsap.fromTo(titleRef.current, 
-                    { 
-                        opacity: 0, 
+                gsap.fromTo(titleRef.current,
+                    {
+                        opacity: 0,
                         scale: 0.8,
                         filter: 'blur(5px)'
                     },
-                    { 
-                        opacity: 1, 
+                    {
+                        opacity: 1,
                         scale: 1,
                         filter: 'blur(0px)',
                         duration: 0.6,
@@ -52,14 +52,14 @@ const Title = ({ title, isActive, sectionIndex }) => {
                     }
                 );
             } else if (animationType.includes('slide')) {
-                gsap.fromTo(titleRef.current, 
-                    { 
-                        opacity: 0, 
+                gsap.fromTo(titleRef.current,
+                    {
+                        opacity: 0,
                         y: 20,
                         filter: 'blur(5px)'
                     },
-                    { 
-                        opacity: 1, 
+                    {
+                        opacity: 1,
                         y: 0,
                         filter: 'blur(0px)',
                         duration: 0.6,
@@ -67,12 +67,12 @@ const Title = ({ title, isActive, sectionIndex }) => {
                     }
                 );
             } else {
-                gsap.fromTo(titleRef.current, 
-                    { 
+                gsap.fromTo(titleRef.current,
+                    {
                         opacity: 0,
                         filter: 'blur(5px)'
                     },
-                    { 
+                    {
                         opacity: 1,
                         filter: 'blur(0px)',
                         duration: 0.6,
@@ -84,23 +84,23 @@ const Title = ({ title, isActive, sectionIndex }) => {
             // Ausblende-Animation
             if (titleRef.current.style.opacity !== '0') {
                 if (animationType.includes('scale')) {
-                    gsap.to(titleRef.current, { 
-                        opacity: 0, 
+                    gsap.to(titleRef.current, {
+                        opacity: 0,
                         scale: 0.8,
                         filter: 'blur(5px)',
                         duration: 0.4,
                         ease: 'power2.in'
                     });
                 } else if (animationType.includes('slide')) {
-                    gsap.to(titleRef.current, { 
-                        opacity: 0, 
+                    gsap.to(titleRef.current, {
+                        opacity: 0,
                         y: -20,
                         filter: 'blur(5px)',
                         duration: 0.4,
                         ease: 'power2.in'
                     });
                 } else {
-                    gsap.to(titleRef.current, { 
+                    gsap.to(titleRef.current, {
                         opacity: 0,
                         filter: 'blur(5px)',
                         duration: 0.4,
@@ -114,7 +114,7 @@ const Title = ({ title, isActive, sectionIndex }) => {
     // Transformations-Styles für den Titel
     const getTransformStyle = () => {
         const baseTransform = 'translate(-50%, -50%)';
-        
+
         if (!isActive) {
             if (animationTypeRef.current.includes('scale')) {
                 return `${baseTransform} scale(0.8)`;
@@ -122,7 +122,7 @@ const Title = ({ title, isActive, sectionIndex }) => {
                 return `${baseTransform} translateY(20px)`;
             }
         }
-        
+
         return baseTransform;
     };
 

@@ -1,6 +1,6 @@
 // src/components/Parallax/config.js
 
-// Desktop-Konfiguration (bleibt unverändert)
+// Desktop-Konfiguration (mit aktualisierten Titeln)
 export const desktopConfig = {
     background: {
         startScale: 4.0,
@@ -82,33 +82,9 @@ export const desktopConfig = {
     titles: [
         {
             id: 'title-1',
-            text: 'Von Uns Heißt Für Uns',
-            scrollStart: 0.35, // Diese Position entspricht ungefähr der Position des aktuellen "Musik trifft Animation"
-            scrollEnd: 0.50, // Diese Position entspricht ungefähr der Position des aktuellen "Musik trifft Animation"
+            text: 'Von Uns Ist Für Uns',
             position: {
                 top: '60%',
-                left: '70%'
-            },
-            style: {
-                fontSize: '2rem',
-                fontWeight: 'normal',
-                color: 'white',
-                textShadow: '0 0 8px rgba(0,0,0,0.6)',
-                fontFamily: 'Lobster, cursive'
-            },
-            animation: {
-                inDuration: 0.2,
-                outDuration: 0.2,
-                type: 'fade-slide'
-            }
-        },
-        {
-            id: 'title-2',
-            text: 'Der Weg',
-            scrollStart: 0.9, // Exakt bei 0.39 einblenden
-            scrollEnd: 1,   // Exakt bei 0.78 ausblenden
-            position: {
-                top: '40%',
                 left: '50%'
             },
             style: {
@@ -116,18 +92,118 @@ export const desktopConfig = {
                 fontWeight: 'bold',
                 color: 'white',
                 textShadow: '0 0 10px rgba(0,0,0,0.7)',
-                fontFamily: 'Lobster, cursive' // Beachte: Lobster muss importiert oder verlinkt sein
+                fontFamily: 'Lobster, cursive'
             },
             animation: {
-                inDuration: 0.1, // Schnelleres Einblenden für präziseren Start
-                outDuration: 0.1, // Schnelleres Ausblenden für präziseren End
-                type: 'fade-scale' // Einblenden mit Skalierung statt Slide
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-2',
+            text: 'Der Weg',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-3',
+            text: 'Ist Das Ziel',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-4',
+            text: 'Die Community',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-5',
+            text: 'Heißt',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-6',
+            text: 'AniTune',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
             }
         }
-    ],    
+    ],
 };
 
-// Vollständige Mobile-Konfiguration
+// Vollständige Mobile-Konfiguration (ebenfalls mit aktualisierten Titeln)
 export const mobileConfig = {
     background: {
         startScale: 3.0,
@@ -209,33 +285,9 @@ export const mobileConfig = {
     titles: [
         {
             id: 'title-1',
-            text: 'Von Uns Heißt Für Uns',
-            scrollStart: 0.35,
-            scrollEnd: 0.50,
+            text: 'Von Uns Ist Für Uns',
             position: {
                 top: '60%',
-                left: '60%'
-            },
-            style: {
-                fontSize: '1.2rem',
-                fontWeight: 'normal',
-                color: 'white',
-                textShadow: '0 0 8px rgba(0,0,0,0.6)',
-                fontFamily: 'Lobster, cursive'
-            },
-            animation: {
-                inDuration: 0.2,
-                outDuration: 0.2,
-                type: 'fade-slide'
-            }
-        },
-        {
-            id: 'title-2',
-            text: 'Der Weg',
-            scrollStart: 0.9,
-            scrollEnd: 1,
-            position: {
-                top: '40%',
                 left: '50%'
             },
             style: {
@@ -246,12 +298,112 @@ export const mobileConfig = {
                 fontFamily: 'Lobster, cursive'
             },
             animation: {
-                inDuration: 0.1,
-                outDuration: 0.1,
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-2',
+            text: 'Der Weg',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '1.8rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-3',
+            text: 'Ist Das Ziel',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '1.8rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-4',
+            text: 'Die Community',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '1.8rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-5',
+            text: 'Heißt',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '1.8rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
+                type: 'fade-scale'
+            }
+        },
+        {
+            id: 'title-6',
+            text: 'AniTune',
+            position: {
+                top: '60%',
+                left: '50%'
+            },
+            style: {
+                fontSize: '1.8rem',
+                fontWeight: 'bold',
+                color: 'white',
+                textShadow: '0 0 10px rgba(0,0,0,0.7)',
+                fontFamily: 'Lobster, cursive'
+            },
+            animation: {
+                inDuration: 0.2,
+                outDuration: 0.2,
                 type: 'fade-scale'
             }
         }
-    ]        
+    ]
 };
 
 // Verbesserte Funktion zur Auswahl der Konfiguration mit mehreren Breakpoints
