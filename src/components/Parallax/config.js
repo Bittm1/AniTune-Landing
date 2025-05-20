@@ -83,8 +83,8 @@ export const desktopConfig = {
         {
             id: 'title-1',
             text: 'Von Uns Heißt Für Uns',
-            scrollStart: 0.39, // Diese Position entspricht ungefähr der Position des aktuellen "Musik trifft Animation"
-            scrollEnd: 0.78, // Diese Position entspricht ungefähr der Position des aktuellen "Musik trifft Animation"
+            scrollStart: 0.35, // Diese Position entspricht ungefähr der Position des aktuellen "Musik trifft Animation"
+            scrollEnd: 0.50, // Diese Position entspricht ungefähr der Position des aktuellen "Musik trifft Animation"
             position: {
                 top: '60%',
                 left: '70%'
@@ -210,8 +210,8 @@ export const mobileConfig = {
         {
             id: 'title-1',
             text: 'Von Uns Heißt Für Uns',
-            scrollStart: 0.39,
-            scrollEnd: 0.78,
+            scrollStart: 0.35,
+            scrollEnd: 0.50,
             position: {
                 top: '60%',
                 left: '60%'

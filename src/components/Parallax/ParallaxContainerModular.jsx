@@ -38,13 +38,32 @@ const ParallaxContainerModular = () => {
             const total = parallaxRef.current.space;
 
             if (typeof current === 'number' && typeof total === 'number') {
-                // Nicht mehr auf 0-1 begrenzen, damit wir auch Werte über 100% erfassen können
                 const rawProgress = current / total;
-                const slowedProgress = rawProgress * 0.2; // Anpassungsfaktor
+                let slowedProgress;
+
+                if (rawProgress < 0.35) {
+                    // Erste 35%: Normal
+                    slowedProgress = rawProgress;
+                } else {
+                    // Rest: 100x langsamer
+                    // Offset berechnen: 0.35 (normaler Bereich endet hier)
+                    slowedProgress = 0.35 + (rawProgress - 0.35) * 0.05; // Faktor 0.01 = 100x langsamer
+                }
+
+                console.log(`Raw: ${rawProgress.toFixed(3)}, Slowed: ${slowedProgress.toFixed(3)}`);
                 setScrollProgress(slowedProgress);
             }
         } catch (error) {
             console.error('Error in scroll handler:', error);
+        }
+    }, []);
+
+    // Optimierter Resize-Handler mit useCallback
+    const handleResize = useCallback(() => {
+        try {
+            setConfig(getConfig());
+        } catch (error) {
+            console.error('Error updating configuration on resize:', error);
         }
     }, []);
 
@@ -66,15 +85,6 @@ const ParallaxContainerModular = () => {
             console.error('Error setting up scroll listener:', error);
         }
     }, [handleScroll]);
-
-    // Optimierter Resize-Handler mit useCallback
-    const handleResize = useCallback(() => {
-        try {
-            setConfig(getConfig());
-        } catch (error) {
-            console.error('Error updating configuration on resize:', error);
-        }
-    }, []);
 
     // Optimierte Resize-Event-Registrierung
     useEffect(() => {
@@ -163,11 +173,9 @@ const ParallaxContainerModular = () => {
 
                 {/* Parallax nur für den Scrollbereich - keine Änderung */}
                 <Parallax pages={20} ref={parallaxRef} style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }}>
-                    <ParallaxLayer offset={0} speed={0} factor={1} />
-                    <ParallaxLayer offset={1} speed={0} factor={1} />
-                    <ParallaxLayer offset={2} speed={0} factor={1} />
-                    <ParallaxLayer offset={3} speed={0} factor={1} />
-                    <ParallaxLayer offset={4} speed={0} factor={1} />
+                    {Array.from({ length: 20 }).map((_, index) => (
+                        <ParallaxLayer key={index} offset={index} speed={0} factor={1} />
+                    ))}
                 </Parallax>
             </div>
         </ErrorBoundary>
