@@ -1,0 +1,8 @@
+/* Füge dies zu deiner CSS-Datei hinzu (z.B. in index.css oder einer neuen fonts.css) */
+@font-face {
+    font-family: 'Lobster';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    /* Oder 'block' für ein kurzes Timeout bevor der Text angezeigt wird */
+    src: url(https://fonts.googleapis.com/css2?family=Lobster&display=swap); }
