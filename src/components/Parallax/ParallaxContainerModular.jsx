@@ -10,6 +10,9 @@ import NewsletterLayer from './Elements/NewsletterLayer';
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
 import gsap from 'gsap';
+
+// Hooks Import
+import { useScrollProgress } from './hooks/useScrollProgress';
 import { useResponsiveConfig } from './hooks/useResponsiveConfig';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -36,8 +39,6 @@ if (typeof window !== 'undefined') {
 
 const ParallaxContainerModular = () => {
     // Statusvariablen
-    const [scrollProgress, setScrollProgress] = useState(0);
-    const [activeSection, setActiveSection] = useState(0);
     const [isInitialized, setIsInitialized] = useState(false);
     const [resetCount, setResetCount] = useState(0);
 
@@ -45,10 +46,18 @@ const ParallaxContainerModular = () => {
     const containerRef = useRef(null);
     const sectionsRef = useRef([]);
     const observerRef = useRef(null);
-    const scrollTimeoutRef = useRef(null);
 
     // Konfiguration
     const config = useResponsiveConfig();
+
+    const {
+        scrollProgress,
+        activeSection,
+        setActiveSection,
+        scrollToSection,
+        formattedScrollProgress,
+        updateScrollProgress
+    } = useScrollProgress(containerRef, sectionsRef);    
 
     // ScrollTrigger komplett abbauen
     const destroyScrollTrigger = useCallback(() => {
@@ -66,69 +75,6 @@ const ParallaxContainerModular = () => {
 
         console.log("ScrollTrigger abgebaut");
     }, []);
-
-    // Manuelles Update des Scroll-Fortschritts ohne GSAP
-    const manualUpdateScrollProgress = useCallback(() => {
-        if (!containerRef.current || typeof window === 'undefined') return;
-
-        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const currentScroll = window.scrollY;
-        const progress = Math.max(0, Math.min(1, currentScroll / totalHeight));
-
-        setScrollProgress(progress);
-
-        // Aktiven Abschnitt berechnen
-        const sectionCount = sectionsRef.current.length;
-        if (sectionCount > 0) {
-            const newSectionIndex = Math.round(progress * (sectionCount - 1));
-            setActiveSection(newSectionIndex);
-        }
-    }, []);
-
-    // Alternative Implementierung ohne GSAP ScrollTrigger
-    const setupManualScrollHandler = useCallback(() => {
-        // Bereinige vorherige Handler
-        if (scrollTimeoutRef.current) {
-            clearTimeout(scrollTimeoutRef.current);
-        }
-
-        // Handler für Scroll-Events
-        const handleScroll = () => {
-            // Debounce für bessere Performance
-            if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
-            }
-
-            // Direkt aktualisieren für flüssiges Gefühl
-            requestAnimationFrame(manualUpdateScrollProgress);
-
-            // Verzögert nochmal aktualisieren für akkurate End-Position
-            scrollTimeoutRef.current = setTimeout(manualUpdateScrollProgress, 50);
-        };
-
-        // Resize-Handler für Aktualisierungen bei Größenänderungen
-        const handleResize = () => {
-            manualUpdateScrollProgress();
-        };
-
-        // Event-Listener registrieren
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        window.addEventListener('resize', handleResize, { passive: true });
-
-        // Initiale Aktualisierung
-        manualUpdateScrollProgress();
-
-        console.log("Manueller Scroll-Handler eingerichtet");
-
-        // Aufräumen
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('resize', handleResize);
-            if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
-            }
-        };
-    }, [manualUpdateScrollProgress]);
 
     // Intersection Observer für das Snap-Verhalten
     const setupSectionObserver = useCallback(() => {
@@ -181,9 +127,8 @@ const ParallaxContainerModular = () => {
 
         // Verzögerte Initialisierung für bessere Zuverlässigkeit
         const initTimer = setTimeout(() => {
-            // ScrollTrigger bereinigen und manuelle Handler einrichten
+            // ScrollTrigger bereinigen und Observer einrichten
             destroyScrollTrigger();
-            const cleanupScrollHandler = setupManualScrollHandler();
             const cleanupSectionObserver = setupSectionObserver();
 
             setIsInitialized(true);
@@ -191,14 +136,13 @@ const ParallaxContainerModular = () => {
 
             // Aufräumen bei Komponenten-Unmount
             return () => {
-                cleanupScrollHandler();
                 cleanupSectionObserver();
                 destroyScrollTrigger();
             };
         }, 200);
 
         return () => clearTimeout(initTimer);
-    }, [destroyScrollTrigger, setupManualScrollHandler, setupSectionObserver, isInitialized]);
+    }, [destroyScrollTrigger, setupSectionObserver, isInitialized]);
 
     // Kompletter Reset der Komponente
     const resetComponent = useCallback(() => {
@@ -221,7 +165,7 @@ const ParallaxContainerModular = () => {
 
         // Nach einer kurzen Verzögerung neu initialisieren
         setTimeout(() => {
-            setupManualScrollHandler();
+            updateScrollProgress();
             setupSectionObserver();
 
             // Zur vorherigen Sektion zurückkehren
@@ -230,7 +174,7 @@ const ParallaxContainerModular = () => {
 
             setIsInitialized(true);
         }, 100);
-    }, [activeSection, destroyScrollTrigger, setupManualScrollHandler, setupSectionObserver]);
+    }, [activeSection, destroyScrollTrigger, updateScrollProgress, setupSectionObserver]);
 
     // Keyboard-Shortcut für Reset
     useEffect(() => {
@@ -247,38 +191,10 @@ const ParallaxContainerModular = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [resetComponent]);
 
-    // Funktion zum Scrollen zu einer bestimmten Sektion
-    const scrollToSection = useCallback((index) => {
-        if (typeof window === 'undefined') return;
-
-        const sectionHeight = window.innerHeight;
-        const y = index * sectionHeight;
-
-        // Sanftes Scrollen zur Sektion
-        window.scrollTo({
-            top: y,
-            behavior: 'smooth'
-        });
-
-        // Nach dem Scrollen manuell den aktiven Abschnitt setzen
-        setTimeout(() => {
-            setActiveSection(index);
-        }, 800);
-    }, []);
-
     // Referenzen für die Abschnitte einrichten
     const setSectionRef = (el, index) => {
         sectionsRef.current[index] = el;
     };
-
-    // Formatierter Scroll-Progress
-    const formattedScrollProgress = useMemo(() => {
-        const normalizedProgress = Math.min(1, Math.max(0, scrollProgress)) * 100;
-        return {
-            normalized: normalizedProgress.toFixed(0),
-            absolute: normalizedProgress.toFixed(0)
-        };
-    }, [scrollProgress]);
 
     return (
         <ErrorBoundary fallback={
