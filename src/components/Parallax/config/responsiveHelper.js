@@ -1,82 +1,110 @@
 // src/components/Parallax/config/responsiveHelper.js
 import { desktopConfig } from './desktopConfig';
 import { mobileConfig } from './mobileConfig';
+import { breakpoints, elementSizes, assetPaths } from './constants';
 
-// Erweiterte Funktion zur Auswahl der Konfiguration mit Unterstützung für verschiedene Breiten
+
+/**
+ * Erweiterte Funktion zur Auswahl der Konfiguration mit Unterstützung für verschiedene Breiten
+ * Optimiert für bessere Performance und Wartbarkeit
+ */
 export const getResponsiveConfig = () => {
+    // Cache für die berechnete Konfiguration
+    const configCache = {
+        lastWidth: null,
+        config: null
+    };
+
+    // Wenn wir im Server-Side Rendering sind, geben wir die Desktop-Konfiguration zurück
     if (typeof window === 'undefined') {
-        return desktopConfig; // Server-Side Rendering Fallback
+        return {
+            ...desktopConfig,
+            imageSources: {
+                background: assetPaths.background.default,
+                forest: assetPaths.forest.default,
+                leftCloud: assetPaths.leftCloud.default,
+                rightCloud: assetPaths.rightCloud.default,
+                logo: assetPaths.logo.default
+            }
+        };
     }
 
+    // Aktuelle Viewport-Breite
     const width = window.innerWidth;
 
+    // Wenn die Breite gleich ist wie beim letzten Aufruf, verwenden wir den Cache
+    if (configCache.lastWidth === width && configCache.config) {
+        return configCache.config;
+    }
+
+    // Für die Bildpfade immer die sicheren Standardwerte verwenden
+    const baseImageSources = {
+        background: assetPaths.background.default,
+        forest: assetPaths.forest.default,
+        leftCloud: assetPaths.leftCloud.default,
+        rightCloud: assetPaths.rightCloud.default,
+        logo: assetPaths.logo.default
+    };
+
+    // Konfiguration basierend auf Viewport-Breite festlegen
+    let config;
+
     // Sehr klein (Smartphones)
-    if (width < 480) {
-        return {
+    if (width < breakpoints.xs) {
+        config = {
             ...mobileConfig,
             logo: {
                 ...mobileConfig.logo,
-                size: '120px'
+                size: elementSizes.logo.xs
             },
-            // Ressourcen für kleine Bildschirme
-            imageSources: {
-                background: '/Parallax/Himmel.png', // Später durch mobile Versionen ersetzen
-                forest: '/Parallax/Erster_Hintergrund.png',  
-                leftCloud: '/Parallax/Wolken_Vorne_links.png',
-                rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
-                logo: '/Parallax/Logo.png'
-            }
+            imageSources: baseImageSources
         };
     }
     // Klein (große Smartphones / kleine Tablets)
-    else if (width < 768) {
-        return {
+    else if (width < breakpoints.sm) {
+        config = {
             ...mobileConfig,
-            // Ressourcen für Smartphones
-            imageSources: {
-                background: '/Parallax/Himmel.png',
-                forest: '/Parallax/Erster_Hintergrund.png',  
-                leftCloud: '/Parallax/Wolken_Vorne_links.png',
-                rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
-                logo: '/Parallax/Logo.png'
-            }
+            imageSources: baseImageSources
         };
     }
     // Mittel (Tablets)
-    else if (width < 1024) {
-        return {
+    else if (width < breakpoints.md) {
+        config = {
             ...desktopConfig,
             logo: {
                 ...desktopConfig.logo,
-                size: '180px'
+                size: elementSizes.logo.md
             },
-            // Ressourcen für Tablets
-            imageSources: {
-                background: '/Parallax/Himmel.png',
-                forest: '/Parallax/Erster_Hintergrund.png',  
-                leftCloud: '/Parallax/Wolken_Vorne_links.png',
-                rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
-                logo: '/Parallax/Logo.png'
-            }
+            // Leicht angepasste Positionen für Tablets
+            leftCloud: {
+                ...desktopConfig.leftCloud,
+                position: {
+                    ...desktopConfig.leftCloud.position,
+                    bottom: '54%'
+                },
+                size: elementSizes.cloud.left.md
+            },
+            rightCloud: {
+                ...desktopConfig.rightCloud,
+                position: {
+                    ...desktopConfig.rightCloud.position,
+                    bottom: '54%'
+                },
+                size: elementSizes.cloud.right.md
+            },
+            imageSources: baseImageSources
         };
     }
     // Desktop (Standard)
-    else if (width < 1920) {
-        return {
+    else if (width < breakpoints.xl) {
+        config = {
             ...desktopConfig,
-            // Standard Desktop-Ressourcen
-            imageSources: {
-                background: '/Parallax/Himmel.png',
-                forest: '/Parallax/Erster_Hintergrund.png',  
-                leftCloud: '/Parallax/Wolken_Vorne_links.png',
-                rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
-                logo: '/Parallax/Logo.png'
-            }
+            imageSources: baseImageSources
         };
     }
     // Große Bildschirme (1920px und mehr)
     else {
-        return {
+        config = {
             ...desktopConfig,
             // Hier können Sie spezielle Anpassungen für große Bildschirme vornehmen
             background: {
@@ -86,16 +114,53 @@ export const getResponsiveConfig = () => {
             },
             logo: {
                 ...desktopConfig.logo,
-                size: '250px', // Größeres Logo für große Displays
+                size: elementSizes.logo.xl, // Größeres Logo für große Displays
             },
-            // Ressourcen für große Bildschirme (hochauflösend)
+            // Angepasste Größen für große Bildschirme
+            leftCloud: {
+                ...desktopConfig.leftCloud,
+                size: elementSizes.cloud.left.xl
+            },
+            rightCloud: {
+                ...desktopConfig.rightCloud,
+                size: elementSizes.cloud.right.xl
+            },
+            // Hochauflösende Ressourcen für große Bildschirme
             imageSources: {
-                background: '/Parallax/Himmel_large.png', // Später durch hochauflösende Versionen ersetzen
-                forest: '/Parallax/Erster_Hintergrund.png',  
-                leftCloud: '/Parallax/Wolken_Vorne_links.png',
-                rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
-                logo: '/Parallax/Logo.png'
+                ...baseImageSources,
+                background: assetPaths.background.large // Hochauflösender Hintergrund für große Bildschirme
             }
         };
     }
+
+    // Konfiguration zwischenspeichern
+    configCache.lastWidth = width;
+    configCache.config = config;
+
+    return config;
+};
+
+// Für Performance-Optimierung: Debounced Version der getResponsiveConfig-Funktion
+// die bei häufigen Aufrufen (z.B. Resize) nur alle 100ms tatsächlich berechnet wird
+export const getDebouncedResponsiveConfig = () => {
+    let timeout = null;
+    let cachedConfig = null;
+
+    return () => {
+        // Wenn wir bereits eine Konfiguration haben, geben wir diese zurück
+        if (cachedConfig) {
+            return cachedConfig;
+        }
+
+        // Aktuelle Konfiguration berechnen
+        cachedConfig = getResponsiveConfig();
+
+        // Timeout setzen, um den Cache nach 100ms zu leeren
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            cachedConfig = null;
+        }, 100);
+
+        return cachedConfig;
+    };
 };

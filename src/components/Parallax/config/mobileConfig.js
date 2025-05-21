@@ -1,91 +1,127 @@
 // src/components/Parallax/config/mobileConfig.js
-import { springs, createTitles } from './baseConfig';
-import { zIndices } from './constants/index';
+import { springs, createTitles, baseAnimationConfig } from './baseConfig';
+import { zIndices, elementSizes } from './constants';
 
 export const mobileConfig = {
-    // Basiswerte für Mobile - vereinfachte Version der Desktop-Konfiguration
+    // ===== Basis-Konfiguration =====
     background: {
-        startScale: 3.0,
+        startScale: 3.0,  // Kleinerer Startzoom für mobile Geräte
         endScale: 1.0,
-        spring: springs.responsive,
+        spring: springs.responsive, // Schnellere Feder für mobile Geräte
         zIndex: zIndices.background
     },
+
+    // ===== Logo-Konfiguration =====
     logo: {
         segments: [
             {
                 scrollStart: 0,
                 scrollEnd: 1,
-                scaleStart: 1.0,
-                scaleEnd: 0.6
+                scaleStart: 1.0,  // Kleinerer Anfangswert für mobile Geräte
+                scaleEnd: 0.6,    // Kleinerer Endwert für mobile Geräte
+                opacityStart: 1,
+                opacityEnd: 0.85   // Etwas transparenter auf mobilen Geräten
             }
         ],
         position: {
-            top: '30%',
+            top: '30%',  // Höher positioniert auf mobilen Geräten
             left: '50%'
         },
-        size: '140px',
-        spring: springs.responsive,
+        size: elementSizes.logo.sm, // Verwendung der zentralen Größendefinition
+        spring: springs.responsive,  // Schnellere Feder für mobile Geräte
         zIndex: zIndices.logo
     },
+
+    // ===== Wolken-Konfigurationen =====
     leftCloud: {
         segments: [
             {
                 scrollStart: 0,
                 scrollEnd: 1,
-                posStart: -90,
-                posEnd: -30
+                posStart: -90,  // Stärkere Bewegung auf mobilen Geräten
+                posEnd: -30,    // Nicht vollständig sichtbar auf mobilen Geräten
+                opacityStart: 0.9,
+                opacityEnd: 1.0
             },
         ],
         position: {
-            bottom: '52%'
+            bottom: '52%'  // Angepasste Position für mobile Geräte
         },
-        size: {
-            width: '40vw',
-            maxWidth: '300px'
-        },
+        size: elementSizes.cloud.left.sm, // Zentrale Größendefinition
         spring: {
             ...springs.responsive,
-            tension: 180,
-            friction: 22
+            tension: 180,  // Schnellere Reaktion
+            friction: 22   // Weniger Widerstand
         },
         zIndex: zIndices.clouds
     },
+
     rightCloud: {
         segments: [
             {
                 scrollStart: 0,
                 scrollEnd: 1,
-                posStart: -90,
-                posEnd: -30
+                posStart: -90,  // Stärkere Bewegung auf mobilen Geräten
+                posEnd: -30,    // Nicht vollständig sichtbar auf mobilen Geräten
+                opacityStart: 0.9,
+                opacityEnd: 1.0
             },
         ],
         position: {
-            bottom: '52%'
+            bottom: '52%'  // Angepasste Position für mobile Geräte
         },
-        size: {
-            width: '35vw',
-            maxWidth: '250px'
-        },
+        size: elementSizes.cloud.right.sm, // Zentrale Größendefinition
         spring: {
             ...springs.responsive,
-            tension: 180,
-            friction: 22
+            tension: 180,  // Schnellere Reaktion
+            friction: 22   // Weniger Widerstand
         },
         zIndex: zIndices.clouds
     },
+
+    // ===== Wald-Konfiguration =====
     forest: {
         segments: [
             {
                 scrollStart: 0,
                 scrollEnd: 0.3,
                 posStart: -50,
-                posEnd: 0
+                posEnd: 0,
+                opacityStart: 0.95,
+                opacityEnd: 1.0
             }
         ],
         zIndex: zIndices.forest,
-        imageSrc: '/Parallax/Erster_Hintergrund.png'
+        // Keine hartkodierten Bildpfade mehr, werden über imageSources injiziert
     },
-    titles: createTitles({
-        fontSize: '1.8rem'
-    })
+
+    // ===== Titel-Konfiguration =====
+    // Generiere Titel mit der Hilfsfunktion - kleiner und mit angepassten Animationen für mobile Geräte
+    titles: createTitles(
+        {
+            fontSize: '1.8rem',
+            fontWeight: 600, // Etwas leichter für mobile Geräte
+            textShadow: '0 0 8px rgba(0,0,0,0.8)' // Stärkerer Schatten für bessere Lesbarkeit
+        },
+        {
+            // Angepasste Positionen für mobile Geräte
+            positions: [
+                { top: '55%', left: '50%' },
+                { top: '60%', left: '50%' },
+                { top: '65%', left: '50%' },
+                { top: '60%', left: '50%' },
+                { top: '65%', left: '50%' },
+                { top: '70%', left: '50%' }
+            ],
+            // Vereinfachte Animationen für mobile Geräte (besser für Performance)
+            animations: [
+                baseAnimationConfig.fade,
+                baseAnimationConfig.fade,
+                baseAnimationConfig.fadeScale,
+                baseAnimationConfig.fade,
+                baseAnimationConfig.fadeScale,
+                baseAnimationConfig.popIn
+            ]
+        }
+    )
 };
