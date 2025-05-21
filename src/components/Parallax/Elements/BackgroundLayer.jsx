@@ -1,6 +1,7 @@
 // src/components/Parallax/Elements/BackgroundLayer.jsx
 import React from 'react';
 import SafeImage from './SafeImage';
+import { zIndices } from '../config/constants/index';
 import ErrorBoundary from '../../ErrorBoundary';
 
 const BackgroundLayer = ({ scrollProgress, config }) => {
@@ -13,7 +14,10 @@ const BackgroundLayer = ({ scrollProgress, config }) => {
     // Sichere Zugriffe mit Fallbacks
     const startScale = config.startScale || 1.5;
     const endScale = config.endScale || 1.0;
-    const imageSrc = config.imageSrc || "/Parallax/Himmel.png"; // Neue Zeile: imageSrc aus config verwenden
+    const imageSrc = config.imageSrc || "/Parallax/Himmel.png";
+
+    // Z-Index aus Config mit Fallback auf den definierten Wert
+    const zIndex = config.zIndex || zIndices.background;
 
     // Direkte lineare Skalierung ohne Segments
     const scale = startScale - (scrollProgress * (startScale - endScale));
@@ -30,10 +34,10 @@ const BackgroundLayer = ({ scrollProgress, config }) => {
                 transform: `scale(${scale})`,
                 transformOrigin: 'center top',
                 transition: 'transform 0.3s ease-out',
-                zIndex: 0
+                zIndex: zIndex  // Verwende den konfigurierten Z-Index
             }}>
                 <SafeImage
-                    src={imageSrc} // Geändert: Verwende die dynamische imageSrc statt des statischen Pfads
+                    src={imageSrc}
                     style={{
                         width: '100%',
                         height: '100%',

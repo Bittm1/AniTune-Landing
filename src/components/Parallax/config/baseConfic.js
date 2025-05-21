@@ -1,6 +1,16 @@
 // src/components/Parallax/config/baseConfig.js
 
-// Gemeinsame Animations-Konfigurationen
+/**
+ * Basis-Konfigurationen für das Parallax-System
+ * Enthält grundlegende Definitionen, die von allen spezifischen Konfigurationen verwendet werden
+ */
+
+
+// ===== Animations-Konfigurationen =====
+
+/**
+ * Gemeinsame Animations-Einstellungen für verschiedene Übergänge
+ */
 export const baseAnimationConfig = {
     fade: {
         inDuration: 0.2,
@@ -19,15 +29,9 @@ export const baseAnimationConfig = {
     }
 };
 
-// Grundlegende Titeleigenschaften
-export const baseTitleStyle = {
-    fontWeight: 'bold',
-    color: 'white',
-    textShadow: '0 0 10px rgba(0,0,0,0.7)',
-    fontFamily: 'Lobster, cursive'
-};
-
-// Basis Spring-Konfigurationen
+/**
+ * Basis-Federungen für Animationen (GSAP Physics)
+ */
 export const springs = {
     smooth: {
         mass: 0.8,
@@ -43,7 +47,21 @@ export const springs = {
     }
 };
 
-// Titel-Texte (um Duplikate zu vermeiden)
+// ===== Inhalts-Konfigurationen =====
+
+/**
+ * Basis-Stil für alle Titel-Elemente
+ */
+export const baseTitleStyle = {
+    fontWeight: 'bold',
+    color: 'white',
+    textShadow: '0 0 10px rgba(0,0,0,0.7)',
+    fontFamily: 'Lobster, cursive'
+};
+
+/**
+ * Titel-Texte für die verschiedenen Sektionen
+ */
 export const titleTexts = [
     'Von Uns Ist Für Uns',
     'Der Weg',
@@ -53,7 +71,14 @@ export const titleTexts = [
     'AniTune'
 ];
 
-// Hilfsfunktion zum Erstellen von Titeln
+// ===== Hilfsfunktionen =====
+
+/**
+ * Erstellt Titel-Konfigurationsobjekte für alle Sektionen
+ * @param {Object} styles - Überschreibende Stileigenschaften
+ * @param {Object} options - Zusätzliche Optionen (Positionen, Animation)
+ * @returns {Array} Array von Titel-Konfigurationsobjekten
+ */
 export function createTitles(styles, options = {}) {
     return titleTexts.map((text, index) => ({
         id: `title-${index + 1}`,

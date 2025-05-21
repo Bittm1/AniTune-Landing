@@ -2,6 +2,7 @@
 import React from 'react';
 import { getPositionFromSegments } from '../utils/animationUtils';
 import SafeImage from './SafeImage';
+import { zIndices } from '../config/constants/index';
 import ErrorBoundary from '../../ErrorBoundary';
 
 const CloudLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
@@ -19,13 +20,24 @@ const CloudLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
     const leftCloudSrc = leftConfig.imageSrc || "/Parallax/Wolken_Vorne_links.png";
     const rightCloudSrc = rightConfig.imageSrc || "/Parallax/Wolken_Vorne_rechts.png";
 
+    // Z-Index mit Fallback (nutze leftConfig, dann rightConfig, dann zIndices)
+    const zIndex = leftConfig.zIndex || rightConfig.zIndex || zIndices.clouds;
+
     // Berechne die aktuelle Position basierend auf den Segmenten
     const leftCloudPosition = getPositionFromSegments(leftCloudSegments, scrollProgress);
     const rightCloudPosition = getPositionFromSegments(rightCloudSegments, scrollProgress);
 
     return (
         <ErrorBoundary>
-            <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', height: '100vh', zIndex: 3, pointerEvents: 'none' }}>
+            <div style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                width: '100%',
+                height: '100vh',
+                zIndex: zIndex, // Verwende den konfigurierten Z-Index
+                pointerEvents: 'none'
+            }}>
                 {/* Wolke links */}
                 <div style={{
                     position: 'absolute',
@@ -34,7 +46,7 @@ const CloudLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
                     transition: 'left 0.3s ease-out'
                 }}>
                     <SafeImage
-                        src={leftCloudSrc} // Geändert: Verwende die dynamische Bildquelle
+                        src={leftCloudSrc}
                         style={{
                             width: leftConfig.size?.width || '30vw',
                             maxWidth: leftConfig.size?.maxWidth || '500px'
@@ -52,7 +64,7 @@ const CloudLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
                     transition: 'right 0.3s ease-out'
                 }}>
                     <SafeImage
-                        src={rightCloudSrc} // Geändert: Verwende die dynamische Bildquelle
+                        src={rightCloudSrc}
                         style={{
                             width: rightConfig.size?.width || '25vw',
                             maxWidth: rightConfig.size?.maxWidth || '400px'

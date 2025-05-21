@@ -21,6 +21,7 @@ export const getResponsiveConfig = () => {
             // Ressourcen für kleine Bildschirme
             imageSources: {
                 background: '/Parallax/Himmel.png', // Später durch mobile Versionen ersetzen
+                forest: '/Parallax/Erster_Hintergrund.png',  
                 leftCloud: '/Parallax/Wolken_Vorne_links.png',
                 rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
                 logo: '/Parallax/Logo.png'
@@ -34,6 +35,7 @@ export const getResponsiveConfig = () => {
             // Ressourcen für Smartphones
             imageSources: {
                 background: '/Parallax/Himmel.png',
+                forest: '/Parallax/Erster_Hintergrund.png',  
                 leftCloud: '/Parallax/Wolken_Vorne_links.png',
                 rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
                 logo: '/Parallax/Logo.png'
@@ -51,6 +53,7 @@ export const getResponsiveConfig = () => {
             // Ressourcen für Tablets
             imageSources: {
                 background: '/Parallax/Himmel.png',
+                forest: '/Parallax/Erster_Hintergrund.png',  
                 leftCloud: '/Parallax/Wolken_Vorne_links.png',
                 rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
                 logo: '/Parallax/Logo.png'
@@ -64,6 +67,7 @@ export const getResponsiveConfig = () => {
             // Standard Desktop-Ressourcen
             imageSources: {
                 background: '/Parallax/Himmel.png',
+                forest: '/Parallax/Erster_Hintergrund.png',  
                 leftCloud: '/Parallax/Wolken_Vorne_links.png',
                 rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
                 logo: '/Parallax/Logo.png'
@@ -87,6 +91,7 @@ export const getResponsiveConfig = () => {
             // Ressourcen für große Bildschirme (hochauflösend)
             imageSources: {
                 background: '/Parallax/Himmel_large.png', // Später durch hochauflösende Versionen ersetzen
+                forest: '/Parallax/Erster_Hintergrund.png',  
                 leftCloud: '/Parallax/Wolken_Vorne_links.png',
                 rightCloud: '/Parallax/Wolken_Vorne_rechts.png',
                 logo: '/Parallax/Logo.png'

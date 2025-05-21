@@ -1,11 +1,13 @@
 // src/components/Parallax/config/desktopConfig.js
 import { springs, createTitles } from './baseConfig';
+import { zIndices } from './constants/index';
 
 export const desktopConfig = {
     background: {
         startScale: 4.0,
         endScale: 1.0,
-        spring: springs.smooth
+        spring: springs.smooth,  // Tippfehler korrigiert
+        zIndex: zIndices.background  // Z-Index für den Hintergrund hinzugefügt
     },
     logo: {
         segments: [
@@ -21,7 +23,8 @@ export const desktopConfig = {
             left: '50%'
         },
         size: '200px',
-        spring: springs.smooth
+        spring: springs.smooth,
+        zIndex: zIndices.logo  // Korrekter Z-Index für das Logo
     },
     leftCloud: {
         segments: [
@@ -43,7 +46,8 @@ export const desktopConfig = {
             ...springs.smooth,
             tension: 100,
             friction: 24
-        }
+        },
+        zIndex: zIndices.clouds  // Korrekter Z-Index für die linke Wolke
     },
     rightCloud: {
         segments: [
@@ -65,8 +69,23 @@ export const desktopConfig = {
             ...springs.smooth,
             tension: 100,
             friction: 24
-        }
+        },
+        zIndex: zIndices.clouds  // Korrekt
     },
+
+    forest: {
+        segments: [
+            {
+                scrollStart: 0,
+                scrollEnd: 0.3,
+                posStart: -50,
+                posEnd: 0
+            }
+        ],
+        zIndex: zIndices.forest,  // Z-Index aus zentraler Konstante statt hartkodiert
+        imageSrc: '/Parallax/Erster_Hintergrund.png'
+    },
+
     // Generiere Titel mit der Hilfsfunktion
     titles: createTitles({
         fontSize: '2.5rem'

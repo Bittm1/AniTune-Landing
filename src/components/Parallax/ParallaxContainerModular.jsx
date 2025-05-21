@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { getConfig } from './config';
 import BackgroundLayer from './Elements/BackgroundLayer';
+import ForestLayer from './Elements/ForestLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
 import LogoLayer from './Elements/LogoLayer';
 import CloudLayer from './Elements/CloudLayer';
@@ -269,6 +270,16 @@ const ParallaxContainerModular = () => {
 
                     <ErrorBoundary>
                         <StarfieldLayer scrollProgress={scrollProgress} />
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <ForestLayer
+                            scrollProgress={scrollProgress}
+                            config={{
+                                ...config.forest,
+                                imageSrc: config.imageSources?.forest || config.forest?.imageSrc
+                            }}
+                        />
                     </ErrorBoundary>
 
                     <ErrorBoundary>
