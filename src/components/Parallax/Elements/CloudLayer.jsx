@@ -15,6 +15,10 @@ const CloudLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
     const leftCloudSegments = leftConfig.segments || [{ scrollStart: 0, scrollEnd: 1, posStart: 0, posEnd: 0 }];
     const rightCloudSegments = rightConfig.segments || [{ scrollStart: 0, scrollEnd: 1, posStart: 0, posEnd: 0 }];
 
+    // Bildquellen mit Fallbacks
+    const leftCloudSrc = leftConfig.imageSrc || "/Parallax/Wolken_Vorne_links.png";
+    const rightCloudSrc = rightConfig.imageSrc || "/Parallax/Wolken_Vorne_rechts.png";
+
     // Berechne die aktuelle Position basierend auf den Segmenten
     const leftCloudPosition = getPositionFromSegments(leftCloudSegments, scrollProgress);
     const rightCloudPosition = getPositionFromSegments(rightCloudSegments, scrollProgress);
@@ -30,7 +34,7 @@ const CloudLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
                     transition: 'left 0.3s ease-out'
                 }}>
                     <SafeImage
-                        src="/Parallax/Wolken_Vorne_links.png"
+                        src={leftCloudSrc} // Geändert: Verwende die dynamische Bildquelle
                         style={{
                             width: leftConfig.size?.width || '30vw',
                             maxWidth: leftConfig.size?.maxWidth || '500px'
@@ -48,7 +52,7 @@ const CloudLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
                     transition: 'right 0.3s ease-out'
                 }}>
                     <SafeImage
-                        src="/Parallax/Wolken_Vorne_rechts.png"
+                        src={rightCloudSrc} // Geändert: Verwende die dynamische Bildquelle
                         style={{
                             width: rightConfig.size?.width || '25vw',
                             maxWidth: rightConfig.size?.maxWidth || '400px'

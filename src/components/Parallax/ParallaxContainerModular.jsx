@@ -10,6 +10,7 @@ import NewsletterLayer from './Elements/NewsletterLayer';
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
 import gsap from 'gsap';
+import { useResponsiveConfig } from './hooks/useResponsiveConfig';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import './gsap-scroll.css';
@@ -40,27 +41,14 @@ const ParallaxContainerModular = () => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [resetCount, setResetCount] = useState(0);
 
-    // Refs
+    // Refst
     const containerRef = useRef(null);
     const sectionsRef = useRef([]);
     const observerRef = useRef(null);
     const scrollTimeoutRef = useRef(null);
 
     // Konfiguration
-    const [config, setConfig] = useState(() => {
-        try {
-            return getConfig();
-        } catch (error) {
-            console.error('Failed to load configuration:', error);
-            return {
-                background: { startScale: 1.5, endScale: 1.0 },
-                logo: { segments: [{ scrollStart: 0, scrollEnd: 1, scaleStart: 1, scaleEnd: 1 }] },
-                leftCloud: { segments: [{ scrollStart: 0, scrollEnd: 1, posStart: 0, posEnd: 0 }] },
-                rightCloud: { segments: [{ scrollStart: 0, scrollEnd: 1, posStart: 0, posEnd: 0 }] },
-                titles: []
-            };
-        }
-    });
+    const config = useResponsiveConfig();
 
     // ScrollTrigger komplett abbauen
     const destroyScrollTrigger = useCallback(() => {
@@ -356,7 +344,10 @@ const ParallaxContainerModular = () => {
                     <ErrorBoundary>
                         <BackgroundLayer
                             scrollProgress={scrollProgress}
-                            config={config.background}
+                            config={{
+                                ...config.background,
+                                imageSrc: config.imageSources?.background
+                            }}
                         />
                     </ErrorBoundary>
 
@@ -367,15 +358,24 @@ const ParallaxContainerModular = () => {
                     <ErrorBoundary>
                         <LogoLayer
                             scrollProgress={scrollProgress}
-                            config={config.logo}
+                            config={{
+                                ...config.logo,
+                                imageSrc: config.imageSources?.logo
+                            }}
                         />
                     </ErrorBoundary>
 
                     <ErrorBoundary>
                         <CloudLayer
                             scrollProgress={scrollProgress}
-                            leftConfig={config.leftCloud}
-                            rightConfig={config.rightCloud}
+                            leftConfig={{
+                                ...config.leftCloud,
+                                imageSrc: config.imageSources?.leftCloud
+                            }}
+                            rightConfig={{
+                                ...config.rightCloud,
+                                imageSrc: config.imageSources?.rightCloud
+                            }}
                         />
                     </ErrorBoundary>
 

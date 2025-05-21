@@ -13,6 +13,7 @@ const BackgroundLayer = ({ scrollProgress, config }) => {
     // Sichere Zugriffe mit Fallbacks
     const startScale = config.startScale || 1.5;
     const endScale = config.endScale || 1.0;
+    const imageSrc = config.imageSrc || "/Parallax/Himmel.png"; // Neue Zeile: imageSrc aus config verwenden
 
     // Direkte lineare Skalierung ohne Segments
     const scale = startScale - (scrollProgress * (startScale - endScale));
@@ -32,7 +33,7 @@ const BackgroundLayer = ({ scrollProgress, config }) => {
                 zIndex: 0
             }}>
                 <SafeImage
-                    src="/Parallax/Himmel.png"
+                    src={imageSrc} // Geändert: Verwende die dynamische imageSrc statt des statischen Pfads
                     style={{
                         width: '100%',
                         height: '100%',
