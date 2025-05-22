@@ -82,6 +82,44 @@ export const desktopConfig = {
         zIndex: zIndices.clouds
     },
 
+    leftCloudHinten: {
+        segments: [
+            // Phase 1: 0-100%
+            {
+                scrollStart: 0,
+                scrollEnd: 1,
+                posStart: -60,
+                posEnd: 0,
+                opacityStart: 0.9,
+                opacityEnd: 1.0
+            }
+        ],
+        position: {
+            bottom: '70%'
+        },
+        size: elementSizes.cloud.left.lg,
+        zIndex: zIndices.wolkenHinten
+    },
+
+    rightCloudHinten: {
+        segments: [
+            // Phase 1: 0-100%
+            {
+                scrollStart: 0,
+                scrollEnd: 1,
+                posStart: -60,
+                posEnd: +8,
+                opacityStart: 0.9,
+                opacityEnd: 1.0
+            }
+        ],
+        position: {
+            bottom: '70%'
+        },
+        size: elementSizes.cloud.right.lg,
+        zIndex: zIndices.wolkenHinten
+    },
+
     // ===== Wald-Konfiguration (NUR Phase 1) =====
     forest: {
         segments: [

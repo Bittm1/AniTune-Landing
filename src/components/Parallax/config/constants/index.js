@@ -12,6 +12,7 @@ export const zIndices = {
     tal: 3,               // Tal-Silhouette
     road: 5,              // Straße
     clouds: 2,            // Wolken
+    wolkenHinten: 1,      // Wolken hinten, zwischen stars und tal
     logo: 10,             // Logo (über Landschaft)
     titles: 20,           // Titel-Texte
     newsletter: 30,       // Newsletter-Form
@@ -103,6 +104,14 @@ export const assetPaths = {
         default: '/Parallax/Wolken_Vorne_rechts.png',
         fallback: '/Parallax/fallback-cloud.png'
     },
+    leftCloudHinten: {
+        default: '/Parallax/Wolken_Hinten_links.png',
+        fallback: '/Parallax/fallback-cloud.png'
+    },
+    rightCloudHinten: {
+        default: '/Parallax/Wolken_Hinten_rechts.png',
+        fallback: '/Parallax/fallback-cloud.png'
+    },    
     logo: {
         default: '/Parallax/Logo.png',
         fallback: '/Parallax/fallback-logo.png'

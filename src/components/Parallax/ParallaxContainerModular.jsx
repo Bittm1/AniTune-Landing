@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { getConfig } from './config';
 import BackgroundLayer from './Elements/BackgroundLayer';
 import CloudLayer from './Elements/CloudLayer';
+import WolkenHintenLayer from './Elements/WolkenHintenLayer';
 import ForestLayer from './Elements/ForestLayer';
 import BergeLayer from './Elements/BergeLayer';
 import TalLayer from './Elements/TalLayer';
@@ -412,6 +413,19 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, config.road, config.imageSources?.road]);
 
+    const wolkenHintenLayer = useMemo(() => (
+        <WolkenHintenLayer
+            scrollProgress={scrollProgress}
+            leftConfig={{
+                ...config.leftCloudHinten,
+                imageSrc: config.imageSources?.leftCloudHinten
+            }}
+            rightConfig={{
+                ...config.rightCloudHinten,
+                imageSrc: config.imageSources?.rightCloudHinten
+            }}
+        />
+    ), [scrollProgress, config.leftCloudHinten, config.rightCloudHinten, config.imageSources?.leftCloudHinten, config.imageSources?.rightCloudHinten]);
 
     const logoLayer = useMemo(() => (
         <LogoLayer
@@ -494,6 +508,10 @@ const ParallaxContainerModular = React.memo(() => {
 
                     <ErrorBoundary>
                         <MemoizedLayer>{cloudLayer}</MemoizedLayer>
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <MemoizedLayer>{wolkenHintenLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
                     <ErrorBoundary>
