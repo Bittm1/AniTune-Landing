@@ -111,25 +111,49 @@ export const desktopConfig = {
         segments: [
             // Phase 1: 0-100%
             {
-                scrollStart: 0,
+                scrollStart: 0.8,
                 scrollEnd: 1,
-                posStart: -100,
-                posEnd: -20,
+                posStart: -60,
+                posEnd: -40,
                 opacityStart: 0.0,
                 opacityEnd: 0.3
             },
             // Phase 2: 100%-200%
             {
                 scrollStart: 1,
-                scrollEnd: 2,
-                posStart: -20,
+                scrollEnd: 1.5,
+                posStart: -40,
                 posEnd: 0,
                 opacityStart: 0.3,
                 opacityEnd: 0.8
             }
         ],
         zIndex: zIndices.road
-    },    
+
+    },
+    berge: {
+        segments: [
+            // Phase 1: 0-100%
+            {
+                scrollStart: 0.8,
+                scrollEnd: 1,
+                posStart: -80,
+                posEnd: -40,
+                opacityStart: 1.0,
+                opacityEnd: 1.0
+            },
+            // Phase 2: 100%-200%
+            {
+                scrollStart: 1,
+                scrollEnd: 1.8,
+                posStart:  -40,
+                posEnd: 0,
+                opacityStart: 1.0,
+                opacityEnd: 1.0
+            }
+        ],
+        zIndex: zIndices.berge
+    },
 
     // ===== Desktop-spezifische Titel-Konfiguration =====
     titles: createTitles(
