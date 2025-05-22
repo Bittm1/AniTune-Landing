@@ -85,7 +85,7 @@ export const desktopConfig = {
             {
                 scrollStart: 0,
                 scrollEnd: 1,
-                posStart: -50,
+                posStart: -80,
                 posEnd: 0,
                 opacityStart: 0.95,
                 opacityEnd: 1.0
@@ -105,12 +105,12 @@ export const desktopConfig = {
         {
             // Desktop-spezifische Positionen für alle 6 Titel
             positions: [
-                { top: '58%', left: '50%' }, // Von Uns Ist Für Uns
-                { top: '62%', left: '50%' }, // Der Weg
-                { top: '66%', left: '50%' }, // Ist Das Ziel
-                { top: '62%', left: '50%' }, // Die Community
-                { top: '66%', left: '50%' }, // Heißt
-                { top: '70%', left: '50%' }  // AniTune
+                { top: '50%', left: '50%' }, // Von Uns Ist Für Uns
+                { top: '50%', left: '50%' }, // Der Weg
+                { top: '50%', left: '50%' }, // Ist Das Ziel
+                { top: '50%', left: '50%' }, // Die Community
+                { top: '50%', left: '50%' }, // Heißt
+                { top: '50%', left: '50%' }  // AniTune
             ],
 
             // Desktop-spezifische Animationen

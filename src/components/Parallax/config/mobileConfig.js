@@ -84,8 +84,8 @@ export const mobileConfig = {
         segments: [
             {
                 scrollStart: 0,
-                scrollEnd: 0.3,
-                posStart: -50,
+                scrollEnd: 1,
+                posStart: -80,
                 posEnd: 0,
                 opacityStart: 0.95,
                 opacityEnd: 1.0
@@ -106,12 +106,12 @@ export const mobileConfig = {
         {
             // Mobile-spezifische Positionen (höher positioniert für kleinere Bildschirme)
             positions: [
-                { top: '52%', left: '50%' }, // Von Uns Ist Für Uns
-                { top: '56%', left: '50%' }, // Der Weg
-                { top: '60%', left: '50%' }, // Ist Das Ziel
-                { top: '56%', left: '50%' }, // Die Community
-                { top: '60%', left: '50%' }, // Heißt
-                { top: '64%', left: '50%' }  // AniTune
+                { top: '50%', left: '50%' }, // Von Uns Ist Für Uns
+                { top: '50%', left: '50%' }, // Der Weg
+                { top: '50%', left: '50%' }, // Ist Das Ziel
+                { top: '50%', left: '50%' }, // Die Community
+                { top: '50%', left: '50%' }, // Heißt
+                { top: '50%', left: '50%' }  // AniTune
             ],
 
             // Vereinfachte Animationen für mobile Geräte (besser für Performance)
