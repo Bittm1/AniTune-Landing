@@ -8,7 +8,8 @@ export const zIndices = {
     background: 0,        // Himmel/Hintergrund (ganz hinten)
     stars: 1,             // Sternenhimmel
     forest: 2,            // Wald-Silhouette
-    clouds: 3,            // Wolken
+    road: 3,              // Straße
+    clouds: 4,            // Wolken
     logo: 10,             // Logo (über Landschaft)
     titles: 20,           // Titel-Texte
     newsletter: 30,       // Newsletter-Form
@@ -79,6 +80,10 @@ export const assetPaths = {
     forest: {
         default: '/Parallax/Erster_Hintergrund.png',
         fallback: '/Parallax/fallback-forest.png'
+    },
+    road: {
+        default: '/Parallax/Weg.png',
+        fallback: '/Parallax/fallback-road.png'
     },
     leftCloud: {
         default: '/Parallax/Wolken_Vorne_links.png',

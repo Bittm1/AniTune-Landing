@@ -107,6 +107,30 @@ export const desktopConfig = {
         zIndex: zIndices.forest,
     },
 
+    road: {
+        segments: [
+            // Phase 1: 0-100%
+            {
+                scrollStart: 0,
+                scrollEnd: 1,
+                posStart: -100,
+                posEnd: -20,
+                opacityStart: 0.0,
+                opacityEnd: 0.3
+            },
+            // Phase 2: 100%-200%
+            {
+                scrollStart: 1,
+                scrollEnd: 2,
+                posStart: -20,
+                posEnd: 0,
+                opacityStart: 0.3,
+                opacityEnd: 0.8
+            }
+        ],
+        zIndex: zIndices.road
+    },    
+
     // ===== Desktop-spezifische Titel-Konfiguration =====
     titles: createTitles(
         {

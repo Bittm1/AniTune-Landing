@@ -2,10 +2,11 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { getConfig } from './config';
 import BackgroundLayer from './Elements/BackgroundLayer';
+import CloudLayer from './Elements/CloudLayer';
 import ForestLayer from './Elements/ForestLayer';
+import RoadLayer from './Elements/RoadLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
 import LogoLayer from './Elements/LogoLayer';
-import CloudLayer from './Elements/CloudLayer';
 import TitleLayer from './Elements/TitleLayer';
 import NewsletterLayer from './Elements/NewsletterLayer';
 import ScrollIndicator from './Elements/ScrollIndicator';
@@ -379,6 +380,17 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, config.forest, config.imageSources?.forest]);
 
+    const roadLayer = useMemo(() => (
+        <RoadLayer
+            scrollProgress={scrollProgress}
+            config={{
+                ...config.road,
+                imageSrc: config.imageSources?.road || config.road?.imageSrc
+            }}
+        />
+    ), [scrollProgress, config.road, config.imageSources?.road]);
+
+
     const logoLayer = useMemo(() => (
         <LogoLayer
             scrollProgress={scrollProgress}
@@ -440,6 +452,10 @@ const ParallaxContainerModular = React.memo(() => {
 
                     <ErrorBoundary>
                         <MemoizedLayer>{forestLayer}</MemoizedLayer>
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <MemoizedLayer>{roadLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
                     <ErrorBoundary>
