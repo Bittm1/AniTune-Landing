@@ -2,23 +2,21 @@
 
 /**
  * Basis-Konfigurationen für das Parallax-System
- * Enthält grundlegende Definitionen, die von allen spezifischen Konfigurationen verwendet werden
+ * Vereinfacht für Event-basierte Titel-Animationen
  */
 import { animationTiming } from './constants';
-
 
 // ===== Animations-Konfigurationen =====
 
 /**
  * Gemeinsame Animations-Einstellungen für verschiedene Übergänge
- * Optimiert für konsistente Nutzung der zentralen Timing-Konstanten
  */
 export const baseAnimationConfig = {
     fade: {
         inDuration: animationTiming.standard,
         outDuration: animationTiming.standard,
         type: 'fade',
-        easing: 'power2.inOut' // GSAP easing hinzugefügt für glattere Übergänge
+        easing: 'power2.inOut'
     },
     fadeScale: {
         inDuration: animationTiming.standard,
@@ -33,9 +31,8 @@ export const baseAnimationConfig = {
         outDuration: animationTiming.standard,
         type: 'fade-slide',
         easing: 'power2.inOut',
-        distance: 30 // Pixel für slide transition
+        distance: 30
     },
-    // Neue optimierte Übergänge hinzugefügt
     popIn: {
         inDuration: animationTiming.medium,
         outDuration: animationTiming.fast,
@@ -55,7 +52,6 @@ export const baseAnimationConfig = {
 
 /**
  * Basis-Federungen für Animationen (GSAP Physics)
- * Für Performance-optimierte Animationen mit Memo-Kompatibilität
  */
 export const springs = {
     smooth: {
@@ -63,8 +59,8 @@ export const springs = {
         tension: 120,
         friction: 26,
         clamp: true,
-        precision: 0.01, // Höhere Präzision verbessert die Leistung
-        velocity: 0      // Anfangsgeschwindigkeit auf 0 setzen
+        precision: 0.01,
+        velocity: 0
     },
     responsive: {
         mass: 0.5,
@@ -74,7 +70,6 @@ export const springs = {
         precision: 0.01,
         velocity: 0
     },
-    // Neue optimierte Varianten
     snappy: {
         mass: 0.4,
         tension: 250,
@@ -93,26 +88,24 @@ export const springs = {
     }
 };
 
-// ===== Inhalts-Konfigurationen =====
+// ===== Titel-spezifische Konfigurationen =====
 
 /**
  * Basis-Stil für alle Titel-Elemente
- * Mit Fallback für Schriftarten und verbesserten Lesbarkeits-Eigenschaften
  */
 export const baseTitleStyle = {
     fontWeight: 'bold',
     color: 'white',
-    textShadow: '0 0 10px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5)', // Verbesserte Lesbarkeit
-    fontFamily: 'Lobster, cursive, sans-serif', // Fallback-Schriftart hinzugefügt
-    letterSpacing: '0.5px', // Bessere Lesbarkeit
-    textAlign: 'center', // Konsistente Ausrichtung
-    transform: 'translateX(-50%)', // Für Zentrierung mit left: 50%
-    opacity: 0.95 // Leicht transparent für bessere Integration
+    textShadow: '0 0 10px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5)',
+    fontFamily: 'Lobster, cursive, sans-serif',
+    letterSpacing: '0.5px',
+    textAlign: 'center',
+    transform: 'translateX(-50%)',
+    opacity: 0.95
 };
 
 /**
  * Titel-Texte für die verschiedenen Sektionen
- * Als separates Array für einfachere Pflege und Mehrsprachigkeit
  */
 export const titleTexts = [
     'Von Uns Ist Für Uns',
@@ -123,37 +116,117 @@ export const titleTexts = [
     'AniTune'
 ];
 
-// ===== Hilfsfunktionen =====
+/**
+ * Standard-Animationstypen für verschiedene Titel
+ */
+export const defaultTitleAnimations = [
+    'fadeScale',    // Titel 1: Von Uns Ist Für Uns
+    'slideUp',      // Titel 2: Der Weg
+    'popIn',        // Titel 3: Ist Das Ziel
+    'fadeScale',    // Titel 4: Die Community
+    'slideDown',    // Titel 5: Heißt
+    'popIn'         // Titel 6: AniTune
+];
+
+// Positionen werden jetzt device-spezifisch in desktopConfig.js / mobileConfig.js definiert
 
 /**
- * Erstellt Titel-Konfigurationsobjekte für alle Sektionen
- * @param {Object} styles - Überschreibende Stileigenschaften
- * @param {Object} options - Zusätzliche Optionen (Positionen, Animation)
+ * Event-basierte Titel-Erstellungsfunktion mit einfachen Animation-Definitionen
+ * @param {Object} styleOverrides - Überschreibende Stileigenschaften
+ * @param {Object} options - Zusätzliche Optionen
  * @returns {Array} Array von Titel-Konfigurationsobjekten
  */
-export function createTitles(styles = {}, options = {}) {
-    // Stelle sicher, dass die Optionen korrekt initialisiert sind
-    const positions = options.positions || [];
-    const animations = options.animations || [];
+export function createTitles(styleOverrides = {}, options = {}) {
+    // Positionen sind jetzt PFLICHT - müssen von desktopConfig/mobileConfig übergeben werden
+    const positions = options.positions;
+    const animations = options.animations || defaultTitleAnimations;
+    const timing = options.timing || {};
 
-    return titleTexts.map((text, index) => ({
-        id: `title-${index + 1}`,
-        text,
-        // Effizientere Positions-Zuweisung mit Fallback-Werten
-        position: positions[index] || {
-            top: `${50 + (index * 5)}%`, // Dynamische Positionierung basierend auf Index
-            left: '50%'
-        },
-        style: {
-            ...baseTitleStyle,
-            ...styles,
-            // Anpassung der Schriftgröße basierend auf Textlänge für bessere Anzeige
-            fontSize: text.length > 15 ?
-                (styles.fontSize ? `calc(${styles.fontSize} * 0.85)` : '2.125rem') :
-                (styles.fontSize || '2.5rem')
-        },
-        // Effizientere Animations-Zuweisung mit individuellen Anpassungen
-        animation: animations[index] ||
-            (index % 2 === 0 ? baseAnimationConfig.fadeScale : baseAnimationConfig.fadeSlide)
-    }));
+    // Validierung: Positionen müssen übergeben werden
+    if (!positions || positions.length !== titleTexts.length) {
+        throw new Error('createTitles: positions array is required and must match titleTexts length');
+    }
+
+    return titleTexts.map((text, index) => {
+        // Bestimme Animationstyp für diesen Titel
+        const animationType = animations[index] || 'fadeScale';
+
+        // Erstelle einfache Animation-Definition
+        const animation = {
+            type: animationType,
+            duration: timing[animationType]?.duration || animationTiming.standard,
+            outDuration: timing[animationType]?.outDuration || (timing[animationType]?.duration || animationTiming.standard) * 0.7,
+            delay: timing[animationType]?.delay || 0,
+            ease: timing[animationType]?.ease || getDefaultEaseForType(animationType),
+            outEase: timing[animationType]?.outEase || 'power2.in'
+        };
+
+        return {
+            id: `title-${index + 1}`,
+            text,
+            section: index + 1, // Welche Sektion (1-6)
+
+            // Position (muss von Config übergeben werden)
+            position: positions[index],
+
+            // Styling
+            style: {
+                ...baseTitleStyle,
+                ...styleOverrides,
+                // Anpassung der Schriftgröße basierend auf Textlänge
+                fontSize: text.length > 15 ?
+                    (styleOverrides.fontSize ? `calc(${styleOverrides.fontSize} * 0.85)` : '2.125rem') :
+                    (styleOverrides.fontSize || '2.5rem')
+            },
+
+            // Einfache Animation-Konfiguration
+            animation
+        };
+    });
+}
+
+/**
+ * Hilfsfunktion: Gibt Standard-Easing für Animationstyp zurück
+ */
+function getDefaultEaseForType(animationType) {
+    switch (animationType) {
+        case 'fadeScale': return 'power2.out';
+        case 'slideUp': return 'power2.out';
+        case 'slideDown': return 'power2.out';
+        case 'slideLeft': return 'power2.out';
+        case 'slideRight': return 'power2.out';
+        case 'popIn': return 'back.out(1.7)';
+        case 'fade': return 'power2.out';
+        default: return 'power2.out';
+    }
+}
+
+/**
+ * Timing-Konfigurationen für verschiedene Devices
+ */
+export function createDeviceSpecificTiming(deviceType = 'desktop') {
+    const baseTiming = {
+        fadeScale: { duration: 0.6, delay: 0, ease: 'power2.out', outDuration: 0.4 },
+        slideUp: { duration: 0.7, delay: 0.1, ease: 'power2.out', outDuration: 0.5 },
+        slideDown: { duration: 0.7, delay: 0.1, ease: 'power2.out', outDuration: 0.5 },
+        slideLeft: { duration: 0.6, delay: 0, ease: 'power2.out', outDuration: 0.4 },
+        slideRight: { duration: 0.6, delay: 0, ease: 'power2.out', outDuration: 0.4 },
+        popIn: { duration: 0.8, delay: 0.2, ease: 'back.out(1.7)', outDuration: 0.5 },
+        fade: { duration: 0.5, delay: 0, ease: 'power2.out', outDuration: 0.3 }
+    };
+
+    if (deviceType === 'mobile') {
+        // Schnellere Animationen für mobile Geräte
+        return {
+            fadeScale: { duration: 0.4, delay: 0, ease: 'power2.out', outDuration: 0.3 },
+            slideUp: { duration: 0.5, delay: 0.05, ease: 'power2.out', outDuration: 0.3 },
+            slideDown: { duration: 0.5, delay: 0.05, ease: 'power2.out', outDuration: 0.3 },
+            slideLeft: { duration: 0.4, delay: 0, ease: 'power2.out', outDuration: 0.3 },
+            slideRight: { duration: 0.4, delay: 0, ease: 'power2.out', outDuration: 0.3 },
+            popIn: { duration: 0.6, delay: 0.1, ease: 'back.out(1.4)', outDuration: 0.4 }, // Weniger bounce
+            fade: { duration: 0.3, delay: 0, ease: 'power2.out', outDuration: 0.2 }
+        };
+    }
+
+    return baseTiming;
 }

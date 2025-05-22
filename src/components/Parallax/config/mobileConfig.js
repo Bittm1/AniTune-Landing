@@ -1,5 +1,5 @@
 // src/components/Parallax/config/mobileConfig.js
-import { springs, createTitles, baseAnimationConfig } from './baseConfig';
+import { springs, createTitles, createDeviceSpecificTiming } from './baseConfig';
 import { zIndices, elementSizes } from './constants';
 
 export const mobileConfig = {
@@ -92,36 +92,40 @@ export const mobileConfig = {
             }
         ],
         zIndex: zIndices.forest,
-        // Keine hartkodierten Bildpfade mehr, werden über imageSources injiziert
     },
 
-    // ===== Titel-Konfiguration =====
-    // Generiere Titel mit der Hilfsfunktion - kleiner und mit angepassten Animationen für mobile Geräte
+    // ===== Mobile-optimierte Titel-Konfiguration =====
     titles: createTitles(
+        // Style-Überschreibungen für Mobile
         {
             fontSize: '1.8rem',
             fontWeight: 600, // Etwas leichter für mobile Geräte
-            textShadow: '0 0 8px rgba(0,0,0,0.8)' // Stärkerer Schatten für bessere Lesbarkeit
+            textShadow: '0 0 12px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.7)', // Stärkerer Schatten für bessere Lesbarkeit
+            letterSpacing: '0.3px' // Engerer Buchstabenabstand für kleinere Bildschirme
         },
         {
-            // Angepasste Positionen für mobile Geräte
+            // Mobile-spezifische Positionen (höher positioniert für kleinere Bildschirme)
             positions: [
-                { top: '55%', left: '50%' },
-                { top: '60%', left: '50%' },
-                { top: '65%', left: '50%' },
-                { top: '60%', left: '50%' },
-                { top: '65%', left: '50%' },
-                { top: '70%', left: '50%' }
+                { top: '52%', left: '50%' }, // Von Uns Ist Für Uns
+                { top: '56%', left: '50%' }, // Der Weg
+                { top: '60%', left: '50%' }, // Ist Das Ziel
+                { top: '56%', left: '50%' }, // Die Community
+                { top: '60%', left: '50%' }, // Heißt
+                { top: '64%', left: '50%' }  // AniTune
             ],
+
             // Vereinfachte Animationen für mobile Geräte (besser für Performance)
             animations: [
-                baseAnimationConfig.fade,
-                baseAnimationConfig.fade,
-                baseAnimationConfig.fadeScale,
-                baseAnimationConfig.fade,
-                baseAnimationConfig.fadeScale,
-                baseAnimationConfig.popIn
-            ]
+                'fadeScale',    // Von Uns Ist Für Uns - Einfach und zuverlässig
+                'fade',         // Der Weg - Nur Fade für bessere Performance
+                'fadeScale',    // Ist Das Ziel - Klassisch
+                'fade',         // Die Community - Nur Fade
+                'fadeScale',    // Heißt - Klassisch
+                'popIn'         // AniTune - Dynamisches Finale
+            ],
+
+            // Mobile-spezifische Timing-Anpassungen (schneller für Touch-Interaktion)
+            timing: createDeviceSpecificTiming('mobile')
         }
     )
 };

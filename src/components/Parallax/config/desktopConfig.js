@@ -1,5 +1,5 @@
 // src/components/Parallax/config/desktopConfig.js
-import { springs, createTitles, baseAnimationConfig } from './baseConfig';
+import { springs, createTitles, createDeviceSpecificTiming } from './baseConfig';
 import { zIndices, elementSizes } from './constants';
 
 export const desktopConfig = {
@@ -20,14 +20,14 @@ export const desktopConfig = {
                 scaleStart: 1.2,
                 scaleEnd: 0.8,
                 opacityStart: 1,
-                opacityEnd: 0.9 // Leichte Transparenz am Ende
+                opacityEnd: 0.9
             }
         ],
         position: {
             top: '33%',
             left: '50%'
         },
-        size: elementSizes.logo.lg, // Verwendung der zentralen Größendefinition
+        size: elementSizes.logo.lg,
         spring: springs.smooth,
         zIndex: zIndices.logo
     },
@@ -47,7 +47,7 @@ export const desktopConfig = {
         position: {
             bottom: '56%'
         },
-        size: elementSizes.cloud.left.lg, // Zentrale Größendefinition
+        size: elementSizes.cloud.left.lg,
         spring: {
             ...springs.smooth,
             tension: 100,
@@ -70,7 +70,7 @@ export const desktopConfig = {
         position: {
             bottom: '56%'
         },
-        size: elementSizes.cloud.right.lg, // Zentrale Größendefinition
+        size: elementSizes.cloud.right.lg,
         spring: {
             ...springs.smooth,
             tension: 100,
@@ -92,35 +92,39 @@ export const desktopConfig = {
             }
         ],
         zIndex: zIndices.forest,
-        // Keine hartkodierten Bildpfade mehr, werden über imageSources injiziert
     },
 
-    // ===== Titel-Konfiguration =====
-    // Generiere Titel mit der Hilfsfunktion
+    // ===== Desktop-spezifische Titel-Konfiguration =====
     titles: createTitles(
+        // Style-Überschreibungen für Desktop
         {
             fontSize: '2.5rem',
-            fontWeight: 700 // Stärker für Desktop
+            fontWeight: 700,
+            textShadow: '0 0 15px rgba(0,0,0,0.8), 0 3px 6px rgba(0,0,0,0.6)'
         },
         {
-            // Individuelle Positionen für die Titel
+            // Desktop-spezifische Positionen für alle 6 Titel
             positions: [
-                { top: '60%', left: '50%' },
-                { top: '65%', left: '50%' },
-                { top: '70%', left: '50%' },
-                { top: '65%', left: '50%' },
-                { top: '70%', left: '50%' },
-                { top: '75%', left: '50%' }
+                { top: '58%', left: '50%' }, // Von Uns Ist Für Uns
+                { top: '62%', left: '50%' }, // Der Weg
+                { top: '66%', left: '50%' }, // Ist Das Ziel
+                { top: '62%', left: '50%' }, // Die Community
+                { top: '66%', left: '50%' }, // Heißt
+                { top: '70%', left: '50%' }  // AniTune
             ],
-            // Individuelle Animationen für verschiedene Titel
+
+            // Desktop-spezifische Animationen
             animations: [
-                baseAnimationConfig.fadeScale,
-                baseAnimationConfig.fadeSlide,
-                baseAnimationConfig.popIn,
-                baseAnimationConfig.fadeScale,
-                baseAnimationConfig.floatIn,
-                baseAnimationConfig.popIn
-            ]
+                'fadeScale',    // Von Uns Ist Für Uns - Klassisch
+                'slideUp',      // Der Weg - Von unten
+                'popIn',        // Ist Das Ziel - Dynamisch
+                'fadeScale',    // Die Community - Klassisch
+                'slideDown',    // Heißt - Von oben
+                'popIn'         // AniTune - Dynamisches Finale
+            ],
+
+            // Desktop-spezifische Timing-Anpassungen
+            timing: createDeviceSpecificTiming('desktop')
         }
     )
 };

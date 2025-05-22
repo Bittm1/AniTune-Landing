@@ -1,6 +1,11 @@
 // src/components/Parallax/utils/animationUtils.js
 
 /**
+ * Animation-Utilities für scroll-basierte Parallax-Elemente (Logo, Wolken, etc.)
+ * Titel-Animationen sind jetzt event-basiert und in den Config-Dateien definiert
+ */
+
+/**
  * Berechnet einen Wert basierend auf Segmenten und dem aktuellen Scroll-Fortschritt
  * @param {Array} segments Array von Segmenten mit scrollStart, scrollEnd, valueStart, valueEnd
  * @param {number} scrollProgress Aktuelle Scroll-Position (0-1)
@@ -35,6 +40,14 @@ export const getPositionFromSegments = (segments, scrollProgress) => {
  */
 export const getScaleFromSegments = (segments, scrollProgress) => {
     return getValueFromSegments(segments, scrollProgress, 'scaleStart', 'scaleEnd');
+};
+
+/**
+ * Spezifische Funktion für die Opacity-Berechnung
+ */
+export const getOpacityFromSegments = (segments, scrollProgress) => {
+    const opacity = getValueFromSegments(segments, scrollProgress, 'opacityStart', 'opacityEnd');
+    return Math.max(0, Math.min(1, opacity)); // Clamp zwischen 0 und 1
 };
 
 /**
