@@ -5,22 +5,21 @@ import { zIndices } from '../config/constants/index';
 import ErrorBoundary from '../../ErrorBoundary';
 
 const BackgroundLayer = ({ scrollProgress, config }) => {
-    // Fehlerbehandlung für fehlende Konfiguration
     if (!config) {
         console.warn('BackgroundLayer: Missing configuration');
         return null;
     }
 
-    // Sichere Zugriffe mit Fallbacks
     const startScale = config.startScale || 1.5;
     const endScale = config.endScale || 1.0;
     const imageSrc = config.imageSrc || "/Parallax/Himmel.png";
-
-    // Z-Index aus Config mit Fallback auf den definierten Wert
     const zIndex = config.zIndex || zIndices.background;
 
-    // Direkte lineare Skalierung ohne Segments
-    const scale = startScale - (scrollProgress * (startScale - endScale));
+    // WICHTIG: Nur Phase 1 (0-100%) verwenden
+    const phase1Progress = Math.min(1, scrollProgress);
+
+    // Direkte lineare Skalierung nur für Phase 1
+    const scale = startScale - (phase1Progress * (startScale - endScale));
 
     return (
         <ErrorBoundary>
@@ -34,7 +33,7 @@ const BackgroundLayer = ({ scrollProgress, config }) => {
                 transform: `scale(${scale})`,
                 transformOrigin: 'center top',
                 transition: 'transform 0.3s ease-out',
-                zIndex: zIndex  // Verwende den konfigurierten Z-Index
+                zIndex: zIndex
             }}>
                 <SafeImage
                     src={imageSrc}

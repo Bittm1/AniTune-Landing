@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 export function useScrollProgress(containerRef, sectionsRef) {
     // States
-    const [scrollProgress, setScrollProgress] = useState(0);
+    const [scrollProgress, setScrollProgress] = useState(0); // Jetzt 0-2 statt 0-1
     const [activeSection, setActiveSection] = useState(0);
 
     // Refs
@@ -15,49 +15,51 @@ export function useScrollProgress(containerRef, sectionsRef) {
 
         const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
         const currentScroll = window.scrollY;
-        const progress = Math.max(0, Math.min(1, currentScroll / totalHeight));
+
+        // HIER IST DIE ÄNDERUNG: Progress geht jetzt von 0-2
+        const progress = Math.max(0, Math.min(2, (currentScroll / totalHeight) * 2));
 
         setScrollProgress(progress);
 
-        // Aktiven Abschnitt berechnen
+        // Aktiven Abschnitt berechnen - erweitert für 14 Sektionen (0-200%)
         const sectionCount = sectionsRef.current.length;
         if (sectionCount > 0) {
-            const newSectionIndex = Math.round(progress * (sectionCount - 1));
-            setActiveSection(newSectionIndex);
+            // Für die ersten 7 Sektionen (0-100%)
+            if (progress <= 1) {
+                const newSectionIndex = Math.round(progress * (sectionCount / 2 - 1));
+                setActiveSection(newSectionIndex);
+            }
+            // Für die nächsten 7 Sektionen (100%-200%)
+            else {
+                const extendedProgress = progress - 1; // 0-1 für zweite Hälfte
+                const newSectionIndex = Math.round(extendedProgress * (sectionCount / 2 - 1)) + (sectionCount / 2);
+                setActiveSection(newSectionIndex);
+            }
         }
     }, [containerRef, sectionsRef]);
 
-    // Scroll-Event-Handler setup
+    // Scroll-Event-Handler setup (bleibt gleich)
     useEffect(() => {
         if (!containerRef.current) return;
 
-        // Handler für Scroll-Events
         const handleScroll = () => {
-            // Debounce für bessere Performance
             if (scrollTimeoutRef.current) {
                 clearTimeout(scrollTimeoutRef.current);
             }
 
-            // Direkt aktualisieren für flüssiges Gefühl
             requestAnimationFrame(updateScrollProgress);
-
-            // Verzögert nochmal aktualisieren für akkurate End-Position
             scrollTimeoutRef.current = setTimeout(updateScrollProgress, 50);
         };
 
-        // Resize-Handler
         const handleResize = () => {
             updateScrollProgress();
         };
 
-        // Event-Listener registrieren
         window.addEventListener('scroll', handleScroll, { passive: true });
         window.addEventListener('resize', handleResize, { passive: true });
 
-        // Initiale Aktualisierung
         updateScrollProgress();
 
-        // Aufräumen
         return () => {
             window.removeEventListener('scroll', handleScroll);
             window.removeEventListener('resize', handleResize);
@@ -67,29 +69,31 @@ export function useScrollProgress(containerRef, sectionsRef) {
         };
     }, [containerRef, updateScrollProgress]);
 
-    // Funktion zum Scrollen zu einer bestimmten Sektion
+    // Funktion zum Scrollen zu einer bestimmten Sektion - ERWEITERT
     const scrollToSection = useCallback((index) => {
         if (typeof window === 'undefined') return;
 
         const sectionHeight = window.innerHeight;
         const y = index * sectionHeight;
 
-        // Sanftes Scrollen zur Sektion
         window.scrollTo({
             top: y,
             behavior: 'smooth'
         });
 
-        // Nach dem Scrollen manuell den aktiven Abschnitt setzen
         setTimeout(() => {
             setActiveSection(index);
         }, 800);
     }, []);
 
-    // Formatierter Scroll-Progress
+    // Formatierter Scroll-Progress - ERWEITERT
     const formattedScrollProgress = {
-        normalized: (Math.min(1, Math.max(0, scrollProgress)) * 100).toFixed(0),
-        absolute: (scrollProgress * 100).toFixed(0)
+        normalized: (Math.min(2, Math.max(0, scrollProgress)) * 50).toFixed(0), // 0-100%
+        absolute: (scrollProgress * 50).toFixed(0), // 0-100% (bei scrollProgress = 2)
+        // Neue Werte für bessere Übersicht:
+        phase1: Math.min(1, scrollProgress), // 0-1 für bestehende Effekte
+        phase2: Math.max(0, scrollProgress - 1), // 0-1 für neue Effekte
+        percentage: (scrollProgress * 50).toFixed(0) + '%' // 0%-100%
     };
 
     return {

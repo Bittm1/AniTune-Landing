@@ -16,12 +16,13 @@ export const desktopConfig = {
         segments: [
             {
                 scrollStart: 0,
-                scrollEnd: 1,
+                scrollEnd: 1,        // Endet bei 100%
                 scaleStart: 1.2,
                 scaleEnd: 0.8,
                 opacityStart: 1,
                 opacityEnd: 0.9
             }
+            // KEIN zweites Segment = Logo bleibt ab 100% konstant
         ],
         position: {
             top: '33%',
@@ -32,17 +33,18 @@ export const desktopConfig = {
         zIndex: zIndices.logo
     },
 
-    // ===== Wolken-Konfigurationen =====
+    // ===== Wolken-Konfigurationen (NUR Phase 1) =====
     leftCloud: {
         segments: [
             {
                 scrollStart: 0,
-                scrollEnd: 1,
+                scrollEnd: 1,        // Endet bei 100%
                 posStart: -60,
                 posEnd: 0,
                 opacityStart: 0.9,
                 opacityEnd: 1.0
-            },
+            }
+            // KEIN zweites Segment = Wolke bleibt ab 100% an Position 0
         ],
         position: {
             bottom: '56%'
@@ -60,12 +62,13 @@ export const desktopConfig = {
         segments: [
             {
                 scrollStart: 0,
-                scrollEnd: 1,
+                scrollEnd: 1,        // Endet bei 100%
                 posStart: -60,
                 posEnd: 0,
                 opacityStart: 0.9,
                 opacityEnd: 1.0
-            },
+            }
+            // KEIN zweites Segment = Wolke bleibt ab 100% an Position 0
         ],
         position: {
             bottom: '56%'
@@ -79,16 +82,26 @@ export const desktopConfig = {
         zIndex: zIndices.clouds
     },
 
-    // ===== Wald-Konfiguration =====
+    // ===== Wald-Konfiguration (NUR Phase 1) =====
     forest: {
         segments: [
+            // Phase 1: 0-100% (wie bisher)
             {
                 scrollStart: 0,
                 scrollEnd: 1,
                 posStart: -80,
-                posEnd: 0,
+                posEnd: -20,           // Bei 100% ist er an Position 0
                 opacityStart: 0.95,
                 opacityEnd: 1.0
+            },
+            // Phase 2: 100%-200% (neu!)
+            {
+                scrollStart: 1,      // Startet bei 100%
+                scrollEnd: 1.2,        // Endet bei 200%
+                posStart: -20,         // Startet wo Phase 1 endete
+                posEnd: 0,         // Sinkt nach unten (halb verschwunden)
+                opacityStart: 1.0,   // Startet vollständig sichtbar
+                opacityEnd: 0.6      // Wird transparenter
             }
         ],
         zIndex: zIndices.forest,
@@ -96,14 +109,12 @@ export const desktopConfig = {
 
     // ===== Desktop-spezifische Titel-Konfiguration =====
     titles: createTitles(
-        // Style-Überschreibungen für Desktop
         {
             fontSize: '2.5rem',
             fontWeight: 700,
             textShadow: '0 0 15px rgba(0,0,0,0.8), 0 3px 6px rgba(0,0,0,0.6)'
         },
         {
-            // Desktop-spezifische Positionen für alle 6 Titel
             positions: [
                 { top: '50%', left: '50%' }, // Von Uns Ist Für Uns
                 { top: '50%', left: '50%' }, // Der Weg
@@ -112,18 +123,14 @@ export const desktopConfig = {
                 { top: '50%', left: '50%' }, // Heißt
                 { top: '50%', left: '50%' }  // AniTune
             ],
-
-            // Desktop-spezifische Animationen
             animations: [
-                'fadeScale',    // Von Uns Ist Für Uns - Klassisch
-                'slideUp',      // Der Weg - Von unten
-                'popIn',        // Ist Das Ziel - Dynamisch
-                'fadeScale',    // Die Community - Klassisch
-                'slideDown',    // Heißt - Von oben
-                'popIn'         // AniTune - Dynamisches Finale
+                'fadeScale',    // Von Uns Ist Für Uns
+                'slideUp',      // Der Weg
+                'popIn',        // Ist Das Ziel
+                'fadeScale',    // Die Community
+                'slideDown',    // Heißt
+                'popIn'         // AniTune
             ],
-
-            // Desktop-spezifische Timing-Anpassungen
             timing: createDeviceSpecificTiming('desktop')
         }
     )

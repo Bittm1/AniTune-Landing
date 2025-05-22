@@ -314,9 +314,10 @@ const ParallaxContainerModular = React.memo(() => {
     ), [resetComponent]);
 
     // Memoize the debug indicator to prevent unnecessary re-renders
+    // Debug-Anzeige (ca. Zeile 200-220):
     const debugIndicator = useMemo(() => (
         <div className="debug-indicator">
-            Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/7
+            Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/14
             <button
                 onClick={resetComponent}
                 style={{
@@ -333,15 +334,15 @@ const ParallaxContainerModular = React.memo(() => {
                 ↻
             </button>
             <span style={{ marginLeft: '10px', fontSize: '11px', color: '#aaa' }}>
-                Mode: Manual
+                Phase: {scrollProgress <= 1 ? '1 (0-100%)' : '2 (100-200%)'}
             </span>
         </div>
-    ), [formattedScrollProgress.absolute, activeSection, resetComponent]);
+    ), [formattedScrollProgress.absolute, activeSection, resetComponent, scrollProgress]);
 
     // Memoize the section indicators to prevent unnecessary re-renders
     const sectionIndicators = useMemo(() => (
         <div className="section-indicators">
-            {[0, 1, 2, 3, 4, 5, 6].map((index) => (
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((index) => (
                 <button
                     key={index}
                     className={`section-indicator ${activeSection === index ? 'active' : ''}`}
@@ -351,6 +352,7 @@ const ParallaxContainerModular = React.memo(() => {
             ))}
         </div>
     ), [activeSection, scrollToSection]);
+    
 
     // Memoize the layers to prevent unnecessary re-renders
     const backgroundLayer = useMemo(() => (
@@ -465,7 +467,7 @@ const ParallaxContainerModular = React.memo(() => {
 
                 {/* Scroll-Abschnitte */}
                 <div className="gsap-sections-container">
-                    {[0, 1, 2, 3, 4, 5, 6].map((index) => (
+                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((index) => (
                         <section
                             key={`section-${index}-${resetCount}`}
                             ref={(el) => setSectionRef(el, index)}
