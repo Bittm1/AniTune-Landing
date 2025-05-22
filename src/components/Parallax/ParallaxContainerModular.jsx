@@ -5,6 +5,7 @@ import BackgroundLayer from './Elements/BackgroundLayer';
 import CloudLayer from './Elements/CloudLayer';
 import ForestLayer from './Elements/ForestLayer';
 import BergeLayer from './Elements/BergeLayer';
+import TalLayer from './Elements/TalLayer';
 import RoadLayer from './Elements/RoadLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
 import LogoLayer from './Elements/LogoLayer';
@@ -391,6 +392,16 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, config.berge, config.imageSources?.berge]); 
 
+    const talLayer = useMemo(() => (
+        <TalLayer
+            scrollProgress={scrollProgress}
+            config={{
+                ...config.tal,
+                imageSrc: config.imageSources?.tal || config.tal?.imageSrc
+            }}
+        />
+    ), [scrollProgress, config.tal, config.imageSources?.tal]);    
+
     const roadLayer = useMemo(() => (
         <RoadLayer
             scrollProgress={scrollProgress}
@@ -471,6 +482,10 @@ const ParallaxContainerModular = React.memo(() => {
 
                     <ErrorBoundary>
                         <MemoizedLayer>{bergeLayer}</MemoizedLayer>
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <MemoizedLayer>{talLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
                     <ErrorBoundary>

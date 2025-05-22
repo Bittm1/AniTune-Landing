@@ -155,6 +155,31 @@ export const desktopConfig = {
         zIndex: zIndices.berge
     },
 
+    tal: {
+        segments: [
+            // Phase 1: 0-100%
+            {
+                scrollStart: 0,
+                scrollEnd: 1,
+                posStart: -120,
+                posEnd: -30,
+                opacityStart: 0.0,
+                opacityEnd: 0.4
+            },
+            // Phase 2: 100%-200%
+            {
+                scrollStart: 1,
+                scrollEnd: 2,
+                posStart: -30,
+                posEnd: 0,
+                opacityStart: 0.4,
+                opacityEnd: 0.7
+            }
+        ],
+        zIndex: zIndices.tal
+    },
+    
+
     // ===== Desktop-spezifische Titel-Konfiguration =====
     titles: createTitles(
         {

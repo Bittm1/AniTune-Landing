@@ -9,6 +9,7 @@ export const zIndices = {
     stars: 1,             // Sternenhimmel
     forest: 4,            // Wald-Silhouette
     berge: 2,             // Berg-Silhouette
+    tal: 3,               // Tal-Silhouette
     road: 5,              // Straße
     clouds: 2,            // Wolken
     logo: 10,             // Logo (über Landschaft)
@@ -85,7 +86,11 @@ export const assetPaths = {
     berge: {
         default: '/Parallax/Vierter_Hintergrund.png',
         fallback: '/Parallax/fallback-berge.png'
-    },   
+    },
+    tal: {
+        default: '/Parallax/Dritter_Hintergrund.png',
+        fallback: '/Parallax/fallback-tal.png'
+    },
     road: {
         default: '/Parallax/Weg.png',
         fallback: '/Parallax/fallback-road.png'
