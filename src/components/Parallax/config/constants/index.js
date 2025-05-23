@@ -7,12 +7,15 @@
 export const zIndices = {
     background: 0,        // Himmel/Hintergrund (ganz hinten)
     stars: 1,             // Sternenhimmel
-    forest: 4,            // Wald-Silhouette
-    berge: 2,             // Berg-Silhouette
-    tal: 3,               // Tal-Silhouette
-    road: 5,              // Straße
     clouds: 2,            // Wolken
     wolkenHinten: 1,      // Wolken hinten, zwischen stars und tal
+    berge: 2,             // Berg-Silhouette
+    tal: 3,               // Tal-Silhouette
+    waldHinten: 2.5,      // Wald hinten
+    forest: 4,            // Wald-Silhouette
+    road: 5,              // Straße
+    person: 6,         // Person zwischen Wald und Road
+    menge: 7,          
     logo: 10,             // Logo (über Landschaft)
     titles: 20,           // Titel-Texte
     newsletter: 30,       // Newsletter-Form
@@ -92,9 +95,21 @@ export const assetPaths = {
         default: '/Parallax/Dritter_Hintergrund.png',
         fallback: '/Parallax/fallback-tal.png'
     },
+    waldHinten: {
+        default: '/Parallax/Zweiter_Hintergrund.png',
+        fallback: '/Parallax/fallback-wald.png'
+    },    
     road: {
         default: '/Parallax/Weg.png',
         fallback: '/Parallax/fallback-road.png'
+    },
+    person: {
+        default: '/Parallax/Person.png',
+        fallback: '/Parallax/fallback-person.png'
+    },
+    menge: {
+        default: '/Parallax/Menge.png',
+        fallback: '/Parallax/fallback-menge.png'
     },
     leftCloud: {
         default: '/Parallax/Wolken_Vorne_links.png',

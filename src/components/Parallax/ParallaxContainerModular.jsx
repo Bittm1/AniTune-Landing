@@ -7,7 +7,10 @@ import WolkenHintenLayer from './Elements/WolkenHintenLayer';
 import ForestLayer from './Elements/ForestLayer';
 import BergeLayer from './Elements/BergeLayer';
 import TalLayer from './Elements/TalLayer';
+import WaldHintenLayer from './Elements/WaldHintenLayer';
 import RoadLayer from './Elements/RoadLayer';
+import PersonLayer from './Elements/PersonLayer';
+import MengeLayer from './Elements/MengeLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
 import LogoLayer from './Elements/LogoLayer';
 import TitleLayer from './Elements/TitleLayer';
@@ -401,7 +404,17 @@ const ParallaxContainerModular = React.memo(() => {
                 imageSrc: config.imageSources?.tal || config.tal?.imageSrc
             }}
         />
-    ), [scrollProgress, config.tal, config.imageSources?.tal]);    
+    ), [scrollProgress, config.tal, config.imageSources?.tal]);   
+    
+    const waldHintenLayer = useMemo(() => (
+        <WaldHintenLayer
+            scrollProgress={scrollProgress}
+            config={{
+                ...config.waldHinten,
+                imageSrc: config.imageSources?.waldHinten || config.waldHinten?.imageSrc
+            }}
+        />
+    ), [scrollProgress, config.waldHinten, config.imageSources?.waldHinten]);
 
     const roadLayer = useMemo(() => (
         <RoadLayer
@@ -412,6 +425,26 @@ const ParallaxContainerModular = React.memo(() => {
             }}
         />
     ), [scrollProgress, config.road, config.imageSources?.road]);
+
+    const personLayer = useMemo(() => (
+        <PersonLayer
+            scrollProgress={scrollProgress}
+            config={{
+                ...config.person,
+                imageSrc: config.imageSources?.person || config.person?.imageSrc
+            }}
+        />
+    ), [scrollProgress, config.person, config.imageSources?.person]);
+
+    const mengeLayer = useMemo(() => (
+        <MengeLayer
+            scrollProgress={scrollProgress}
+            config={{
+                ...config.menge,
+                imageSrc: config.imageSources?.menge || config.menge?.imageSrc
+            }}
+        />
+    ), [scrollProgress, config.menge, config.imageSources?.menge]);
 
     const wolkenHintenLayer = useMemo(() => (
         <WolkenHintenLayer
@@ -487,6 +520,18 @@ const ParallaxContainerModular = React.memo(() => {
                     </ErrorBoundary>
 
                     <ErrorBoundary>
+                        <MemoizedLayer>{bergeLayer}</MemoizedLayer>
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <MemoizedLayer>{talLayer}</MemoizedLayer>
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <MemoizedLayer>{waldHintenLayer}</MemoizedLayer>
+                    </ErrorBoundary>
+
+                    <ErrorBoundary>
                         <MemoizedLayer>{forestLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
@@ -495,12 +540,13 @@ const ParallaxContainerModular = React.memo(() => {
                     </ErrorBoundary>
 
                     <ErrorBoundary>
-                        <MemoizedLayer>{bergeLayer}</MemoizedLayer>
+                        <MemoizedLayer>{personLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
                     <ErrorBoundary>
-                        <MemoizedLayer>{talLayer}</MemoizedLayer>
+                        <MemoizedLayer>{mengeLayer}</MemoizedLayer>
                     </ErrorBoundary>
+
 
                     <ErrorBoundary>
                         <MemoizedLayer>{logoLayer}</MemoizedLayer>
