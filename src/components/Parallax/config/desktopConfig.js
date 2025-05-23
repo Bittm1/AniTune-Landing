@@ -37,9 +37,9 @@ export const desktopConfig = {
     leftCloud: {
         segments: [
             {
-                scrollStart: 0,
+                scrollStart: 0.13,
                 scrollEnd: 1,        // Endet bei 100%
-                posStart: 0,
+                posStart: -35,
                 posEnd: 0,
                 opacityStart: 0.9,
                 opacityEnd: 1.0
@@ -61,9 +61,9 @@ export const desktopConfig = {
     rightCloud: {
         segments: [
             {
-                scrollStart: 0,
+                scrollStart: 0.13,
                 scrollEnd: 1,        // Endet bei 100%
-                posStart: 0,
+                posStart: -35,
                 posEnd: 0,
                 opacityStart: 0.9,
                 opacityEnd: 1.0
@@ -185,7 +185,7 @@ export const desktopConfig = {
                 scrollStart: 1,
                 scrollEnd: 1.8,
                 posStart:  -40,
-                posEnd: -40,
+                posEnd: -5,
                 opacityStart: 1.0,
                 opacityEnd: 1.0
             }
@@ -209,7 +209,7 @@ export const desktopConfig = {
                 scrollStart: 1,
                 scrollEnd: 2,
                 posStart: -30,
-                posEnd: -30,
+                posEnd: -10,
                 opacityStart: 0.4,
                 opacityEnd: 0.7
             }
@@ -224,18 +224,18 @@ export const desktopConfig = {
                 scrollStart: 0,
                 scrollEnd: 1,
                 posStart: -80,
-                posEnd: 0,
-                opacityStart: 0.95,
+                posEnd: -20,
+                opacityStart: 1.0,
                 opacityEnd: 1.0
             },
             // Phase 2: 100%-200%
             {
                 scrollStart: 1,
                 scrollEnd: 2,
-                posStart: 0,
-                posEnd: 0,
+                posStart: -20,
+                posEnd: -10,
                 opacityStart: 1.0,
-                opacityEnd: 0.8
+                opacityEnd: 1.0
             }
         ],
         zIndex: zIndices.waldHinten
@@ -244,22 +244,22 @@ export const desktopConfig = {
     // In desktopConfig.js - Person und Menge Layer (vertikal bewegend)
 
     // ===== Person Layer =====
-    person: {
+    dog: {
         segments: [
             // Phase 1: 0-100%
             {
                 scrollStart: 0,
                 scrollEnd: 1,
                 posStart: -100,      // Startet außerhalb (unten)
-                posEnd: -20,         // Kommt fast ins Bild
-                opacityStart: 0.0,
+                posEnd: -30,         // Kommt fast ins Bild
+                opacityStart: 1.0,
                 opacityEnd: 1.0
             },
             // Phase 2: 100%-200%
             {
                 scrollStart: 1,
-                scrollEnd: 1.6,
-                posStart: -20,       // Startet wo Phase 1 endete
+                scrollEnd: 1.5,
+                posStart: -30,       // Startet wo Phase 1 endete
                 posEnd: 10,          // Kommt vollständig ins Bild
                 opacityStart: 1.0,
                 opacityEnd: 1.0
@@ -273,7 +273,7 @@ export const desktopConfig = {
             maxWidth: '250px',
             height: 'auto'
         },
-        zIndex: zIndices.person
+        zIndex: zIndices.dog
     },
 
     // ===== Menge Layer =====

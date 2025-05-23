@@ -14,7 +14,7 @@ export const zIndices = {
     waldHinten: 2.5,      // Wald hinten
     forest: 4,            // Wald-Silhouette
     road: 5,              // Straße
-    person: 6,         // Person zwischen Wald und Road
+    dog: 6,         // Person zwischen Wald und Road
     menge: 7,          
     logo: 10,             // Logo (über Landschaft)
     titles: 20,           // Titel-Texte
@@ -103,9 +103,9 @@ export const assetPaths = {
         default: '/Parallax/Weg.png',
         fallback: '/Parallax/fallback-road.png'
     },
-    person: {
-        default: '/Parallax/Person.png',
-        fallback: '/Parallax/fallback-person.png'
+    dog: {
+        default: '/Parallax/Hund.png',
+        fallback: '/Parallax/fallback-Hund.png'
     },
     menge: {
         default: '/Parallax/Menge.png',

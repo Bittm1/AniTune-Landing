@@ -9,7 +9,7 @@ import BergeLayer from './Elements/BergeLayer';
 import TalLayer from './Elements/TalLayer';
 import WaldHintenLayer from './Elements/WaldHintenLayer';
 import RoadLayer from './Elements/RoadLayer';
-import PersonLayer from './Elements/PersonLayer';
+import DogLayer from './Elements/DogLayer';  // Geändert von PersonLayer zu DogLayer
 import MengeLayer from './Elements/MengeLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
 import LogoLayer from './Elements/LogoLayer';
@@ -321,7 +321,6 @@ const ParallaxContainerModular = React.memo(() => {
     ), [resetComponent]);
 
     // Memoize the debug indicator to prevent unnecessary re-renders
-    // Debug-Anzeige (ca. Zeile 200-220):
     const debugIndicator = useMemo(() => (
         <div className="debug-indicator">
             Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/14
@@ -359,7 +358,7 @@ const ParallaxContainerModular = React.memo(() => {
             ))}
         </div>
     ), [activeSection, scrollToSection]);
-    
+
 
     // Memoize the layers to prevent unnecessary re-renders
     const backgroundLayer = useMemo(() => (
@@ -394,7 +393,7 @@ const ParallaxContainerModular = React.memo(() => {
                 imageSrc: config.imageSources?.berge || config.berge?.imageSrc
             }}
         />
-    ), [scrollProgress, config.berge, config.imageSources?.berge]); 
+    ), [scrollProgress, config.berge, config.imageSources?.berge]);
 
     const talLayer = useMemo(() => (
         <TalLayer
@@ -404,8 +403,8 @@ const ParallaxContainerModular = React.memo(() => {
                 imageSrc: config.imageSources?.tal || config.tal?.imageSrc
             }}
         />
-    ), [scrollProgress, config.tal, config.imageSources?.tal]);   
-    
+    ), [scrollProgress, config.tal, config.imageSources?.tal]);
+
     const waldHintenLayer = useMemo(() => (
         <WaldHintenLayer
             scrollProgress={scrollProgress}
@@ -426,15 +425,15 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, config.road, config.imageSources?.road]);
 
-    const personLayer = useMemo(() => (
-        <PersonLayer
+    const dogLayer = useMemo(() => (
+        <DogLayer
             scrollProgress={scrollProgress}
             config={{
-                ...config.person,
-                imageSrc: config.imageSources?.person || config.person?.imageSrc
+                ...config.dog,
+                imageSrc: config.imageSources?.dog || config.dog?.imageSrc
             }}
         />
-    ), [scrollProgress, config.person, config.imageSources?.person]);
+    ), [scrollProgress, config.dog, config.imageSources?.dog]);
 
     const mengeLayer = useMemo(() => (
         <MengeLayer
@@ -540,7 +539,7 @@ const ParallaxContainerModular = React.memo(() => {
                     </ErrorBoundary>
 
                     <ErrorBoundary>
-                        <MemoizedLayer>{personLayer}</MemoizedLayer>
+                        <MemoizedLayer>{dogLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
                     <ErrorBoundary>
