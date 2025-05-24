@@ -1,8 +1,6 @@
-// src/components/Parallax/config/baseConfig.js
-
 /**
  * Basis-Konfigurationen für das Parallax-System
- * Vereinfacht für Event-basierte Titel-Animationen
+ * Erweitert für Segment-basierte Titel-Animationen mit Snap-Scroll
  */
 import { animationTiming } from './constants';
 
@@ -128,10 +126,8 @@ export const defaultTitleAnimations = [
     'popIn'         // Titel 6: AniTune
 ];
 
-// Positionen werden jetzt device-spezifisch in desktopConfig.js / mobileConfig.js definiert
-
 /**
- * Event-basierte Titel-Erstellungsfunktion mit einfachen Animation-Definitionen
+ * Segment-basierte Titel-Erstellungsfunktion mit Snap-Scroll
  * @param {Object} styleOverrides - Überschreibende Stileigenschaften
  * @param {Object} options - Zusätzliche Optionen
  * @returns {Array} Array von Titel-Konfigurationsobjekten
@@ -142,6 +138,52 @@ export function createTitles(styleOverrides = {}, options = {}) {
     const animations = options.animations || defaultTitleAnimations;
     const timing = options.timing || {};
 
+    // NEU: Segment-basierte Definitionen mit Snap-Targets (flexibel anpassbar!)
+    const titleSegments = options.segments || [
+        {
+            scrollStart: 0,
+            scrollEnd: 0.2,
+            snapTarget: 0.1,           // Snap-Punkt bei 10%
+            snapDuration: 1.2,         // Snap-Animation-Dauer
+            snapEase: "power2.inOut"   // Snap-Easing
+        },
+        {
+            scrollStart: 0.15,
+            scrollEnd: 0.35,
+            snapTarget: 0.25,
+            snapDuration: 1.0,
+            snapEase: "power2.inOut"
+        },
+        {
+            scrollStart: 0.3,
+            scrollEnd: 0.5,
+            snapTarget: 0.4,
+            snapDuration: 1.0,
+            snapEase: "power2.inOut"
+        },
+        {
+            scrollStart: 0.45,
+            scrollEnd: 0.65,
+            snapTarget: 0.55,
+            snapDuration: 1.0,
+            snapEase: "power2.inOut"
+        },
+        {
+            scrollStart: 0.6,
+            scrollEnd: 0.8,
+            snapTarget: 0.7,
+            snapDuration: 1.0,
+            snapEase: "power2.inOut"
+        },
+        {
+            scrollStart: 0.75,
+            scrollEnd: 1.0,
+            snapTarget: 0.875,
+            snapDuration: 1.2,
+            snapEase: "power2.inOut"
+        }
+    ];
+
     // Validierung: Positionen müssen übergeben werden
     if (!positions || positions.length !== titleTexts.length) {
         throw new Error('createTitles: positions array is required and must match titleTexts length');
@@ -150,6 +192,7 @@ export function createTitles(styleOverrides = {}, options = {}) {
     return titleTexts.map((text, index) => {
         // Bestimme Animationstyp für diesen Titel
         const animationType = animations[index] || 'fadeScale';
+        const segment = titleSegments[index];
 
         // Erstelle einfache Animation-Definition
         const animation = {
@@ -164,7 +207,13 @@ export function createTitles(styleOverrides = {}, options = {}) {
         return {
             id: `title-${index + 1}`,
             text,
-            section: index + 1, // Welche Sektion (1-6)
+            index, // Für Navigation
+
+            // NEU: Segment-Definition mit Snap-Daten
+            segments: [segment],
+            snapTarget: segment.snapTarget,
+            snapDuration: segment.snapDuration,
+            snapEase: segment.snapEase,
 
             // Position (muss von Config übergeben werden)
             position: positions[index],
@@ -179,7 +228,7 @@ export function createTitles(styleOverrides = {}, options = {}) {
                     (styleOverrides.fontSize || '2.5rem')
             },
 
-            // Einfache Animation-Konfiguration
+            // Animation-Konfiguration
             animation
         };
     });
@@ -229,4 +278,43 @@ export function createDeviceSpecificTiming(deviceType = 'desktop') {
     }
 
     return baseTiming;
+}
+
+/**
+ * Snap-Scroll-Hilfsfunktionen
+ */
+
+// Finde den nächsten Snap-Punkt basierend auf aktuellem Scroll
+export function findNearestSnapTarget(currentProgress, titles) {
+    let nearestTitle = null;
+    let minDistance = Infinity;
+
+    titles.forEach(title => {
+        const distance = Math.abs(currentProgress - title.snapTarget);
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestTitle = title;
+        }
+    });
+
+    return nearestTitle;
+}
+
+// Finde nächsten/vorherigen Titel für Keyboard-Navigation
+export function findAdjacentTitle(currentProgress, titles, direction = 'next') {
+    const sortedTitles = [...titles].sort((a, b) => a.snapTarget - b.snapTarget);
+
+    if (direction === 'next') {
+        return sortedTitles.find(title => title.snapTarget > currentProgress) || sortedTitles[0];
+    } else {
+        return sortedTitles.reverse().find(title => title.snapTarget < currentProgress) || sortedTitles[0];
+    }
+}
+
+// Prüfe ob User innerhalb eines Titel-Segments ist
+export function getCurrentActiveTitle(scrollProgress, titles) {
+    return titles.find(title => {
+        const segment = title.segments[0];
+        return scrollProgress >= segment.scrollStart && scrollProgress <= segment.scrollEnd;
+    });
 }

@@ -1,11 +1,11 @@
-// src/components/Parallax/Elements/TitleLayer.jsx
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
+import { getOpacityFromSegments } from '../utils/animationUtils';
 import ErrorBoundary from '../../ErrorBoundary';
 import './TitleLayer.css';
 
 // Hauptkomponente als memo für bessere Performance
-const TitleLayer = React.memo(({ scrollProgress, titles = [], activeSection }) => {
+const TitleLayer = React.memo(({ scrollProgress, titles = [] }) => {
     if (!titles || titles.length === 0) return null;
 
     return (
@@ -26,8 +26,7 @@ const TitleLayer = React.memo(({ scrollProgress, titles = [], activeSection }) =
                     <Title
                         key={title.id}
                         title={title}
-                        activeSection={activeSection}
-                        titleSection={title.section || index + 1}
+                        scrollProgress={scrollProgress}
                     />
                 ))}
             </div>
@@ -35,23 +34,46 @@ const TitleLayer = React.memo(({ scrollProgress, titles = [], activeSection }) =
     );
 });
 
-// Event-basierte Title-Komponente mit stabiler Logik
-const Title = React.memo(({ title, activeSection, titleSection }) => {
+// Segment-basierte Title-Komponente mit optimierter Performance
+const Title = React.memo(({ title, scrollProgress }) => {
     const titleRef = useRef(null);
     const animationRef = useRef(null);
     const isAnimatingRef = useRef(false);
     const currentStateRef = useRef('hidden'); // 'hidden', 'visible', 'animating'
 
-    // Stabile Referenz für activeSection ohne Endlos-Updates
-    const stableActiveSectionRef = useRef(activeSection);
+    // Berechne Opacity basierend auf Segmenten (wie bei anderen Layern)
+    const opacity = useMemo(() => {
+        if (!title.segments || title.segments.length === 0) return 0;
 
-    // Nur bei tatsächlicher Änderung von activeSection updaten
-    useEffect(() => {
-        stableActiveSectionRef.current = activeSection;
-    }, [activeSection]);
+        // Verwende die gleiche Segment-Logik wie andere Layer
+        const segment = title.segments[0];
 
-    // Bestimme den gewünschten Zustand basierend auf activeSection
-    const shouldBeVisible = activeSection === titleSection;
+        // Einfache lineare Opacity-Berechnung basierend auf Segment
+        if (scrollProgress < segment.scrollStart) {
+            return 0; // Vor Segment = unsichtbar
+        } else if (scrollProgress > segment.scrollEnd) {
+            return 0; // Nach Segment = unsichtbar
+        } else {
+            // Innerhalb des Segments
+            const segmentProgress = (scrollProgress - segment.scrollStart) /
+                (segment.scrollEnd - segment.scrollStart);
+
+            // Fade-In am Anfang und Fade-Out am Ende
+            if (segmentProgress < 0.2) {
+                // Fade-In (erste 20% des Segments)
+                return segmentProgress / 0.2;
+            } else if (segmentProgress > 0.8) {
+                // Fade-Out (letzte 20% des Segments)
+                return (1 - segmentProgress) / 0.2;
+            } else {
+                // Vollständig sichtbar (mittlere 60% des Segments)
+                return 1;
+            }
+        }
+    }, [scrollProgress, title.segments]);
+
+    // Bestimme ob Titel sichtbar sein sollte
+    const shouldBeVisible = opacity > 0.01;
 
     // Animation-Funktion für Einblenden
     const animateIn = useCallback(() => {
@@ -62,7 +84,7 @@ const Title = React.memo(({ title, activeSection, titleSection }) => {
 
         // Debug-Log
         if (process.env.NODE_ENV === 'development') {
-            console.log(`🎬 Titel "${title.text}" wird eingeblendet (Sektion ${titleSection})`);
+            console.log(`🎬 Titel "${title.text}" wird eingeblendet`);
         }
 
         // Kill existing animation
@@ -75,7 +97,7 @@ const Title = React.memo(({ title, activeSection, titleSection }) => {
 
         // Bestimme Animation-Parameter basierend auf Typ
         let animationProps = {
-            opacity: 1,
+            opacity: opacity, // Nutze berechnete Opacity statt fester Werte
             duration: animation.duration || 0.6,
             ease: animation.ease || 'power2.out',
             delay: animation.delay || 0,
@@ -135,7 +157,7 @@ const Title = React.memo(({ title, activeSection, titleSection }) => {
         // Starte Animation
         animationRef.current = gsap.to(element, animationProps);
 
-    }, [title.animation, title.text, titleSection]);
+    }, [title.animation, title.text, opacity]);
 
     // Animation-Funktion für Ausblenden
     const animateOut = useCallback(() => {
@@ -146,7 +168,7 @@ const Title = React.memo(({ title, activeSection, titleSection }) => {
 
         // Debug-Log
         if (process.env.NODE_ENV === 'development') {
-            console.log(`🎬 Titel "${title.text}" wird ausgeblendet (Sektion ${titleSection})`);
+            console.log(`🎬 Titel "${title.text}" wird ausgeblendet`);
         }
 
         // Kill existing animation
@@ -213,7 +235,7 @@ const Title = React.memo(({ title, activeSection, titleSection }) => {
         // Starte Ausblende-Animation
         animationRef.current = gsap.to(element, animationProps);
 
-    }, [title.animation, title.text, titleSection]);
+    }, [title.animation, title.text]);
 
     // Hauptlogik: Bestimme ob Animation gestartet werden soll
     useEffect(() => {
@@ -228,6 +250,13 @@ const Title = React.memo(({ title, activeSection, titleSection }) => {
             animateOut();
         }
     }, [shouldBeVisible, animateIn, animateOut]);
+
+    // Live-Update der Opacity während Titel sichtbar ist
+    useEffect(() => {
+        if (titleRef.current && currentStateRef.current === 'visible' && !isAnimatingRef.current) {
+            gsap.set(titleRef.current, { opacity: opacity });
+        }
+    }, [opacity]);
 
     // Initialisierung: Setze alle Titel initial auf unsichtbar
     useEffect(() => {
@@ -271,8 +300,8 @@ const Title = React.memo(({ title, activeSection, titleSection }) => {
     const cssClasses = useMemo(() => {
         const classes = [
             'title-element',
-            'stable-animated-title',
-            `section-${titleSection}`,
+            'segment-animated-title',
+            `title-${title.index + 1}`,
             `animation-${title.animation?.type || 'fadeScale'}`
         ];
 
@@ -285,7 +314,7 @@ const Title = React.memo(({ title, activeSection, titleSection }) => {
         }
 
         return classes.join(' ');
-    }, [titleSection, title.animation?.type, shouldBeVisible]);
+    }, [title.index, title.animation?.type, shouldBeVisible]);
 
     return (
         <div
@@ -293,9 +322,10 @@ const Title = React.memo(({ title, activeSection, titleSection }) => {
             className={cssClasses}
             style={titleStyles}
             data-title-id={title.id}
-            data-section={titleSection}
+            data-snap-target={title.snapTarget}
             data-animation-type={title.animation?.type}
             data-current-state={currentStateRef.current}
+            data-opacity={opacity.toFixed(2)}
         >
             {title.text}
         </div>

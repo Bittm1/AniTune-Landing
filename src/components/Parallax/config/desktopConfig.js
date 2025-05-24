@@ -129,7 +129,7 @@ export const desktopConfig = {
                 scrollEnd: 1,
                 posStart: -80,
                 posEnd: -20,           // Bei 100% ist er an Position 0
-                opacityStart: 0.95,
+                opacityStart: 1.0,   // Startet vollständig sichtbarkk
                 opacityEnd: 1.0
             },
             // Phase 2: 100%-200% (neu!)

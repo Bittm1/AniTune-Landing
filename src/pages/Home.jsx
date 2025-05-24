@@ -4,7 +4,7 @@ import ParallaxContainerModular from '../components/Parallax/ParallaxContainerMo
 import LoadingScreen from '../components/Loading/LoadingScreen';
 
 const Home = () => {
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     
     const handleLoadingComplete = () => {
         setIsLoading(false);

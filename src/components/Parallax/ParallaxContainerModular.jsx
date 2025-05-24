@@ -76,8 +76,13 @@ const ParallaxContainerModular = React.memo(() => {
         setActiveSection,
         scrollToSection,
         formattedScrollProgress,
-        updateScrollProgress
-    } = useScrollProgress(containerRef, sectionsRef);
+        updateScrollProgress,
+        activeTitle,
+        isSnapping,
+        snapToTitle,
+        scrollToTitleIndex,
+        handleKeyboardNavigation
+    } = useScrollProgress(containerRef, sectionsRef, config.titles);    
 
     // ScrollTrigger komplett abbauen - Optimiert
     const destroyScrollTrigger = useCallback(() => {
@@ -487,9 +492,8 @@ const ParallaxContainerModular = React.memo(() => {
         <TitleLayer
             scrollProgress={scrollProgress}
             titles={config.titles}
-            activeSection={activeSection}
         />
-    ), [scrollProgress, config.titles, activeSection]);
+    ), [scrollProgress, config.titles]);    
 
     const newsletterLayer = useMemo(() => (
         <NewsletterLayer scrollProgress={scrollProgress} />
@@ -559,9 +563,9 @@ const ParallaxContainerModular = React.memo(() => {
                         <MemoizedLayer>{wolkenHintenLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
-                    <ErrorBoundary>
+                    {/*<ErrorBoundary>
                         <MemoizedLayer>{titleLayer}</MemoizedLayer>
-                    </ErrorBoundary>
+                    </ErrorBoundary>*/}
 
                     <ErrorBoundary>
                         <MemoizedLayer>{newsletterLayer}</MemoizedLayer>
