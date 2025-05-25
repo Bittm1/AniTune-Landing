@@ -7,7 +7,7 @@ const NewsletterLayer = ({ scrollProgress = 0 }) => {
     return (
         <FadeComponent
             scrollProgress={scrollProgress}
-            threshold={0.33}
+            threshold={0.1}
             style={{
                 position: 'fixed',
                 top: '50%',

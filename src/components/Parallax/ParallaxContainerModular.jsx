@@ -81,8 +81,10 @@ const ParallaxContainerModular = React.memo(() => {
         isSnapping,
         snapToTitle,
         scrollToTitleIndex,
-        handleKeyboardNavigation
-    } = useScrollProgress(containerRef, sectionsRef, config.titles);    
+        handleKeyboardNavigation,
+        currentTitleIndex,        // ← NEU
+        isScrollLocked           // ← NEU
+    } = useScrollProgress(containerRef, sectionsRef, config.titles);   
 
     // ScrollTrigger komplett abbauen - Optimiert
     const destroyScrollTrigger = useCallback(() => {
@@ -353,7 +355,7 @@ const ParallaxContainerModular = React.memo(() => {
     // Memoize the section indicators to prevent unnecessary re-renders
     const sectionIndicators = useMemo(() => (
         <div className="section-indicators">
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((index) => (
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
                 <button
                     key={index}
                     className={`section-indicator ${activeSection === index ? 'active' : ''}`}

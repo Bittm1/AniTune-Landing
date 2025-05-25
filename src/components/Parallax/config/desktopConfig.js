@@ -37,7 +37,7 @@ export const desktopConfig = {
     leftCloud: {
         segments: [
             {
-                scrollStart: 0.13,
+                scrollStart: 0.70,
                 scrollEnd: 1,        // Endet bei 100%
                 posStart: -35,
                 posEnd: 0,
@@ -61,7 +61,7 @@ export const desktopConfig = {
     rightCloud: {
         segments: [
             {
-                scrollStart: 0.13,
+                scrollStart: 0.70,
                 scrollEnd: 1,        // Endet bei 100%
                 posStart: -35,
                 posEnd: 0,
@@ -86,7 +86,7 @@ export const desktopConfig = {
         segments: [
             // Phase 1: 0-100%
             {
-                scrollStart: 0,
+                scrollStart: 0.70,
                 scrollEnd: 1,
                 posStart: -60,
                 posEnd: 0,
@@ -105,10 +105,10 @@ export const desktopConfig = {
         segments: [
             // Phase 1: 0-100%
             {
-                scrollStart: 0,
+                scrollStart: 0.70,
                 scrollEnd: 1,
-                posStart: -60,
-                posEnd: +5,
+                posStart: -25,
+                posEnd: 0,
                 opacityStart: 1,
                 opacityEnd: 1.0
             }
@@ -125,22 +125,13 @@ export const desktopConfig = {
         segments: [
             // Phase 1: 0-100% (wie bisher)
             {
-                scrollStart: 0,
+                scrollStart: 0.42,
                 scrollEnd: 1,
-                posStart: -80,
-                posEnd: -20,           // Bei 100% ist er an Position 0
+                posStart: -55,
+                posEnd: 0,           // Bei 100% ist er an Position 0
                 opacityStart: 1.0,   // Startet vollständig sichtbarkk
                 opacityEnd: 1.0
             },
-            // Phase 2: 100%-200% (neu!)
-            {
-                scrollStart: 1,      // Startet bei 100%
-                scrollEnd: 1.2,        // Endet bei 200%
-                posStart: -20,         // Startet wo Phase 1 endete
-                posEnd: 0,         // Sinkt nach unten (halb verschwunden)
-                opacityStart: 1.0,   // Startet vollständig sichtbar
-                opacityEnd: 0.6      // Wird transparenter
-            }
         ],
         zIndex: zIndices.forest,
     },
@@ -149,22 +140,13 @@ export const desktopConfig = {
         segments: [
             // Phase 1: 0-100%
             {
-                scrollStart: 0.8,
+                scrollStart: 0.30,
                 scrollEnd: 1,
-                posStart: -60,
-                posEnd: -40,
+                posStart: -45,
+                posEnd: 0,
                 opacityStart: 0.0,
                 opacityEnd: 0.3
             },
-            // Phase 2: 100%-200%
-            {
-                scrollStart: 1,
-                scrollEnd: 1.5,
-                posStart: -40,
-                posEnd: 0,
-                opacityStart: 0.3,
-                opacityEnd: 0.8
-            }
         ],
         zIndex: zIndices.road
 
@@ -173,22 +155,14 @@ export const desktopConfig = {
         segments: [
             // Phase 1: 0-100%
             {
-                scrollStart: 0.8,
+                scrollStart: 0.60,
                 scrollEnd: 1,
-                posStart: -80,
-                posEnd: -40,
+                posStart: -50,
+                posEnd: 0,
                 opacityStart: 1.0,
                 opacityEnd: 1.0
             },
             // Phase 2: 100%-200%
-            {
-                scrollStart: 1,
-                scrollEnd: 1.8,
-                posStart:  -40,
-                posEnd: -5,
-                opacityStart: 1.0,
-                opacityEnd: 1.0
-            }
         ],
         zIndex: zIndices.berge
     },
@@ -197,22 +171,14 @@ export const desktopConfig = {
         segments: [
             // Phase 1: 0-100%
             {
-                scrollStart: 0,
+                scrollStart: 0.50,
                 scrollEnd: 1,
-                posStart: -120,
-                posEnd: -30,
+                posStart: -60,
+                posEnd: 0,
                 opacityStart: 0.0,
                 opacityEnd: 0.4
             },
             // Phase 2: 100%-200%
-            {
-                scrollStart: 1,
-                scrollEnd: 2,
-                posStart: -30,
-                posEnd: -10,
-                opacityStart: 0.4,
-                opacityEnd: 0.7
-            }
         ],
         zIndex: zIndices.tal
     },
@@ -221,22 +187,14 @@ export const desktopConfig = {
         segments: [
             // Phase 1: 0-100%
             {
-                scrollStart: 0,
+                scrollStart: 0.60,
                 scrollEnd: 1,
-                posStart: -80,
-                posEnd: -20,
+                posStart: -35,
+                posEnd: 0,
                 opacityStart: 1.0,
                 opacityEnd: 1.0
             },
-            // Phase 2: 100%-200%
-            {
-                scrollStart: 1,
-                scrollEnd: 2,
-                posStart: -20,
-                posEnd: -10,
-                opacityStart: 1.0,
-                opacityEnd: 1.0
-            }
+
         ],
         zIndex: zIndices.waldHinten
     },
@@ -248,25 +206,16 @@ export const desktopConfig = {
         segments: [
             // Phase 1: 0-100%
             {
-                scrollStart: 0,
+                scrollStart: 0.30,
                 scrollEnd: 1,
-                posStart: -100,      // Startet außerhalb (unten)
-                posEnd: -30,         // Kommt fast ins Bild
+                posStart: -33,      // Startet außerhalb (unten)
+                posEnd: 12,         // Kommt fast ins Bild
                 opacityStart: 1.0,
                 opacityEnd: 1.0
             },
-            // Phase 2: 100%-200%
-            {
-                scrollStart: 1,
-                scrollEnd: 1.5,
-                posStart: -30,       // Startet wo Phase 1 endete
-                posEnd: 10,          // Kommt vollständig ins Bild
-                opacityStart: 1.0,
-                opacityEnd: 1.0
-            }
         ],
         position: {
-            left: '50%'              // Konfigurierbare X-Position
+            left: '50.8%'              // Konfigurierbare X-Position
         },
         size: {
             width: '5vw',
@@ -284,22 +233,13 @@ export const desktopConfig = {
                 scrollStart: 0,
                 scrollEnd: 1,
                 posStart: -120,      // Startet außerhalb (unten)
-                posEnd: -30,         // Kommt langsam ins Bild
+                posEnd: 0,         // Kommt langsam ins Bild
                 opacityStart: 0.0,
                 opacityEnd: 0.8
             },
-            // Phase 2: 100%-200%
-            {
-                scrollStart: 1,
-                scrollEnd: 2,
-                posStart: -30,       // Startet wo Phase 1 endete
-                posEnd: 0,           // Kommt vollständig ins Bild
-                opacityStart: 0.8,
-                opacityEnd: 1.0
-            }
         ],
         position: {
-            left: '75%'              // Konfigurierbare X-Position (rechts)
+            left: '55%'              // Konfigurierbare X-Position (rechts)
         },
         size: {
             width: '90vw',

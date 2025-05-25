@@ -13,7 +13,7 @@ const LogoLayer = ({ scrollProgress, config }) => {
     const logoScale = getScaleFromSegments(config.segments, scrollProgress);
 
     // Berechne die Opacity basierend auf dem scrollProgress
-    const opacity = Math.max(0, 1 - ((scrollProgress || 0) / 0.33));
+    const opacity = Math.max(0, 1 - ((scrollProgress || 0) / 0.1));
 
     // Verwende die bereitgestellte imageSrc oder Fallback
     const imageSrc = config.imageSrc || "/Parallax/Logo.png";

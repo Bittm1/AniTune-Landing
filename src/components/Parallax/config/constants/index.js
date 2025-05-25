@@ -11,7 +11,7 @@ export const zIndices = {
     wolkenHinten: 1,      // Wolken hinten, zwischen stars und tal
     berge: 2,             // Berg-Silhouette
     tal: 3,               // Tal-Silhouette
-    waldHinten: 2.5,      // Wald hinten
+    waldHinten: 4,      // Wald hinten
     forest: 4,            // Wald-Silhouette
     road: 5,              // Straße
     dog: 6,         // Person zwischen Wald und Road
