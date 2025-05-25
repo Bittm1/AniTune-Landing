@@ -9,11 +9,11 @@ import BergeLayer from './Elements/BergeLayer';
 import TalLayer from './Elements/TalLayer';
 import WaldHintenLayer from './Elements/WaldHintenLayer';
 import RoadLayer from './Elements/RoadLayer';
-import DogLayer from './Elements/DogLayer';  // Geändert von PersonLayer zu DogLayer
+import DogLayer from './Elements/DogLayer';
 import MengeLayer from './Elements/MengeLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
 import LogoLayer from './Elements/LogoLayer';
-import TitleLayer from './Elements/TitleLayer';
+import TitleLayer from './Elements/TitleLayer'; // ✅ WIEDER AKTIVIERT
 import NewsletterLayer from './Elements/NewsletterLayer';
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
@@ -34,19 +34,17 @@ gsap.config({
     autoSleep: 60,
     force3D: "auto",
     nullTargetWarn: false,
-    autoRefreshEvents: "visibilitychange,DOMContentLoaded,load", // Reduzierte Events für bessere Performance
+    autoRefreshEvents: "visibilitychange,DOMContentLoaded,load",
 });
 
 // Bekannte Probleme mit DevTools beheben
 if (typeof window !== 'undefined') {
-    // Scroll-Event-Listener bei Seiten-Reload entfernen
     window.addEventListener('beforeunload', () => {
         ScrollTrigger.getAll().forEach(trigger => trigger.kill());
         gsap.killTweensOf(window);
     });
 }
 
-// Layer-Komponente mit Memo umwickeln für bessere Performance
 const MemoizedLayer = React.memo(({ children }) => children);
 
 const ParallaxContainerModular = React.memo(() => {
@@ -70,6 +68,7 @@ const ParallaxContainerModular = React.memo(() => {
         lastRenderTime: 0
     });
 
+    // ✅ ERWEITERT: useScrollProgress mit Lock-Snap Features
     const {
         scrollProgress,
         activeSection,
@@ -82,19 +81,15 @@ const ParallaxContainerModular = React.memo(() => {
         snapToTitle,
         scrollToTitleIndex,
         handleKeyboardNavigation,
-        currentTitleIndex,        // ← NEU
-        isScrollLocked           // ← NEU
-    } = useScrollProgress(containerRef, sectionsRef, config.titles);   
+        currentTitleIndex,        // ✅ NEU
+        isScrollLocked           // ✅ NEU
+    } = useScrollProgress(containerRef, sectionsRef, config.titles);
 
     // ScrollTrigger komplett abbauen - Optimiert
     const destroyScrollTrigger = useCallback(() => {
-        // Alle ScrollTrigger bereinigen
         ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-
-        // Alle GSAP-Animationen stoppen
         gsap.killTweensOf(window);
 
-        // ScrollTrigger-Events vom Window entfernen
         if (typeof window !== 'undefined') {
             window.removeEventListener('scroll', ScrollTrigger.update);
             window.removeEventListener('resize', ScrollTrigger.update);
@@ -109,28 +104,23 @@ const ParallaxContainerModular = React.memo(() => {
     const setupSectionObserver = useCallback(() => {
         if (typeof IntersectionObserver === 'undefined' || !containerRef.current) return;
 
-        // Bestehenden Observer bereinigen
         if (observerRef.current) {
             observerRef.current.disconnect();
         }
 
-        // Optionen für den Observer - Optimierte Threshold-Werte
         const options = {
-            root: null, // Viewport
+            root: null,
             rootMargin: '0px',
-            threshold: [0.1, 0.5, 0.9], // Mehrere Schwellenwerte für präzisere Kontrolle
+            threshold: [0.1, 0.5, 0.9],
         };
 
-        // Intersection Observer erstellen mit Debounce
         let debounceTimer;
         observerRef.current = new IntersectionObserver((entries) => {
-            // Debounce implementieren um zu häufige Updates zu vermeiden
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
                         const sectionIndex = parseInt(entry.target.dataset.sectionIndex, 10);
-                        // Nur aktiven Abschnitt setzen, kein automatisches Scrollen
                         if (!isResetting) {
                             setActiveSection(sectionIndex);
                         }
@@ -139,7 +129,6 @@ const ParallaxContainerModular = React.memo(() => {
             }, 50);
         }, options);
 
-        // Alle Abschnitte beobachten
         sectionsRef.current.forEach(section => {
             if (section) {
                 observerRef.current.observe(section);
@@ -150,7 +139,6 @@ const ParallaxContainerModular = React.memo(() => {
             console.log("Section Observer eingerichtet");
         }
 
-        // Aufräumen
         return () => {
             clearTimeout(debounceTimer);
             if (observerRef.current) {
@@ -159,19 +147,15 @@ const ParallaxContainerModular = React.memo(() => {
         };
     }, [isResetting, setActiveSection]);
 
-    // Komponenten-Initialisierung mit optimierten Abhängigkeiten
+    // Komponenten-Initialisierung
     useEffect(() => {
-        // Nur einmal initialisieren
         if (isInitialized) return;
 
-        // Performancemessung im Development
         if (process.env.NODE_ENV === 'development') {
             performanceRef.current.startTime = performance.now();
         }
 
-        // Verzögerte Initialisierung für bessere Zuverlässigkeit
         const initTimer = setTimeout(() => {
-            // ScrollTrigger bereinigen und Observer einrichten
             destroyScrollTrigger();
             const cleanupSectionObserver = setupSectionObserver();
 
@@ -182,9 +166,7 @@ const ParallaxContainerModular = React.memo(() => {
                 console.log(`Parallax-Container initialisiert in ${performanceRef.current.lastRenderTime.toFixed(2)}ms`);
             }
 
-            // Optimierte Window-Resize-Behandlung
             const handleResize = () => {
-                // Debounce the resize handler
                 if (resizeTimeoutRef.current) {
                     clearTimeout(resizeTimeoutRef.current);
                 }
@@ -199,7 +181,6 @@ const ParallaxContainerModular = React.memo(() => {
 
             window.addEventListener('resize', handleResize);
 
-            // Aufräumen bei Komponenten-Unmount
             return () => {
                 if (cleanupSectionObserver && typeof cleanupSectionObserver === 'function') {
                     cleanupSectionObserver();
@@ -213,38 +194,30 @@ const ParallaxContainerModular = React.memo(() => {
         return () => clearTimeout(initTimer);
     }, [destroyScrollTrigger, setupSectionObserver, isInitialized, updateScrollProgress]);
 
-    // Kompletter Reset der Komponente - Optimiert für Performance
+    // Kompletter Reset der Komponente
     const resetComponent = useCallback(() => {
-        // Verhindere mehrfache Resets
         if (isResetting) return;
         setIsResetting(true);
 
-        // Aktuellen Zustand speichern
         const currentSection = activeSection;
 
-        // Komponente zurücksetzen
         destroyScrollTrigger();
         setIsInitialized(false);
 
-        // Force reflow - Optimiert mit requestAnimationFrame
         if (containerRef.current) {
             requestAnimationFrame(() => {
                 containerRef.current.style.visibility = 'hidden';
 
-                // Force reflow in einem separaten Frame
                 requestAnimationFrame(() => {
                     void containerRef.current.offsetHeight;
                     containerRef.current.style.visibility = 'visible';
 
-                    // Zähler erhöhen, um einen Re-Mount zu erzwingen
                     setResetCount(prev => prev + 1);
 
-                    // Nach einer kurzen Verzögerung neu initialisieren
                     setTimeout(() => {
                         updateScrollProgress();
                         setupSectionObserver();
 
-                        // Zur vorherigen Sektion zurückkehren
                         const sectionHeight = window.innerHeight;
                         window.scrollTo({
                             top: currentSection * sectionHeight,
@@ -263,10 +236,9 @@ const ParallaxContainerModular = React.memo(() => {
         }
     }, [activeSection, destroyScrollTrigger, updateScrollProgress, setupSectionObserver, isResetting]);
 
-    // Keyboard-Shortcut für Reset - Optimiert
+    // Keyboard-Shortcut für Reset
     useEffect(() => {
         const handleKeyDown = (e) => {
-            // Alt+R für Komponenten-Reset
             if (e.altKey && e.key === 'r') {
                 e.preventDefault();
                 resetComponent();
@@ -277,7 +249,7 @@ const ParallaxContainerModular = React.memo(() => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [resetComponent]);
 
-    // Referenzen für die Abschnitte einrichten - Optimiert mit useCallback
+    // Referenzen für die Abschnitte einrichten
     const setSectionRef = useCallback((el, index) => {
         sectionsRef.current[index] = el;
     }, []);
@@ -292,9 +264,9 @@ const ParallaxContainerModular = React.memo(() => {
                 console.log(`Parallax component render time: ${endTime - startTime}ms`);
             };
         }
-    }, [resetCount]); // Nur bei grundlegenden Änderungen messen
+    }, [resetCount]);
 
-    // Memoize the fallback component to prevent unnecessary re-renders
+    // Memoized components
     const errorFallback = useMemo(() => (
         <div style={{
             padding: '20px',
@@ -327,47 +299,85 @@ const ParallaxContainerModular = React.memo(() => {
         </div>
     ), [resetComponent]);
 
-    // Memoize the debug indicator to prevent unnecessary re-renders
-    const debugIndicator = useMemo(() => (
-        <div className="debug-indicator">
-            Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/14
-            <button
-                onClick={resetComponent}
-                style={{
-                    marginLeft: '10px',
-                    padding: '2px 8px',
-                    fontSize: '12px',
-                    background: '#555',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                }}
-            >
-                ↻
-            </button>
-            <span style={{ marginLeft: '10px', fontSize: '11px', color: '#aaa' }}>
-                Phase: {scrollProgress <= 1 ? '1 (0-100%)' : '2 (100-200%)'}
-            </span>
-        </div>
-    ), [formattedScrollProgress.absolute, activeSection, resetComponent, scrollProgress]);
+    // ✅ ERWEITERTE Debug-Anzeige mit Lock-Snap Info
+    const debugIndicator = useMemo(() => {
+        const titleInfo = currentTitleIndex === -1
+            ? "Logo+Newsletter"
+            : `${currentTitleIndex + 1}/6 - "${config.titles?.[currentTitleIndex]?.text || 'N/A'}"`;
 
-    // Memoize the section indicators to prevent unnecessary re-renders
+        return (
+            <div className="debug-indicator">
+                Phase: {titleInfo} | {isScrollLocked ? '🔒' : '🔓'}
+                <button
+                    onClick={resetComponent}
+                    style={{
+                        marginLeft: '10px',
+                        padding: '2px 8px',
+                        fontSize: '12px',
+                        background: '#555',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    ↻
+                </button>
+                <div style={{ fontSize: '10px', marginTop: '2px' }}>
+                    Scroll: {formattedScrollProgress.percentage} | Snap: {isSnapping ? '✨' : '-'}
+                </div>
+            </div>
+        );
+    }, [currentTitleIndex, isScrollLocked, config.titles, resetComponent, formattedScrollProgress.percentage, isSnapping]);
+
+    // ✅ ERWEITERTE Section-Indikatoren - jetzt für Titel-Navigation + Logo Phase
     const sectionIndicators = useMemo(() => (
         <div className="section-indicators">
-            {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
+            <div style={{ fontSize: '10px', color: 'white', marginBottom: '5px', textAlign: 'center' }}>
+                Navigation
+            </div>
+            {/* Logo+Newsletter Button */}
+            <button
+                className={`section-indicator ${currentTitleIndex === -1 ? 'active' : ''} ${isScrollLocked ? 'locked' : ''}`}
+                onClick={() => {
+                    if (!isScrollLocked) {
+                        setCurrentTitleIndex(-1);
+                        setActiveTitle(null);
+                        gsap.to(window, {
+                            duration: 1.5,
+                            scrollTo: { y: 0 },
+                            ease: "power2.inOut"
+                        });
+                    }
+                }}
+                aria-label="Go to Logo+Newsletter"
+                disabled={isScrollLocked}
+                style={{
+                    opacity: isScrollLocked && currentTitleIndex !== -1 ? 0.3 : 1,
+                    cursor: isScrollLocked ? 'not-allowed' : 'pointer',
+                    backgroundColor: currentTitleIndex === -1 ? 'white' : 'rgba(255, 255, 255, 0.5)'
+                }}
+                title="Logo + Newsletter"
+            />
+            {/* Titel-Buttons */}
+            {config.titles && config.titles.map((title, index) => (
                 <button
                     key={index}
-                    className={`section-indicator ${activeSection === index ? 'active' : ''}`}
-                    onClick={() => scrollToSection(index)}
-                    aria-label={`Go to section ${index + 1}`}
+                    className={`section-indicator ${currentTitleIndex === index ? 'active' : ''} ${isScrollLocked ? 'locked' : ''}`}
+                    onClick={() => !isScrollLocked && snapToTitle(index)}
+                    aria-label={`Go to title: ${title.text}`}
+                    disabled={isScrollLocked}
+                    style={{
+                        opacity: isScrollLocked && currentTitleIndex !== index ? 0.3 : 1,
+                        cursor: isScrollLocked ? 'not-allowed' : 'pointer'
+                    }}
+                    title={title.text}
                 />
             ))}
         </div>
-    ), [activeSection, scrollToSection]);
+    ), [currentTitleIndex, isScrollLocked, config.titles, snapToTitle]);
 
-
-    // Memoize the layers to prevent unnecessary re-renders
+    // Alle Layer-Komponenten bleiben gleich
     const backgroundLayer = useMemo(() => (
         <BackgroundLayer
             scrollProgress={scrollProgress}
@@ -490,16 +500,22 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, config.leftCloud, config.rightCloud, config.imageSources?.leftCloud, config.imageSources?.rightCloud]);
 
+    // ✅ NEUER TitleLayer mit Lock-Snap Props
     const titleLayer = useMemo(() => (
         <TitleLayer
             scrollProgress={scrollProgress}
             titles={config.titles}
+            currentTitleIndex={currentTitleIndex}  // ✅ NEU
+            isScrollLocked={isScrollLocked}        // ✅ NEU
         />
-    ), [scrollProgress, config.titles]);    
+    ), [scrollProgress, config.titles, currentTitleIndex, isScrollLocked]);
 
-    const newsletterLayer = useMemo(() => (
-        <NewsletterLayer scrollProgress={scrollProgress} />
-    ), [scrollProgress]);
+    const newsletterLayer = useMemo(() => {
+        // ✅ Newsletter nur in Logo+Newsletter Phase (Index -1) sichtbar
+        if (currentTitleIndex !== -1) return null;
+
+        return <NewsletterLayer scrollProgress={scrollProgress} />;
+    }, [scrollProgress, currentTitleIndex]);
 
     const scrollIndicator = useMemo(() => (
         <ScrollIndicator scrollProgress={scrollProgress} />
@@ -511,7 +527,7 @@ const ParallaxContainerModular = React.memo(() => {
                 {/* Debug-Anzeige */}
                 {debugIndicator}
 
-                {/* Section-Indikatoren (Navigation) */}
+                {/* Section-Indikatoren (jetzt für Titel-Navigation) */}
                 {sectionIndicators}
 
                 {/* Hintergrund-Layer (fixiert) */}
@@ -552,7 +568,6 @@ const ParallaxContainerModular = React.memo(() => {
                         <MemoizedLayer>{mengeLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
-
                     <ErrorBoundary>
                         <MemoizedLayer>{logoLayer}</MemoizedLayer>
                     </ErrorBoundary>
@@ -565,15 +580,17 @@ const ParallaxContainerModular = React.memo(() => {
                         <MemoizedLayer>{wolkenHintenLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
-                    {/*<ErrorBoundary>
+                    {/* ✅ TITEL-LAYER WIEDER AKTIVIERT */}
+                    <ErrorBoundary>
                         <MemoizedLayer>{titleLayer}</MemoizedLayer>
-                    </ErrorBoundary>*/}
+                    </ErrorBoundary>
 
                     <ErrorBoundary>
                         <MemoizedLayer>{newsletterLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
-                    {activeSection === 0 && (
+                    {/* ✅ SCROLL-INDICATOR: Nur in Logo+Newsletter Phase */}
+                    {currentTitleIndex === -1 && (
                         <ErrorBoundary>
                             <MemoizedLayer>{scrollIndicator}</MemoizedLayer>
                         </ErrorBoundary>

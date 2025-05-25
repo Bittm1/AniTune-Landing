@@ -1,12 +1,20 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
-import { getOpacityFromSegments } from '../utils/animationUtils';
 import ErrorBoundary from '../../ErrorBoundary';
 import './TitleLayer.css';
 
-// Hauptkomponente als memo für bessere Performance
-const TitleLayer = React.memo(({ scrollProgress, titles = [] }) => {
+// NEU: Lock-Snap TitleLayer - zeigt nur einen Titel zur Zeit
+const TitleLayer = React.memo(({ scrollProgress, titles = [], currentTitleIndex = -1, isScrollLocked = false }) => {
     if (!titles || titles.length === 0) return null;
+
+    // ✅ SPECIAL CASE: currentTitleIndex = -1 bedeutet Logo+Newsletter Phase
+    if (currentTitleIndex === -1) {
+        return null; // Kein Titel sichtbar, nur Logo+Newsletter
+    }
+
+    // Aktueller Titel basierend auf Index
+    const currentTitle = titles[currentTitleIndex];
+    if (!currentTitle) return null;
 
     return (
         <ErrorBoundary>
@@ -18,138 +26,106 @@ const TitleLayer = React.memo(({ scrollProgress, titles = [] }) => {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    zIndex: 20, // zIndices.titles
+                    zIndex: 20,
                     pointerEvents: 'none'
                 }}
             >
-                {titles.map((title, index) => (
-                    <Title
-                        key={title.id}
-                        title={title}
-                        scrollProgress={scrollProgress}
-                    />
-                ))}
+                {/* Zeige nur den aktuellen Titel */}
+                <SingleTitle
+                    title={currentTitle}
+                    isActive={true}
+                    isScrollLocked={isScrollLocked}
+                />
+
+                {/* Debug-Info (nur in Development) */}
+                {process.env.NODE_ENV === 'development' && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '60px',
+                            left: '10px',
+                            background: 'rgba(0,0,0,0.7)',
+                            color: 'white',
+                            padding: '8px',
+                            fontSize: '12px',
+                            borderRadius: '4px',
+                            pointerEvents: 'all'
+                        }}
+                    >
+                        <div>Aktueller Titel: {currentTitleIndex + 1}/6</div>
+                        <div>"{currentTitle.text}"</div>
+                        <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+                    </div>
+                )}
             </div>
         </ErrorBoundary>
     );
 });
 
-// Segment-basierte Title-Komponente mit optimierter Performance
-const Title = React.memo(({ title, scrollProgress }) => {
+// Einzelner Titel mit Ein-/Ausblende-Animation
+const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
     const titleRef = useRef(null);
     const animationRef = useRef(null);
-    const isAnimatingRef = useRef(false);
     const currentStateRef = useRef('hidden'); // 'hidden', 'visible', 'animating'
 
-    // Berechne Opacity basierend auf Segmenten (wie bei anderen Layern)
-    const opacity = useMemo(() => {
-        if (!title.segments || title.segments.length === 0) return 0;
-
-        // Verwende die gleiche Segment-Logik wie andere Layer
-        const segment = title.segments[0];
-
-        // Einfache lineare Opacity-Berechnung basierend auf Segment
-        if (scrollProgress < segment.scrollStart) {
-            return 0; // Vor Segment = unsichtbar
-        } else if (scrollProgress > segment.scrollEnd) {
-            return 0; // Nach Segment = unsichtbar
-        } else {
-            // Innerhalb des Segments
-            const segmentProgress = (scrollProgress - segment.scrollStart) /
-                (segment.scrollEnd - segment.scrollStart);
-
-            // Fade-In am Anfang und Fade-Out am Ende
-            if (segmentProgress < 0.2) {
-                // Fade-In (erste 20% des Segments)
-                return segmentProgress / 0.2;
-            } else if (segmentProgress > 0.8) {
-                // Fade-Out (letzte 20% des Segments)
-                return (1 - segmentProgress) / 0.2;
-            } else {
-                // Vollständig sichtbar (mittlere 60% des Segments)
-                return 1;
-            }
-        }
-    }, [scrollProgress, title.segments]);
-
-    // Bestimme ob Titel sichtbar sein sollte
-    const shouldBeVisible = opacity > 0.01;
-
-    // Animation-Funktion für Einblenden
+    // Animation für Einblenden
     const animateIn = useCallback(() => {
-        if (!titleRef.current || isAnimatingRef.current || currentStateRef.current === 'visible') return;
+        if (!titleRef.current || currentStateRef.current === 'visible') return;
 
         const element = titleRef.current;
         const animation = title.animation || {};
 
-        // Debug-Log
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`🎬 Titel "${title.text}" wird eingeblendet`);
-        }
+        console.log(`🎬 Titel "${title.text}" wird eingeblendet`);
 
         // Kill existing animation
         if (animationRef.current) {
             animationRef.current.kill();
         }
 
-        isAnimatingRef.current = true;
         currentStateRef.current = 'animating';
 
-        // Bestimme Animation-Parameter basierend auf Typ
+        // Animation-Parameter
         let animationProps = {
-            opacity: opacity, // Nutze berechnete Opacity statt fester Werte
-            duration: animation.duration || 0.6,
+            opacity: 1,
+            duration: animation.duration || 0.8,
             ease: animation.ease || 'power2.out',
             delay: animation.delay || 0,
             force3D: true,
             onComplete: () => {
-                isAnimatingRef.current = false;
                 currentStateRef.current = 'visible';
             }
         };
 
-        // Setze Startwerte und Zielwerte basierend auf Animation-Typ
+        // Setze Startwerte und Animation basierend auf Typ
         switch (animation.type) {
             case 'fadeScale':
-                gsap.set(element, { opacity: 0, scale: 0.8, filter: 'blur(5px)' });
+                gsap.set(element, { opacity: 0, scale: 0.8, filter: 'blur(8px)' });
                 animationProps.scale = 1;
                 animationProps.filter = 'blur(0px)';
                 break;
 
             case 'slideUp':
-                gsap.set(element, { opacity: 0, y: 30, filter: 'blur(3px)' });
+                gsap.set(element, { opacity: 0, y: 40, filter: 'blur(5px)' });
                 animationProps.y = 0;
                 animationProps.filter = 'blur(0px)';
                 break;
 
             case 'slideDown':
-                gsap.set(element, { opacity: 0, y: -30, filter: 'blur(3px)' });
+                gsap.set(element, { opacity: 0, y: -40, filter: 'blur(5px)' });
                 animationProps.y = 0;
                 animationProps.filter = 'blur(0px)';
                 break;
 
-            case 'slideLeft':
-                gsap.set(element, { opacity: 0, x: 50, filter: 'blur(3px)' });
-                animationProps.x = 0;
-                animationProps.filter = 'blur(0px)';
-                break;
-
-            case 'slideRight':
-                gsap.set(element, { opacity: 0, x: -50, filter: 'blur(3px)' });
-                animationProps.x = 0;
-                animationProps.filter = 'blur(0px)';
-                break;
-
             case 'popIn':
-                gsap.set(element, { opacity: 0, scale: 0.5, filter: 'blur(8px)' });
+                gsap.set(element, { opacity: 0, scale: 0.3, filter: 'blur(10px)' });
                 animationProps.scale = 1;
                 animationProps.filter = 'blur(0px)';
-                animationProps.ease = animation.ease || 'back.out(1.7)';
+                animationProps.ease = 'back.out(1.7)';
                 break;
 
             case 'fade':
             default:
-                gsap.set(element, { opacity: 0, filter: 'blur(5px)' });
+                gsap.set(element, { opacity: 0, filter: 'blur(8px)' });
                 animationProps.filter = 'blur(0px)';
                 break;
         }
@@ -157,78 +133,62 @@ const Title = React.memo(({ title, scrollProgress }) => {
         // Starte Animation
         animationRef.current = gsap.to(element, animationProps);
 
-    }, [title.animation, title.text, opacity]);
+    }, [title.animation, title.text]);
 
-    // Animation-Funktion für Ausblenden
+    // Animation für Ausblenden
     const animateOut = useCallback(() => {
-        if (!titleRef.current || isAnimatingRef.current || currentStateRef.current === 'hidden') return;
+        if (!titleRef.current || currentStateRef.current === 'hidden') return;
 
         const element = titleRef.current;
         const animation = title.animation || {};
 
-        // Debug-Log
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`🎬 Titel "${title.text}" wird ausgeblendet`);
-        }
+        console.log(`🎬 Titel "${title.text}" wird ausgeblendet`);
 
         // Kill existing animation
         if (animationRef.current) {
             animationRef.current.kill();
         }
 
-        isAnimatingRef.current = true;
         currentStateRef.current = 'animating';
 
-        // Ausblende-Animation (meist schneller)
-        const outDuration = animation.outDuration || (animation.duration || 0.6) * 0.7;
-        const outEase = animation.outEase || 'power2.in';
+        // Ausblende-Animation (schneller)
+        const outDuration = (animation.duration || 0.8) * 0.6;
 
         let animationProps = {
             opacity: 0,
             duration: outDuration,
-            ease: outEase,
+            ease: 'power2.in',
             force3D: true,
             onComplete: () => {
-                isAnimatingRef.current = false;
                 currentStateRef.current = 'hidden';
             }
         };
 
-        // Setze Ausblendeeffekte basierend auf Animation-Typ
+        // Ausblende-Effekte basierend auf Typ
         switch (animation.type) {
             case 'fadeScale':
-                animationProps.scale = 0.8;
-                animationProps.filter = 'blur(5px)';
+                animationProps.scale = 0.7;
+                animationProps.filter = 'blur(10px)';
                 break;
 
             case 'slideUp':
-                animationProps.y = -20;
-                animationProps.filter = 'blur(3px)';
+                animationProps.y = -30;
+                animationProps.filter = 'blur(8px)';
                 break;
 
             case 'slideDown':
-                animationProps.y = 20;
-                animationProps.filter = 'blur(3px)';
-                break;
-
-            case 'slideLeft':
-                animationProps.x = -30;
-                animationProps.filter = 'blur(3px)';
-                break;
-
-            case 'slideRight':
-                animationProps.x = 30;
-                animationProps.filter = 'blur(3px)';
+                animationProps.y = 30;
+                animationProps.filter = 'blur(8px)';
                 break;
 
             case 'popIn':
-                animationProps.scale = 0.5;
-                animationProps.filter = 'blur(8px)';
+                animationProps.scale = 0.3;
+                animationProps.filter = 'blur(12px)';
                 break;
 
             case 'fade':
             default:
-                animationProps.filter = 'blur(5px)';
+                animationProps.filter = 'blur(10px)';
                 break;
         }
 
@@ -237,28 +197,18 @@ const Title = React.memo(({ title, scrollProgress }) => {
 
     }, [title.animation, title.text]);
 
-    // Hauptlogik: Bestimme ob Animation gestartet werden soll
+    // Reagiere auf isActive-Änderungen
     useEffect(() => {
-        // Verhindere Animation während einer laufenden Animation
-        if (isAnimatingRef.current) return;
-
-        if (shouldBeVisible && currentStateRef.current === 'hidden') {
-            // Titel soll sichtbar werden und ist aktuell versteckt
-            animateIn();
-        } else if (!shouldBeVisible && currentStateRef.current === 'visible') {
-            // Titel soll versteckt werden und ist aktuell sichtbar
+        if (isActive && currentStateRef.current === 'hidden') {
+            // Titel soll eingeblendet werden
+            setTimeout(animateIn, 100); // Kurze Verzögerung für sanfteren Übergang
+        } else if (!isActive && currentStateRef.current === 'visible') {
+            // Titel soll ausgeblendet werden
             animateOut();
         }
-    }, [shouldBeVisible, animateIn, animateOut]);
+    }, [isActive, animateIn, animateOut]);
 
-    // Live-Update der Opacity während Titel sichtbar ist
-    useEffect(() => {
-        if (titleRef.current && currentStateRef.current === 'visible' && !isAnimatingRef.current) {
-            gsap.set(titleRef.current, { opacity: opacity });
-        }
-    }, [opacity]);
-
-    // Initialisierung: Setze alle Titel initial auf unsichtbar
+    // Initialisierung: Setze Titel initial auf unsichtbar
     useEffect(() => {
         if (titleRef.current && currentStateRef.current === 'hidden') {
             gsap.set(titleRef.current, {
@@ -266,7 +216,7 @@ const Title = React.memo(({ title, scrollProgress }) => {
                 scale: 0.8,
                 x: 0,
                 y: 0,
-                filter: 'blur(5px)'
+                filter: 'blur(8px)'
             });
         }
     }, []);
@@ -280,41 +230,43 @@ const Title = React.memo(({ title, scrollProgress }) => {
         };
     }, []);
 
-    // Memoized inline styles
+    // Memoized styles
     const titleStyles = useMemo(() => ({
         position: 'absolute',
         top: title.position.top,
         left: title.position.left,
-        // Startwerte (unsichtbar)
-        opacity: 0,
+        opacity: 0, // Startet unsichtbar
         transform: 'translate(-50%, -50%)',
-        // User-definierte Styles
         ...title.style,
         // Performance-Optimierungen
         willChange: 'transform, opacity, filter',
         backfaceVisibility: 'hidden',
         perspective: 1000,
-    }), [title.position, title.style]);
+        // Lock-Feedback (optional)
+        ...(isScrollLocked && {
+            filter: 'brightness(1.1)', // Leichtes Highlight während Lock
+        })
+    }), [title.position, title.style, isScrollLocked]);
 
-    // CSS-Klassen basierend auf Animation und Zustand
+    // CSS-Klassen
     const cssClasses = useMemo(() => {
         const classes = [
             'title-element',
-            'segment-animated-title',
+            'lock-snap-title',
             `title-${title.index + 1}`,
             `animation-${title.animation?.type || 'fadeScale'}`
         ];
 
-        if (shouldBeVisible) {
-            classes.push('target-visible');
+        if (isActive) {
+            classes.push('active-title');
         }
 
-        if (currentStateRef.current === 'visible') {
-            classes.push('currently-visible');
+        if (isScrollLocked) {
+            classes.push('scroll-locked');
         }
 
         return classes.join(' ');
-    }, [title.index, title.animation?.type, shouldBeVisible]);
+    }, [title.index, title.animation?.type, isActive, isScrollLocked]);
 
     return (
         <div
@@ -322,10 +274,10 @@ const Title = React.memo(({ title, scrollProgress }) => {
             className={cssClasses}
             style={titleStyles}
             data-title-id={title.id}
-            data-snap-target={title.snapTarget}
+            data-title-index={title.index}
             data-animation-type={title.animation?.type}
-            data-current-state={currentStateRef.current}
-            data-opacity={opacity.toFixed(2)}
+            data-is-active={isActive}
+            data-scroll-locked={isScrollLocked}
         >
             {title.text}
         </div>
@@ -333,7 +285,7 @@ const Title = React.memo(({ title, scrollProgress }) => {
 });
 
 // Display names für besseres Debugging
-TitleLayer.displayName = 'TitleLayer';
-Title.displayName = 'Title';
+TitleLayer.displayName = 'LockSnapTitleLayer';
+SingleTitle.displayName = 'SingleTitle';
 
 export default TitleLayer;
