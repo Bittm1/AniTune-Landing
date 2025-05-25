@@ -9,13 +9,13 @@ export const zIndices = {
     stars: 1,             // Sternenhimmel
     clouds: 2,            // Wolken
     wolkenHinten: 1,      // Wolken hinten, zwischen stars und tal
-    berge: 2,             // Berg-Silhouette
-    tal: 3,               // Tal-Silhouette
-    waldHinten: 4,      // Wald hinten
-    forest: 4,            // Wald-Silhouette
-    road: 5,              // Straße
-    dog: 6,         // Person zwischen Wald und Road
-    menge: 7,          
+    berge: 3,             // Berg-Silhouette
+    tal: 4,               // Tal-Silhouette
+    waldHinten: 5,      // Wald hinten
+    forest: 6,            // Wald-Silhouette
+    road: 7,              // Straße
+    dog: 8,         // Person zwischen Wald und Road
+    menge: 9,          
     logo: 10,             // Logo (über Landschaft)
     titles: 20,           // Titel-Texte
     newsletter: 30,       // Newsletter-Form

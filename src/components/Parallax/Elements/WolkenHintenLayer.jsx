@@ -1,6 +1,5 @@
-// src/components/Parallax/Elements/WolkenHintenLayer.jsx
 import React from 'react';
-import { getPositionFromSegments } from '../utils/animationUtils';
+import { getPositionFromSegments, getScaleFromSegments, getOpacityFromSegments } from '../utils/animationUtils';
 import SafeImage from './SafeImage';
 import { zIndices } from '../config/constants/index';
 import ErrorBoundary from '../../ErrorBoundary';
@@ -27,6 +26,14 @@ const WolkenHintenLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
     const leftCloudPosition = getPositionFromSegments(leftCloudSegments, scrollProgress);
     const rightCloudPosition = getPositionFromSegments(rightCloudSegments, scrollProgress);
 
+    // NEU: Berechne Skalierung basierend auf Segmenten (falls vorhanden)
+    const leftCloudScale = leftConfig.segments ? getScaleFromSegments(leftConfig.segments, scrollProgress) : (leftConfig.scale || 1);
+    const rightCloudScale = rightConfig.segments ? getScaleFromSegments(rightConfig.segments, scrollProgress) : (rightConfig.scale || 1);
+
+    // NEU: Berechne Opacity basierend auf Segmenten (falls vorhanden)
+    const leftCloudOpacity = leftConfig.segments ? getOpacityFromSegments(leftConfig.segments, scrollProgress) : 1;
+    const rightCloudOpacity = rightConfig.segments ? getOpacityFromSegments(rightConfig.segments, scrollProgress) : 1;
+
     return (
         <ErrorBoundary>
             <div style={{
@@ -43,7 +50,10 @@ const WolkenHintenLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
                     position: 'absolute',
                     bottom: leftConfig.position?.bottom || '50%',
                     left: `${leftCloudPosition}%`,
-                    transition: 'left 0.3s ease-out'
+                    transition: 'left 0.3s ease-out, transform 0.3s ease-out, opacity 0.3s ease-out',
+                    transform: `scale(${leftCloudScale})`,
+                    transformOrigin: 'center bottom',
+                    opacity: leftCloudOpacity
                 }}>
                     <SafeImage
                         src={leftCloudSrc}
@@ -61,7 +71,10 @@ const WolkenHintenLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
                     position: 'absolute',
                     bottom: rightConfig.position?.bottom || '50%',
                     right: `${rightCloudPosition}%`,
-                    transition: 'right 0.3s ease-out'
+                    transition: 'right 0.3s ease-out, transform 0.3s ease-out, opacity 0.3s ease-out',
+                    transform: `scale(${rightCloudScale})`,
+                    transformOrigin: 'center bottom',
+                    opacity: rightCloudOpacity
                 }}>
                     <SafeImage
                         src={rightCloudSrc}

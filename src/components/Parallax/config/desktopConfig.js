@@ -33,21 +33,23 @@ export const desktopConfig = {
         zIndex: zIndices.logo
     },
 
-    // ===== Wolken-Konfigurationen (NUR Phase 1) =====
+    // ===== Wolken-Konfigurationen mit Skalierung =====
     leftCloud: {
         segments: [
             {
                 scrollStart: 0.70,
                 scrollEnd: 1,        // Endet bei 100%
-                posStart: -35,
-                posEnd: 0,
+                posStart: -60,
+                posEnd: 5,
                 opacityStart: 0.9,
-                opacityEnd: 1.0
+                opacityEnd: 1.0,
+                // NEU: Skalierung während der Bewegung
+                scaleStart: 1.7,     // Startet kleiner
+                scaleEnd: 1.7        // Wird größer beim Näherkommen
             }
-            // KEIN zweites Segment = Wolke bleibt ab 100% an Position 0
         ],
         position: {
-            bottom: '56%'
+            bottom: '43%'
         },
         size: elementSizes.cloud.left.lg,
         spring: {
@@ -63,15 +65,17 @@ export const desktopConfig = {
             {
                 scrollStart: 0.70,
                 scrollEnd: 1,        // Endet bei 100%
-                posStart: -35,
-                posEnd: 0,
+                posStart: -40,
+                posEnd: 5,
                 opacityStart: 0.9,
-                opacityEnd: 1.0
+                opacityEnd: 1.0,
+                // NEU: Andere Skalierung für Variation
+                scaleStart: 1.5,     // Startet etwas kleiner
+                scaleEnd: 1.5        // Wird etwas größer
             }
-            // KEIN zweites Segment = Wolke bleibt ab 100% an Position 0
         ],
         position: {
-            bottom: '56%'
+            bottom: '44%'
         },
         size: elementSizes.cloud.right.lg,
         spring: {
@@ -84,18 +88,20 @@ export const desktopConfig = {
 
     leftCloudHinten: {
         segments: [
-            // Phase 1: 0-100%
             {
                 scrollStart: 0.70,
                 scrollEnd: 1,
-                posStart: -60,
+                posStart: -140,
                 posEnd: 0,
                 opacityStart: 1,
-                opacityEnd: 1.0
+                opacityEnd: 1.0,
+                // NEU: Hintergrund-Wolken skalieren langsamer
+                scaleStart: 1.20,     // Startet normal
+                scaleEnd: 1.20       // Wird nur leicht größer
             }
         ],
         position: {
-            bottom: '70%'
+            bottom: '65%'
         },
         size: elementSizes.cloud.left.lg,
         zIndex: zIndices.wolkenHinten
@@ -103,33 +109,34 @@ export const desktopConfig = {
 
     rightCloudHinten: {
         segments: [
-            // Phase 1: 0-100%
             {
                 scrollStart: 0.70,
                 scrollEnd: 1,
-                posStart: -25,
-                posEnd: 0,
+                posStart: -140,
+                posEnd: 10,
                 opacityStart: 1,
-                opacityEnd: 1.0
+                opacityEnd: 1.0,
+                // NEU: Ähnliche Skalierung
+                scaleStart: 1.40,
+                scaleEnd: 1.40        // Etwas weniger als linke
             }
         ],
         position: {
-            bottom: '70%'
+            bottom: '65%'
         },
         size: elementSizes.cloud.right.lg,
         zIndex: zIndices.wolkenHinten
     },
 
-    // ===== Wald-Konfiguration (NUR Phase 1) =====
+    // ===== Wald-Konfiguration (unverändert) =====
     forest: {
         segments: [
-            // Phase 1: 0-100% (wie bisher)
             {
                 scrollStart: 0.42,
                 scrollEnd: 1,
                 posStart: -55,
-                posEnd: 0,           // Bei 100% ist er an Position 0
-                opacityStart: 1.0,   // Startet vollständig sichtbarkk
+                posEnd: 0,
+                opacityStart: 1.0,
                 opacityEnd: 1.0
             },
         ],
@@ -138,7 +145,6 @@ export const desktopConfig = {
 
     road: {
         segments: [
-            // Phase 1: 0-100%
             {
                 scrollStart: 0.30,
                 scrollEnd: 1,
@@ -149,11 +155,10 @@ export const desktopConfig = {
             },
         ],
         zIndex: zIndices.road
-
     },
+
     berge: {
         segments: [
-            // Phase 1: 0-100%
             {
                 scrollStart: 0.60,
                 scrollEnd: 1,
@@ -162,14 +167,12 @@ export const desktopConfig = {
                 opacityStart: 1.0,
                 opacityEnd: 1.0
             },
-            // Phase 2: 100%-200%
         ],
         zIndex: zIndices.berge
     },
 
     tal: {
         segments: [
-            // Phase 1: 0-100%
             {
                 scrollStart: 0.50,
                 scrollEnd: 1,
@@ -178,14 +181,12 @@ export const desktopConfig = {
                 opacityStart: 0.0,
                 opacityEnd: 0.4
             },
-            // Phase 2: 100%-200%
         ],
         zIndex: zIndices.tal
     },
 
     waldHinten: {
         segments: [
-            // Phase 1: 0-100%
             {
                 scrollStart: 0.60,
                 scrollEnd: 1,
@@ -194,28 +195,24 @@ export const desktopConfig = {
                 opacityStart: 1.0,
                 opacityEnd: 1.0
             },
-
         ],
         zIndex: zIndices.waldHinten
     },
-    
-    // In desktopConfig.js - Person und Menge Layer (vertikal bewegend)
 
     // ===== Person Layer =====
     dog: {
         segments: [
-            // Phase 1: 0-100%
             {
                 scrollStart: 0.30,
                 scrollEnd: 1,
-                posStart: -33,      // Startet außerhalb (unten)
-                posEnd: 12,         // Kommt fast ins Bild
+                posStart: -33,
+                posEnd: 12,
                 opacityStart: 1.0,
                 opacityEnd: 1.0
             },
         ],
         position: {
-            left: '50.8%'              // Konfigurierbare X-Position
+            left: '50.8%'
         },
         size: {
             width: '5vw',
@@ -228,18 +225,17 @@ export const desktopConfig = {
     // ===== Menge Layer =====
     menge: {
         segments: [
-            // Phase 1: 0-100%
             {
                 scrollStart: 0,
                 scrollEnd: 1,
-                posStart: -120,      // Startet außerhalb (unten)
-                posEnd: 0,         // Kommt langsam ins Bild
+                posStart: -120,
+                posEnd: 0,
                 opacityStart: 0.0,
                 opacityEnd: 0.8
             },
         ],
         position: {
-            left: '55%'              // Konfigurierbare X-Position (rechts)
+            left: '55%'
         },
         size: {
             width: '90vw',
@@ -248,7 +244,7 @@ export const desktopConfig = {
         },
         zIndex: zIndices.menge
     },
-    
+
     // ===== Desktop-spezifische Titel-Konfiguration =====
     titles: createTitles(
         {
