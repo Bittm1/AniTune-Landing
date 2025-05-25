@@ -162,7 +162,7 @@ export const desktopConfig = {
             {
                 scrollStart: 0.60,
                 scrollEnd: 1,
-                posStart: -50,
+                posStart: -55,
                 posEnd: 0,
                 opacityStart: 1.0,
                 opacityEnd: 1.0
@@ -178,8 +178,8 @@ export const desktopConfig = {
                 scrollEnd: 1,
                 posStart: -60,
                 posEnd: 0,
-                opacityStart: 0.0,
-                opacityEnd: 0.4
+                opacityStart: 1,
+                opacityEnd: 1
             },
         ],
         zIndex: zIndices.tal

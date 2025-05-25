@@ -26,11 +26,11 @@ const WolkenHintenLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
     const leftCloudPosition = getPositionFromSegments(leftCloudSegments, scrollProgress);
     const rightCloudPosition = getPositionFromSegments(rightCloudSegments, scrollProgress);
 
-    // NEU: Berechne Skalierung basierend auf Segmenten (falls vorhanden)
+    // Berechne Skalierung basierend auf Segmenten (falls vorhanden)
     const leftCloudScale = leftConfig.segments ? getScaleFromSegments(leftConfig.segments, scrollProgress) : (leftConfig.scale || 1);
     const rightCloudScale = rightConfig.segments ? getScaleFromSegments(rightConfig.segments, scrollProgress) : (rightConfig.scale || 1);
 
-    // NEU: Berechne Opacity basierend auf Segmenten (falls vorhanden)
+    // Berechne Opacity basierend auf Segmenten (falls vorhanden)
     const leftCloudOpacity = leftConfig.segments ? getOpacityFromSegments(leftConfig.segments, scrollProgress) : 1;
     const rightCloudOpacity = rightConfig.segments ? getOpacityFromSegments(rightConfig.segments, scrollProgress) : 1;
 
@@ -45,15 +45,21 @@ const WolkenHintenLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
                 zIndex: zIndex,
                 pointerEvents: 'none'
             }}>
-                {/* Wolke links */}
+                {/* Wolke hinten links - PERFORMANCE OPTIMIERT MIT VW */}
                 <div style={{
                     position: 'absolute',
                     bottom: leftConfig.position?.bottom || '50%',
-                    left: `${leftCloudPosition}%`,
-                    transition: 'left 0.3s ease-out, transform 0.3s ease-out, opacity 0.3s ease-out',
-                    transform: `scale(${leftCloudScale})`,
+                    left: 0, // Basis-Position
+
+                    // PERFORMANCE: Viewport-basierte Transform für horizontale Bewegung + Skalierung
+                    transform: `translate(${leftCloudPosition}vw, 0) scale(${leftCloudScale})`,
                     transformOrigin: 'center bottom',
-                    opacity: leftCloudOpacity
+                    opacity: leftCloudOpacity,
+
+                    // PERFORMANCE: Sanfte Optimierungen
+                    transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
+                    willChange: 'transform',
+                    backfaceVisibility: 'hidden'
                 }}>
                     <SafeImage
                         src={leftCloudSrc}
@@ -66,15 +72,22 @@ const WolkenHintenLayer = ({ scrollProgress, leftConfig, rightConfig }) => {
                     />
                 </div>
 
-                {/* Wolke rechts */}
+                {/* Wolke hinten rechts - PERFORMANCE OPTIMIERT MIT VW */}
                 <div style={{
                     position: 'absolute',
                     bottom: rightConfig.position?.bottom || '50%',
-                    right: `${rightCloudPosition}%`,
-                    transition: 'right 0.3s ease-out, transform 0.3s ease-out, opacity 0.3s ease-out',
-                    transform: `scale(${rightCloudScale})`,
+                    right: 0, // Basis-Position
+
+                    // PERFORMANCE: Viewport-basierte Transform für horizontale Bewegung + Skalierung
+                    // WICHTIG: Für right-Position negatives VW (bewegt von rechts nach links)
+                    transform: `translate(${-rightCloudPosition}vw, 0) scale(${rightCloudScale})`,
                     transformOrigin: 'center bottom',
-                    opacity: rightCloudOpacity
+                    opacity: rightCloudOpacity,
+
+                    // PERFORMANCE: Sanfte Optimierungen
+                    transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
+                    willChange: 'transform',
+                    backfaceVisibility: 'hidden'
                 }}>
                     <SafeImage
                         src={rightCloudSrc}

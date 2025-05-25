@@ -1,4 +1,3 @@
-// src/components/Parallax/Elements/MengeLayer.jsx
 import React from 'react';
 import { getPositionFromSegments } from '../utils/animationUtils';
 import SafeImage from './SafeImage';
@@ -25,12 +24,16 @@ const MengeLayer = ({ scrollProgress, config }) => {
             <div
                 style={{
                     position: 'fixed',
-                    bottom: `${verticalOffset}%`,
+                    bottom: 0, // Basis-Position
                     left: config.position?.left || '70%',        // Konfigurierbare X-Position
-                    transform: 'translateX(-50%)',               // Zentriert horizontal
+                    transform: `translateX(-50%) translate(0, ${-verticalOffset}vh)`, // Zentriert horizontal + vertikale Bewegung
                     zIndex: zIndex,
                     pointerEvents: 'none',
-                    transition: 'bottom 0.3s ease-out'
+
+                    // PERFORMANCE: Sanfte Optimierungen ohne aggressive Einstellungen
+                    transition: 'transform 0.3s ease-out',
+                    willChange: 'transform',
+                    backfaceVisibility: 'hidden'
                 }}
             >
                 <SafeImage

@@ -1,10 +1,8 @@
-// src/components/Parallax/Elements/ForestLayer.jsx
 import React from 'react';
 import { getPositionFromSegments } from '../utils/animationUtils';
 import SafeImage from './SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
 import { zIndices } from '../config/constants/index';
-
 
 const ForestLayer = ({ scrollProgress, config }) => {
     // Fehlerbehandlung für fehlende Konfiguration
@@ -15,7 +13,7 @@ const ForestLayer = ({ scrollProgress, config }) => {
 
     // Sichere Zugriffe auf Config-Werte mit Fallbacks
     const segments = config.segments || [{ scrollStart: 0, scrollEnd: 1, posStart: 0, posEnd: 0 }];
-    const imageSrc = config.imageSrc || "/Parallax/Erster_Hintergrund.png"; // Wald-Bild
+    const imageSrc = config.imageSrc || "/Parallax/Erster_Hintergrund.png";
     const zIndex = config.zIndex || zIndices.forest;
 
     // Berechne die aktuelle Position basierend auf den Segmenten
@@ -26,12 +24,19 @@ const ForestLayer = ({ scrollProgress, config }) => {
             <div
                 style={{
                     position: 'fixed',
-                    bottom: `${verticalOffset}%`, // Benutze die Position direkt als bottom-Wert
+                    bottom: 0, // Basis-Position
                     left: 0,
                     width: '100%',
                     zIndex: zIndex,
                     pointerEvents: 'none',
-                    transition: 'bottom 0.3s ease-out' // Ändere die Transition-Eigenschaft auf bottom
+
+                    // PERFORMANCE: Viewport-basierte Transform (gleiche Logik wie vorher)
+                    transform: `translate(0, ${-verticalOffset}vh)`,
+
+                    // PERFORMANCE: Sanfte Optimierungen
+                    transition: 'transform 0.3s ease-out',
+                    willChange: 'transform',
+                    backfaceVisibility: 'hidden'
                 }}
             >
                 <SafeImage

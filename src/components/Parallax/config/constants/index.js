@@ -84,23 +84,23 @@ export const assetPaths = {
         fallback: '/Parallax/fallback-background.png'
     },
     forest: {
-        default: '/Parallax/Erster_Hintergrund.png',
+        default: '/Parallax/Erster_Hintergrund.webp',
         fallback: '/Parallax/fallback-forest.png'
     },
     berge: {
-        default: '/Parallax/Vierter_Hintergrund.png',
+        default: '/Parallax/Vierter_Hintergrund.webp',
         fallback: '/Parallax/fallback-berge.png'
     },
     tal: {
-        default: '/Parallax/Dritter_Hintergrund.png',
+        default: '/Parallax/Dritter_Hintergrund.webp',
         fallback: '/Parallax/fallback-tal.png'
     },
     waldHinten: {
-        default: '/Parallax/Zweiter_Hintergrund.png',
+        default: '/Parallax/Zweiter_Hintergrund.webp',
         fallback: '/Parallax/fallback-wald.png'
     },    
     road: {
-        default: '/Parallax/Weg.png',
+        default: '/Parallax/Weg.webp',
         fallback: '/Parallax/fallback-road.png'
     },
     dog: {

@@ -1,4 +1,3 @@
-// src/components/Parallax/Elements/BergeLayer.jsx
 import React from 'react';
 import { getPositionFromSegments } from '../utils/animationUtils';
 import SafeImage from './SafeImage';
@@ -25,12 +24,19 @@ const BergeLayer = ({ scrollProgress, config }) => {
             <div
                 style={{
                     position: 'fixed',
-                    bottom: `${verticalOffset}%`,
+                    bottom: 0, // Basis-Position
                     left: 0,
                     width: '100%',
                     zIndex: zIndex,
                     pointerEvents: 'none',
-                    transition: 'bottom 0.3s ease-out'
+
+                    // PERFORMANCE: Viewport-basierte Transform (gleiche Logik wie vorher)
+                    transform: `translate(0, ${-verticalOffset}vh)`,
+
+                    // PERFORMANCE: Sanfte Optimierungen ohne aggressive Einstellungen
+                    transition: 'transform 0.3s ease-out',
+                    willChange: 'transform',
+                    backfaceVisibility: 'hidden'
                 }}
             >
                 <SafeImage
