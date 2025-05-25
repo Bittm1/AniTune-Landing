@@ -1,18 +1,17 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
 import ErrorBoundary from '../../ErrorBoundary';
+// ✅ NEUE IMPORT: Timing-Config
+import { getAnimationTiming, getDeviceOptimizedTiming } from '../config/timingConfig';
 import './TitleLayer.css';
 
-// NEU: Lock-Snap TitleLayer - zeigt nur einen Titel zur Zeit
 const TitleLayer = React.memo(({ scrollProgress, titles = [], currentTitleIndex = -1, isScrollLocked = false }) => {
     if (!titles || titles.length === 0) return null;
 
-    // ✅ SPECIAL CASE: currentTitleIndex = -1 bedeutet Logo+Newsletter Phase
     if (currentTitleIndex === -1) {
-        return null; // Kein Titel sichtbar, nur Logo+Newsletter
+        return null; // Logo+Newsletter Phase
     }
 
-    // Aktueller Titel basierend auf Index
     const currentTitle = titles[currentTitleIndex];
     if (!currentTitle) return null;
 
@@ -30,66 +29,91 @@ const TitleLayer = React.memo(({ scrollProgress, titles = [], currentTitleIndex 
                     pointerEvents: 'none'
                 }}
             >
-                {/* Zeige nur den aktuellen Titel */}
                 <SingleTitle
                     title={currentTitle}
                     isActive={true}
                     isScrollLocked={isScrollLocked}
                 />
 
-                {/* Debug-Info (nur in Development) */}
+                {/* Debug-Info mit Timing-Details */}
                 {process.env.NODE_ENV === 'development' && (
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: '60px',
-                            left: '10px',
-                            background: 'rgba(0,0,0,0.7)',
-                            color: 'white',
-                            padding: '8px',
-                            fontSize: '12px',
-                            borderRadius: '4px',
-                            pointerEvents: 'all'
-                        }}
-                    >
-                        <div>Aktueller Titel: {currentTitleIndex + 1}/6</div>
-                        <div>"{currentTitle.text}"</div>
-                        <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
-                    </div>
+                    <TimingDebugPanel
+                        currentTitleIndex={currentTitleIndex}
+                        currentTitle={currentTitle}
+                        isScrollLocked={isScrollLocked}
+                    />
                 )}
             </div>
         </ErrorBoundary>
     );
 });
 
-// Einzelner Titel mit Ein-/Ausblende-Animation
+// ✅ DEBUG-PANEL MIT TIMING-INFO
+const TimingDebugPanel = React.memo(({ currentTitleIndex, currentTitle, isScrollLocked }) => {
+    const timingConfig = getDeviceOptimizedTiming();
+    const animationTiming = getAnimationTiming(currentTitle.animation?.type || 'fadeScale');
+
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                top: '60px',
+                left: '10px',
+                background: 'rgba(0,0,0,0.8)',
+                color: 'white',
+                padding: '12px',
+                fontSize: '11px',
+                borderRadius: '6px',
+                pointerEvents: 'all',
+                fontFamily: 'monospace',
+                lineHeight: '1.4'
+            }}
+        >
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                🎬 Titel-Debug ({timingConfig.name})
+            </div>
+            <div>Titel: {currentTitleIndex + 1}/6 - "{currentTitle.text}"</div>
+            <div>Animation: {currentTitle.animation?.type || 'fadeScale'}</div>
+            <div>Duration: {animationTiming.duration}s</div>
+            <div>Delay: {animationTiming.delay}s</div>
+            <div>Out Duration: {animationTiming.outDuration}s</div>
+            <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+        </div>
+    );
+});
+
+// Einzelner Titel mit Config-basierter Animation
 const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
     const titleRef = useRef(null);
     const animationRef = useRef(null);
-    const currentStateRef = useRef('hidden'); // 'hidden', 'visible', 'animating'
+    const currentStateRef = useRef('hidden');
 
-    // Animation für Einblenden
+    // ✅ TIMING AUS CONFIG LADEN
+    const animationTiming = useMemo(() => {
+        return getAnimationTiming(title.animation?.type || 'fadeScale');
+    }, [title.animation?.type]);
+
+    // Animation für Einblenden - MIT CONFIG-TIMING
     const animateIn = useCallback(() => {
         if (!titleRef.current || currentStateRef.current === 'visible') return;
 
         const element = titleRef.current;
         const animation = title.animation || {};
 
-        console.log(`🎬 Titel "${title.text}" wird eingeblendet`);
+        console.log(`🎬 Titel "${title.text}" wird eingeblendet (${animation.type || 'fadeScale'})`);
 
-        // Kill existing animation
         if (animationRef.current) {
             animationRef.current.kill();
         }
 
         currentStateRef.current = 'animating';
 
-        // Animation-Parameter
+        // ✅ VERWENDE CONFIG-WERTE STATT HART-KODIERTE
         let animationProps = {
             opacity: 1,
-            duration: animation.duration || 0.8,
+            duration: animationTiming.duration,        // ← Aus timingConfig.js
             ease: animation.ease || 'power2.out',
-            delay: animation.delay || 0,
+            delay: animationTiming.delay,              // ← Aus timingConfig.js
             force3D: true,
             onComplete: () => {
                 currentStateRef.current = 'visible';
@@ -130,12 +154,11 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
                 break;
         }
 
-        // Starte Animation
         animationRef.current = gsap.to(element, animationProps);
 
-    }, [title.animation, title.text]);
+    }, [title.animation, title.text, animationTiming]);
 
-    // Animation für Ausblenden
+    // Animation für Ausblenden - MIT CONFIG-TIMING
     const animateOut = useCallback(() => {
         if (!titleRef.current || currentStateRef.current === 'hidden') return;
 
@@ -144,19 +167,16 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
 
         console.log(`🎬 Titel "${title.text}" wird ausgeblendet`);
 
-        // Kill existing animation
         if (animationRef.current) {
             animationRef.current.kill();
         }
 
         currentStateRef.current = 'animating';
 
-        // Ausblende-Animation (schneller)
-        const outDuration = (animation.duration || 0.8) * 0.6;
-
+        // ✅ AUSBLENDE-DAUER AUS CONFIG
         let animationProps = {
             opacity: 0,
-            duration: outDuration,
+            duration: animationTiming.outDuration,     // ← Aus timingConfig.js
             ease: 'power2.in',
             force3D: true,
             onComplete: () => {
@@ -192,23 +212,20 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
                 break;
         }
 
-        // Starte Ausblende-Animation
         animationRef.current = gsap.to(element, animationProps);
 
-    }, [title.animation, title.text]);
+    }, [title.animation, title.text, animationTiming]);
 
     // Reagiere auf isActive-Änderungen
     useEffect(() => {
         if (isActive && currentStateRef.current === 'hidden') {
-            // Titel soll eingeblendet werden
-            setTimeout(animateIn, 100); // Kurze Verzögerung für sanfteren Übergang
+            setTimeout(animateIn, 100);
         } else if (!isActive && currentStateRef.current === 'visible') {
-            // Titel soll ausgeblendet werden
             animateOut();
         }
     }, [isActive, animateIn, animateOut]);
 
-    // Initialisierung: Setze Titel initial auf unsichtbar
+    // Initialisierung
     useEffect(() => {
         if (titleRef.current && currentStateRef.current === 'hidden') {
             gsap.set(titleRef.current, {
@@ -221,7 +238,7 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
         }
     }, []);
 
-    // Cleanup on unmount
+    // Cleanup
     useEffect(() => {
         return () => {
             if (animationRef.current) {
@@ -235,16 +252,14 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
         position: 'absolute',
         top: title.position.top,
         left: title.position.left,
-        opacity: 0, // Startet unsichtbar
+        opacity: 0,
         transform: 'translate(-50%, -50%)',
         ...title.style,
-        // Performance-Optimierungen
         willChange: 'transform, opacity, filter',
         backfaceVisibility: 'hidden',
         perspective: 1000,
-        // Lock-Feedback (optional)
         ...(isScrollLocked && {
-            filter: 'brightness(1.1)', // Leichtes Highlight während Lock
+            filter: 'brightness(1.1)',
         })
     }), [title.position, title.style, isScrollLocked]);
 
@@ -278,14 +293,16 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
             data-animation-type={title.animation?.type}
             data-is-active={isActive}
             data-scroll-locked={isScrollLocked}
+            data-timing-duration={animationTiming.duration}
+            data-timing-delay={animationTiming.delay}
         >
             {title.text}
         </div>
     );
 });
 
-// Display names für besseres Debugging
 TitleLayer.displayName = 'LockSnapTitleLayer';
 SingleTitle.displayName = 'SingleTitle';
+TimingDebugPanel.displayName = 'TimingDebugPanel';
 
 export default TitleLayer;
