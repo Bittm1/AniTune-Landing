@@ -68,3 +68,86 @@
     height: 100%;
     pointer-events: none;
 }
+
+/* ✅ NEU: Audio-Controls Styling - Überschreibt alle anderen Regeln */
+button[style*="position: fixed"][style*="bottom: 80px"],
+button[style*="position: fixed"][style*="bottom: 20px"] {
+    /* Sicherstellen dass Audio-Buttons immer klickbar sind */
+    pointer-events: all !important;
+    z-index: 10000 !important;
+    cursor: pointer !important;
+    position: fixed !important;
+
+    /* Verhindere CSS-Resets von anderen Regeln */
+    border: none !important;
+    outline: none !important;
+
+    /* Bessere Touch-Targets für Mobile */
+    min-width: 44px !important;
+    min-height: 44px !important;
+
+    /* Anti-Aliasing für saubere Darstellung */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ✅ NEU: Hover-Effekte für Audio-Buttons */
+button[style*="position: fixed"][style*="bottom: 80px"]:hover,
+button[style*="position: fixed"][style*="bottom: 20px"]:hover {
+    transform: scale(1.1) !important;
+    transition: transform 0.2s ease !important;
+}
+
+/* ✅ NEU: Focus-States für Barrierefreiheit */
+button[style*="position: fixed"][style*="bottom: 80px"]:focus,
+button[style*="position: fixed"][style*="bottom: 20px"]:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8) !important;
+    outline-offset: 2px !important;
+}
+
+/* ✅ NEU: Disabled-State für Auto-Play Button */
+button[style*="position: fixed"][style*="bottom: 80px"]:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* ✅ NEU: Mobile-Optimierungen */
+@media (max-width: 768px) {
+    button[style*="position: fixed"][style*="bottom: 80px"] {
+        bottom: 100px !important;
+        /* Mehr Abstand auf Mobile */
+        width: 60px !important;
+        height: 60px !important;
+    }
+
+    button[style*="position: fixed"][style*="bottom: 20px"] {
+        bottom: 30px !important;
+        right: 15px !important;
+    }
+
+    .section-indicators {
+        right: 10px;
+        gap: 8px;
+    }
+
+    .section-indicator {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+/* ✅ NEU: Sicherstellen dass alle Interactive Elemente über Fixed Layers sind */
+.interactive-controls {
+    position: relative;
+    z-index: 10000;
+    pointer-events: all;
+}
+
+/* ✅ NEU: Debug-Panel Styling verbessern */
+div[style*="position: fixed"][style*="top: 120px"] {
+    z-index: 10001 !important;
+    pointer-events: all !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
