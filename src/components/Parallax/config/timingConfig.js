@@ -1,57 +1,73 @@
 // src/components/Parallax/config/timingConfig.js
 
 /**
- * 🎛️ PROFESSIONELLE TIMING-KONFIGURATION
- * Alle Timing-Einstellungen zentral verwaltet + Scroll-Segmente
+ * 🎛️ FINALE TIMING-KONFIGURATION
+ * ✅ Phase 0: snapTarget = 0 (0% von 0-1)
+ * ✅ Phase 1-6: Gleichmäßig über den vollen 0-1 Bereich verteilt
+ * ✅ 6 Titel bei: 0%, 16.67%, 33.33%, 50%, 66.67%, 83.33%, 100%
  */
 
 // ===== SCROLL-SEGMENT-PRESETS =====
 export const SCROLL_SEGMENT_PRESETS = {
-    // ⚡ SCHNELLE ÜBERGÄNGE (Kurze Bereiche)
+    // ⚡ SCHNELLE ÜBERGÄNGE
     fast_segments: {
         name: 'Fast Segments',
-        description: 'Kurze Titel-Bereiche, schnelle Übergänge',
+        description: 'Alle 6 Titel gleichmäßig über 0-1 Bereich verteilt',
 
         segments: [
+            // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
             {
                 scrollStart: 0,
-                scrollEnd: 0.15,
-                snapTarget: 0.075,
+                scrollEnd: 0.05,
+                snapTarget: 0,         // 0% scroll
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
+            // ✅ Phase 1: Bei 16.67% - "Von Uns Ist Für Uns"
             {
-                scrollStart: 0.1,
+                scrollStart: 0.05,
                 scrollEnd: 0.25,
-                snapTarget: 0.175,
+                snapTarget: 0.1667,    // 16.67% von 0-1
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
+            // ✅ Phase 2: Bei 33.33% - "Der Weg"
             {
-                scrollStart: 0.2,
-                scrollEnd: 0.35,
-                snapTarget: 0.275,
+                scrollStart: 0.25,
+                scrollEnd: 0.42,
+                snapTarget: 0.3333,    // 33.33% von 0-1
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
+            // ✅ Phase 3: Bei 50% - "Ist Das Ziel"
             {
-                scrollStart: 0.3,
-                scrollEnd: 0.45,
-                snapTarget: 0.375,
+                scrollStart: 0.42,
+                scrollEnd: 0.58,
+                snapTarget: 0.5,       // 50% von 0-1
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
+            // ✅ Phase 4: Bei 66.67% - "Die Community"
             {
-                scrollStart: 0.4,
-                scrollEnd: 0.55,
-                snapTarget: 0.475,
+                scrollStart: 0.58,
+                scrollEnd: 0.75,
+                snapTarget: 0.6667,    // 66.67% von 0-1
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
+            // ✅ Phase 5: Bei 83.33% - "Heißt"
             {
-                scrollStart: 0.5,
-                scrollEnd: 0.65,
-                snapTarget: 0.575,
+                scrollStart: 0.75,
+                scrollEnd: 0.92,
+                snapTarget: 0.8333,    // 83.33% von 0-1
+                snapDuration: 0.8,
+                snapEase: "power3.out"
+            },
+            // ✅ Phase 6: Bei 100% - "AniTune" (Ende)
+            {
+                scrollStart: 0.92,
+                scrollEnd: 1.0,
+                snapTarget: 1.0,       // 100% von 0-1 (Ende!)
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             }
@@ -61,46 +77,60 @@ export const SCROLL_SEGMENT_PRESETS = {
     // ⚖️ AUSGEWOGENE BEREICHE (Standard)
     balanced_segments: {
         name: 'Balanced Segments',
-        description: 'Mittlere Titel-Bereiche, ausgewogene Übergänge',
+        description: 'Alle 6 Titel gleichmäßig über 0-1 Bereich verteilt',
 
         segments: [
+            // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
             {
                 scrollStart: 0,
-                scrollEnd: 0.2,
-                snapTarget: 0.0,
+                scrollEnd: 0.04,
+                snapTarget: 0,
                 snapDuration: 1.2,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 1: Bei 16.67% - "Von Uns Ist Für Uns"
             {
-                scrollStart: 0.15,
-                scrollEnd: 0.35,
-                snapTarget: 0.25,
+                scrollStart: 0.04,
+                scrollEnd: 0.25,
+                snapTarget: 0.1667,
                 snapDuration: 1.2,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 2: Bei 33.33% - "Der Weg"
             {
-                scrollStart: 0.3,
-                scrollEnd: 0.5,
-                snapTarget: 0.4,
+                scrollStart: 0.25,
+                scrollEnd: 0.42,
+                snapTarget: 0.3333,
                 snapDuration: 1.2,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 3: Bei 50% - "Ist Das Ziel"
             {
-                scrollStart: 0.45,
-                scrollEnd: 0.65,
-                snapTarget: 0.55,
+                scrollStart: 0.42,
+                scrollEnd: 0.58,
+                snapTarget: 0.5,
                 snapDuration: 1.2,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 4: Bei 66.67% - "Die Community"
             {
-                scrollStart: 0.6,
-                scrollEnd: 0.8,
-                snapTarget: 0.7,
+                scrollStart: 0.58,
+                scrollEnd: 0.75,
+                snapTarget: 0.6667,
                 snapDuration: 1.2,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 5: Bei 83.33% - "Heißt"
             {
                 scrollStart: 0.75,
+                scrollEnd: 0.92,
+                snapTarget: 0.8333,
+                snapDuration: 1.2,
+                snapEase: "power2.inOut"
+            },
+            // ✅ Phase 6: Bei 100% - "AniTune" (Ende)
+            {
+                scrollStart: 0.92,
                 scrollEnd: 1.0,
                 snapTarget: 1.0,
                 snapDuration: 1.2,
@@ -112,48 +142,62 @@ export const SCROLL_SEGMENT_PRESETS = {
     // 🎬 LANGE BEREICHE (Cinematisch)
     cinematic_segments: {
         name: 'Cinematic Segments',
-        description: 'Lange Titel-Bereiche, langsame Übergänge',
+        description: 'Alle 6 Titel gleichmäßig über 0-1 Bereich verteilt',
 
         segments: [
+            // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
             {
                 scrollStart: 0,
-                scrollEnd: 0.3,
-                snapTarget: 0.15,
+                scrollEnd: 0.04,
+                snapTarget: 0,
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
+            // ✅ Phase 1: Bei 16.67% - "Von Uns Ist Für Uns"
             {
-                scrollStart: 0.2,
-                scrollEnd: 0.45,
-                snapTarget: 0.325,
+                scrollStart: 0.04,
+                scrollEnd: 0.25,
+                snapTarget: 0.1667,
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
+            // ✅ Phase 2: Bei 33.33% - "Der Weg"
             {
-                scrollStart: 0.35,
-                scrollEnd: 0.6,
-                snapTarget: 0.475,
+                scrollStart: 0.25,
+                scrollEnd: 0.42,
+                snapTarget: 0.3333,
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
+            // ✅ Phase 3: Bei 50% - "Ist Das Ziel"
             {
-                scrollStart: 0.5,
+                scrollStart: 0.42,
+                scrollEnd: 0.58,
+                snapTarget: 0.5,
+                snapDuration: 2.5,
+                snapEase: "power1.inOut"
+            },
+            // ✅ Phase 4: Bei 66.67% - "Die Community"
+            {
+                scrollStart: 0.58,
                 scrollEnd: 0.75,
-                snapTarget: 0.625,
+                snapTarget: 0.6667,
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
+            // ✅ Phase 5: Bei 83.33% - "Heißt"
             {
-                scrollStart: 0.65,
-                scrollEnd: 0.9,
-                snapTarget: 0.775,
+                scrollStart: 0.75,
+                scrollEnd: 0.92,
+                snapTarget: 0.8333,
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
+            // ✅ Phase 6: Bei 100% - "AniTune" (Ende)
             {
-                scrollStart: 0.8,
+                scrollStart: 0.92,
                 scrollEnd: 1.0,
-                snapTarget: 0.9,
+                snapTarget: 1.0,
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             }
@@ -163,48 +207,62 @@ export const SCROLL_SEGMENT_PRESETS = {
     // 🎯 CUSTOM (Zum Experimentieren)
     custom_segments: {
         name: 'Custom Segments',
-        description: 'Anpassbare Scroll-Bereiche',
+        description: 'Alle 6 Titel gleichmäßig über 0-1 Bereich verteilt',
 
         segments: [
+            // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
             {
                 scrollStart: 0,
+                scrollEnd: 0.04,
+                snapTarget: 0,
+                snapDuration: 1.8,
+                snapEase: "power2.inOut"
+            },
+            // ✅ Phase 1: Bei 16.67% - "Von Uns Ist Für Uns"
+            {
+                scrollStart: 0.04,
                 scrollEnd: 0.25,
-                snapTarget: 0.125,
+                snapTarget: 0.1667,
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 2: Bei 33.33% - "Der Weg"
             {
-                scrollStart: 0.2,
-                scrollEnd: 0.4,
-                snapTarget: 0.3,
+                scrollStart: 0.25,
+                scrollEnd: 0.42,
+                snapTarget: 0.3333,
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 3: Bei 50% - "Ist Das Ziel"
             {
-                scrollStart: 0.35,
-                scrollEnd: 0.55,
-                snapTarget: 0.45,
+                scrollStart: 0.42,
+                scrollEnd: 0.58,
+                snapTarget: 0.5,
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 4: Bei 66.67% - "Die Community"
             {
-                scrollStart: 0.5,
-                scrollEnd: 0.7,
-                snapTarget: 0.6,
+                scrollStart: 0.58,
+                scrollEnd: 0.75,
+                snapTarget: 0.6667,
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 5: Bei 83.33% - "Heißt"
             {
-                scrollStart: 0.65,
-                scrollEnd: 0.85,
-                snapTarget: 0.75,
+                scrollStart: 0.75,
+                scrollEnd: 0.92,
+                snapTarget: 0.8333,
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
+            // ✅ Phase 6: Bei 100% - "AniTune" (Ende)
             {
-                scrollStart: 0.8,
+                scrollStart: 0.92,
                 scrollEnd: 1.0,
-                snapTarget: 0.9,
+                snapTarget: 1.0,
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             }
@@ -212,7 +270,7 @@ export const SCROLL_SEGMENT_PRESETS = {
     }
 };
 
-// ===== TIMING-PRESETS =====
+// ===== TIMING-PRESETS (unverändert) =====
 export const TIMING_PRESETS = {
     fast: {
         name: 'Fast & Responsive',
@@ -342,7 +400,6 @@ export function getBackToLogoTiming() {
 }
 
 export function getDeviceOptimizedTiming() {
-    // Browser-Check für SSR-Sicherheit
     if (typeof window === 'undefined') {
         return getActiveTimingConfig();
     }
@@ -350,7 +407,6 @@ export function getDeviceOptimizedTiming() {
     const isMobile = window.innerWidth < 768;
 
     if (isMobile && ACTIVE_TIMING_PRESET !== 'mobile') {
-        // Für Mobile automatisch schnellere Werte verwenden
         const currentConfig = getActiveTimingConfig();
         return {
             ...currentConfig,
@@ -388,7 +444,6 @@ export function getTimingDebugInfo() {
     };
 }
 
-// ===== DEFAULT EXPORT =====
 export default {
     timingPresets: TIMING_PRESETS,
     segmentPresets: SCROLL_SEGMENT_PRESETS,

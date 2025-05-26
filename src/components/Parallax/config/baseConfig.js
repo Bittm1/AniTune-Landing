@@ -108,7 +108,7 @@ export const defaultTitleAnimations = [
     'popIn'
 ];
 
-// ✅ ERWEITERTE createTitles-Funktion mit dynamischen Segmenten
+// ✅ KORRIGIERTE createTitles-Funktion mit dynamischen Segmenten
 export function createTitles(styleOverrides = {}, options = {}) {
     const positions = options.positions;
     const animations = options.animations || defaultTitleAnimations;
@@ -122,49 +122,73 @@ export function createTitles(styleOverrides = {}, options = {}) {
         throw new Error('createTitles: positions array is required and must match titleTexts length');
     }
 
-    if (titleSegments.length !== titleTexts.length) {
-        console.warn(`Segment count (${titleSegments.length}) doesn't match title count (${titleTexts.length}). Using available segments.`);
+    // ✅ KORRIGIERT: Erwarte 7 Segmente (Phase 0 + 6 Titel)
+    const expectedSegments = titleTexts.length + 1; // +1 für Phase 0 (Logo/Newsletter)
+    if (titleSegments.length !== expectedSegments) {
+        console.warn(`Expected ${expectedSegments} segments (Phase 0 + ${titleTexts.length} titles), got ${titleSegments.length}. Using available segments.`);
     }
 
     return titleTexts.map((text, index) => {
         const animationType = animations[index] || 'fadeScale';
 
-        // ✅ Verwende Segment aus Config oder Fallback
-        const segment = titleSegments[index] || titleSegments[titleSegments.length - 1];
+        // ✅ KORRIGIERT: Überspringe Phase 0 (index + 1)
+        // titleSegments[0] = Phase 0 (Logo/Newsletter)
+        // titleSegments[1] = Phase 1 (Erster Titel)
+        // titleSegments[2] = Phase 2 (Zweiter Titel) usw.
+        const segmentIndex = index + 1;
+        const segment = titleSegments[segmentIndex] || titleSegments[titleSegments.length - 1];
 
-        const animation = {
-            type: animationType,
-            duration: timing[animationType]?.duration || animationTiming.standard,
-            outDuration: timing[animationType]?.outDuration || (timing[animationType]?.duration || animationTiming.standard) * 0.7,
-            delay: timing[animationType]?.delay || 0,
-            ease: timing[animationType]?.ease || getDefaultEaseForType(animationType),
-            outEase: timing[animationType]?.outEase || 'power2.in'
-        };
+        if (!segment) {
+            console.error(`No segment found for title ${index + 1}: "${text}"`);
+            // Fallback-Segment erstellen
+            const fallbackSegment = {
+                scrollStart: index * 0.1,
+                scrollEnd: (index + 1) * 0.1,
+                snapTarget: (index + 1) * 0.1667,
+                snapDuration: 1.2,
+                snapEase: "power2.inOut"
+            };
+            return createTitleObject(text, index, animationType, fallbackSegment, positions[index], styleOverrides, timing);
+        }
 
-        return {
-            id: `title-${index + 1}`,
-            text,
-            index,
-
-            // ✅ Segment-Definition aus timingConfig
-            segments: [segment],
-            snapTarget: segment.snapTarget,
-            snapDuration: segment.snapDuration,
-            snapEase: segment.snapEase,
-
-            position: positions[index],
-
-            style: {
-                ...baseTitleStyle,
-                ...styleOverrides,
-                fontSize: text.length > 15 ?
-                    (styleOverrides.fontSize ? `calc(${styleOverrides.fontSize} * 0.85)` : '2.125rem') :
-                    (styleOverrides.fontSize || '2.5rem')
-            },
-
-            animation
-        };
+        return createTitleObject(text, index, animationType, segment, positions[index], styleOverrides, timing);
     });
+}
+
+// ✅ NEU: Hilfsfunktion für Titel-Objekt-Erstellung
+function createTitleObject(text, index, animationType, segment, position, styleOverrides, timing) {
+    const animation = {
+        type: animationType,
+        duration: timing[animationType]?.duration || animationTiming.standard,
+        outDuration: timing[animationType]?.outDuration || (timing[animationType]?.duration || animationTiming.standard) * 0.7,
+        delay: timing[animationType]?.delay || 0,
+        ease: timing[animationType]?.ease || getDefaultEaseForType(animationType),
+        outEase: timing[animationType]?.outEase || 'power2.in'
+    };
+
+    return {
+        id: `title-${index + 1}`,
+        text,
+        index,
+
+        // ✅ Segment-Definition aus timingConfig
+        segments: [segment],
+        snapTarget: segment.snapTarget,
+        snapDuration: segment.snapDuration,
+        snapEase: segment.snapEase,
+
+        position: position,
+
+        style: {
+            ...baseTitleStyle,
+            ...styleOverrides,
+            fontSize: text.length > 15 ?
+                (styleOverrides.fontSize ? `calc(${styleOverrides.fontSize} * 0.85)` : '2.125rem') :
+                (styleOverrides.fontSize || '2.5rem')
+        },
+
+        animation
+    };
 }
 
 function getDefaultEaseForType(animationType) {

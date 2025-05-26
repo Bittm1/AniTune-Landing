@@ -5,20 +5,57 @@ import ErrorBoundary from '../../ErrorBoundary';
 import { getAnimationTiming, getDeviceOptimizedTiming } from '../config/timingConfig';
 import './TitleLayer.css';
 
-const TitleLayer = React.memo(({ scrollProgress, titles = [], currentTitleIndex = -1, isScrollLocked = false }) => {
+// ✅ TitleLayer mit interner Phase 0 Logik, aber originalem visuellen Verhalten
+const TitleLayer = React.memo(({
+    scrollProgress,
+    titles = [],
+    currentTitleIndex = 0,  // ✅ Interne Logik: 0=Logo-Phase, 1-6=Titel
+    isScrollLocked = false
+}) => {
     if (!titles || titles.length === 0) return null;
 
-    if (currentTitleIndex === -1) {
-        return null; // Logo+Newsletter Phase
+    // ✅ INTERNE LOGIK: Phase 0 = keine Titel anzeigen (wie vorher bei currentTitleIndex = -1)
+    if (currentTitleIndex === 0) {
+        // Phase 0: Logo/Newsletter - zeige keine Titel an (wie vorher)
+        return (
+            <ErrorBoundary>
+                <div
+                    className="title-layer-container logo-phase"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 20,
+                        pointerEvents: 'none'
+                    }}
+                >
+                    {/* Debug-Info für Logo-Phase */}
+                    {process.env.NODE_ENV === 'development' && (
+                        <LogoPhaseDebugPanel
+                            currentTitleIndex={currentTitleIndex}
+                            isScrollLocked={isScrollLocked}
+                        />
+                    )}
+                </div>
+            </ErrorBoundary>
+        );
     }
 
-    const currentTitle = titles[currentTitleIndex];
-    if (!currentTitle) return null;
+    // ✅ TITEL-PHASEN: Exakt wie vorher, nur Index-Mapping geändert
+    const titleArrayIndex = currentTitleIndex - 1; // Index 1 → titles[0]
+    const currentTitle = titles[titleArrayIndex];
+
+    if (!currentTitle) {
+        console.warn(`TitleLayer: Kein Titel für Index ${currentTitleIndex} gefunden`);
+        return null;
+    }
 
     return (
         <ErrorBoundary>
             <div
-                className="title-layer-container"
+                className="title-layer-container title-phase"
                 style={{
                     position: 'fixed',
                     top: 0,
@@ -33,12 +70,15 @@ const TitleLayer = React.memo(({ scrollProgress, titles = [], currentTitleIndex 
                     title={currentTitle}
                     isActive={true}
                     isScrollLocked={isScrollLocked}
+                    titleIndex={currentTitleIndex}
+                    arrayIndex={titleArrayIndex}
                 />
 
                 {/* Debug-Info mit Timing-Details */}
                 {process.env.NODE_ENV === 'development' && (
-                    <TimingDebugPanel
+                    <TitlePhaseDebugPanel
                         currentTitleIndex={currentTitleIndex}
+                        arrayIndex={titleArrayIndex}
                         currentTitle={currentTitle}
                         isScrollLocked={isScrollLocked}
                     />
@@ -48,8 +88,39 @@ const TitleLayer = React.memo(({ scrollProgress, titles = [], currentTitleIndex 
     );
 });
 
-// ✅ DEBUG-PANEL MIT TIMING-INFO
-const TimingDebugPanel = React.memo(({ currentTitleIndex, currentTitle, isScrollLocked }) => {
+// ✅ DEBUG-PANEL FÜR LOGO-PHASE
+const LogoPhaseDebugPanel = React.memo(({ currentTitleIndex, isScrollLocked }) => {
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                top: '60px',
+                left: '10px',
+                background: 'rgba(0,100,0,0.8)', // Grün für Logo-Phase
+                color: 'white',
+                padding: '12px',
+                fontSize: '11px',
+                borderRadius: '6px',
+                pointerEvents: 'all',
+                fontFamily: 'monospace',
+                lineHeight: '1.4'
+            }}
+        >
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                🏠 Phase 0 - Logo/Newsletter
+            </div>
+            <div>Phase: {currentTitleIndex}/6</div>
+            <div>Status: Logo + Newsletter sichtbar</div>
+            <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+            <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
+                Scroll nach unten → Titel 1
+            </div>
+        </div>
+    );
+});
+
+// ✅ DEBUG-PANEL FÜR TITEL-PHASE (ERWEITERT)
+const TitlePhaseDebugPanel = React.memo(({ currentTitleIndex, arrayIndex, currentTitle, isScrollLocked }) => {
     const timingConfig = getDeviceOptimizedTiming();
     const animationTiming = getAnimationTiming(currentTitle.animation?.type || 'fadeScale');
 
@@ -70,20 +141,24 @@ const TimingDebugPanel = React.memo(({ currentTitleIndex, currentTitle, isScroll
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🎬 Titel-Debug ({timingConfig.name})
+                🎬 Phase {currentTitleIndex} - Titel-Modus ({timingConfig.name})
             </div>
-            <div>Titel: {currentTitleIndex + 1}/6 - "{currentTitle.text}"</div>
+            <div>Titel: {currentTitleIndex}/6 (Array: {arrayIndex}/5)</div>
+            <div>Text: "{currentTitle.text}"</div>
             <div>Animation: {currentTitle.animation?.type || 'fadeScale'}</div>
             <div>Duration: {animationTiming.duration}s</div>
             <div>Delay: {animationTiming.delay}s</div>
             <div>Out Duration: {animationTiming.outDuration}s</div>
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+            <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
+                ↑ Phase {currentTitleIndex - 1} | ↓ Phase {currentTitleIndex + 1}
+            </div>
         </div>
     );
 });
 
-// Einzelner Titel mit Config-basierter Animation
-const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
+// ✅ EINZELNER TITEL (UNVERÄNDERT, aber mit mehr Debug-Info)
+const SingleTitle = React.memo(({ title, isActive, isScrollLocked, titleIndex, arrayIndex }) => {
     const titleRef = useRef(null);
     const animationRef = useRef(null);
     const currentStateRef = useRef('hidden');
@@ -100,7 +175,7 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
         const element = titleRef.current;
         const animation = title.animation || {};
 
-        console.log(`🎬 Titel "${title.text}" wird eingeblendet (${animation.type || 'fadeScale'})`);
+        console.log(`🎬 Titel "${title.text}" (Phase ${titleIndex}) wird eingeblendet (${animation.type || 'fadeScale'})`);
 
         if (animationRef.current) {
             animationRef.current.kill();
@@ -156,7 +231,7 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
 
         animationRef.current = gsap.to(element, animationProps);
 
-    }, [title.animation, title.text, animationTiming]);
+    }, [title.animation, title.text, animationTiming, titleIndex]);
 
     // Animation für Ausblenden - MIT CONFIG-TIMING
     const animateOut = useCallback(() => {
@@ -165,7 +240,7 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
         const element = titleRef.current;
         const animation = title.animation || {};
 
-        console.log(`🎬 Titel "${title.text}" wird ausgeblendet`);
+        console.log(`🎬 Titel "${title.text}" (Phase ${titleIndex}) wird ausgeblendet`);
 
         if (animationRef.current) {
             animationRef.current.kill();
@@ -214,7 +289,7 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
 
         animationRef.current = gsap.to(element, animationProps);
 
-    }, [title.animation, title.text, animationTiming]);
+    }, [title.animation, title.text, animationTiming, titleIndex]);
 
     // Reagiere auf isActive-Änderungen
     useEffect(() => {
@@ -269,7 +344,8 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
             'title-element',
             'lock-snap-title',
             `title-${title.index + 1}`,
-            `animation-${title.animation?.type || 'fadeScale'}`
+            `animation-${title.animation?.type || 'fadeScale'}`,
+            `phase-${titleIndex}` // ✅ NEU: Phase-Klasse
         ];
 
         if (isActive) {
@@ -281,7 +357,7 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
         }
 
         return classes.join(' ');
-    }, [title.index, title.animation?.type, isActive, isScrollLocked]);
+    }, [title.index, title.animation?.type, isActive, isScrollLocked, titleIndex]);
 
     return (
         <div
@@ -290,6 +366,8 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
             style={titleStyles}
             data-title-id={title.id}
             data-title-index={title.index}
+            data-phase-index={titleIndex}          // ✅ NEU: Phase-Index
+            data-array-index={arrayIndex}          // ✅ NEU: Array-Index
             data-animation-type={title.animation?.type}
             data-is-active={isActive}
             data-scroll-locked={isScrollLocked}
@@ -303,6 +381,7 @@ const SingleTitle = React.memo(({ title, isActive, isScrollLocked }) => {
 
 TitleLayer.displayName = 'LockSnapTitleLayer';
 SingleTitle.displayName = 'SingleTitle';
-TimingDebugPanel.displayName = 'TimingDebugPanel';
+LogoPhaseDebugPanel.displayName = 'LogoPhaseDebugPanel';
+TitlePhaseDebugPanel.displayName = 'TitlePhaseDebugPanel';
 
 export default TitleLayer;

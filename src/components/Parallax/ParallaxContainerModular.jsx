@@ -13,7 +13,7 @@ import DogLayer from './Elements/DogLayer';
 import MengeLayer from './Elements/MengeLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
 import LogoLayer from './Elements/LogoLayer';
-import TitleLayer from './Elements/TitleLayer'; // ✅ WIEDER AKTIVIERT
+import TitleLayer from './Elements/TitleLayer';
 import NewsletterLayer from './Elements/NewsletterLayer';
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
@@ -45,6 +45,7 @@ if (typeof window !== 'undefined') {
     });
 }
 
+// Layer-Komponente mit Memo umwickeln für bessere Performance
 const MemoizedLayer = React.memo(({ children }) => children);
 
 const ParallaxContainerModular = React.memo(() => {
@@ -68,7 +69,7 @@ const ParallaxContainerModular = React.memo(() => {
         lastRenderTime: 0
     });
 
-    // ✅ ERWEITERT: useScrollProgress mit Lock-Snap Features
+    // ✅ ERWEITERTE SCROLL-PROGRESS mit Phase 0 Support
     const {
         scrollProgress,
         activeSection,
@@ -81,8 +82,13 @@ const ParallaxContainerModular = React.memo(() => {
         snapToTitle,
         scrollToTitleIndex,
         handleKeyboardNavigation,
-        currentTitleIndex,        // ✅ NEU
-        isScrollLocked           // ✅ NEU
+        currentTitleIndex,        // ✅ Jetzt 0-6 (0=Logo, 1-6=Titel)
+        isScrollLocked,
+        // ✅ NEUE PHASE-HELPER
+        isLogoPhase,             // true wenn currentTitleIndex === 0
+        isTitlePhase,            // true wenn currentTitleIndex > 0
+        currentPhaseDescription, // String-Beschreibung der aktuellen Phase
+        timingInfo               // Debug-Info
     } = useScrollProgress(containerRef, sectionsRef, config.titles);
 
     // ScrollTrigger komplett abbauen - Optimiert
@@ -147,7 +153,7 @@ const ParallaxContainerModular = React.memo(() => {
         };
     }, [isResetting, setActiveSection]);
 
-    // Komponenten-Initialisierung
+    // Komponenten-Initialisierung mit optimierten Abhängigkeiten
     useEffect(() => {
         if (isInitialized) return;
 
@@ -194,7 +200,7 @@ const ParallaxContainerModular = React.memo(() => {
         return () => clearTimeout(initTimer);
     }, [destroyScrollTrigger, setupSectionObserver, isInitialized, updateScrollProgress]);
 
-    // Kompletter Reset der Komponente
+    // Kompletter Reset der Komponente - Optimiert für Performance
     const resetComponent = useCallback(() => {
         if (isResetting) return;
         setIsResetting(true);
@@ -236,7 +242,7 @@ const ParallaxContainerModular = React.memo(() => {
         }
     }, [activeSection, destroyScrollTrigger, updateScrollProgress, setupSectionObserver, isResetting]);
 
-    // Keyboard-Shortcut für Reset
+    // Keyboard-Shortcut für Reset - Optimiert
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.altKey && e.key === 'r') {
@@ -249,7 +255,7 @@ const ParallaxContainerModular = React.memo(() => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [resetComponent]);
 
-    // Referenzen für die Abschnitte einrichten
+    // Referenzen für die Abschnitte einrichten - Optimiert mit useCallback
     const setSectionRef = useCallback((el, index) => {
         sectionsRef.current[index] = el;
     }, []);
@@ -266,7 +272,7 @@ const ParallaxContainerModular = React.memo(() => {
         }
     }, [resetCount]);
 
-    // Memoized components
+    // Memoize the fallback component to prevent unnecessary re-renders
     const errorFallback = useMemo(() => (
         <div style={{
             padding: '20px',
@@ -299,85 +305,65 @@ const ParallaxContainerModular = React.memo(() => {
         </div>
     ), [resetComponent]);
 
-    // ✅ ERWEITERTE Debug-Anzeige mit Lock-Snap Info
-    const debugIndicator = useMemo(() => {
-        const titleInfo = currentTitleIndex === -1
-            ? "Logo+Newsletter"
-            : `${currentTitleIndex + 1}/6 - "${config.titles?.[currentTitleIndex]?.text || 'N/A'}"`;
-
-        return (
-            <div className="debug-indicator">
-                Phase: {titleInfo} | {isScrollLocked ? '🔒' : '🔓'}
-                <button
-                    onClick={resetComponent}
-                    style={{
-                        marginLeft: '10px',
-                        padding: '2px 8px',
-                        fontSize: '12px',
-                        background: '#555',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    ↻
-                </button>
-                <div style={{ fontSize: '10px', marginTop: '2px' }}>
-                    Scroll: {formattedScrollProgress.percentage} | Snap: {isSnapping ? '✨' : '-'}
-                </div>
+    // ✅ ERWEITERTE DEBUG-ANZEIGE: 7 Phasen (0-6)
+    const debugIndicator = useMemo(() => (
+        <div className="debug-indicator">
+            Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/14
+            <div style={{ fontSize: '10px', marginTop: '2px' }}>
+                Phase: {currentTitleIndex}/6 ({currentPhaseDescription})
             </div>
-        );
-    }, [currentTitleIndex, isScrollLocked, config.titles, resetComponent, formattedScrollProgress.percentage, isSnapping]);
+            <div style={{ fontSize: '10px' }}>
+                Timing: {timingInfo.preset} | Lock: {isScrollLocked ? '🔒' : '🔓'} | Konfig: ✅
+            </div>
+            <button
+                onClick={resetComponent}
+                style={{
+                    marginLeft: '10px',
+                    padding: '2px 8px',
+                    fontSize: '12px',
+                    background: '#555',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                }}
+            >
+                ↻
+            </button>
+        </div>
+    ), [formattedScrollProgress.absolute, activeSection, resetComponent, scrollProgress, currentTitleIndex, currentPhaseDescription, timingInfo, isScrollLocked]);
 
-    // ✅ ERWEITERTE Section-Indikatoren - jetzt für Titel-Navigation + Logo Phase
+    // ✅ ERWEITERTE SECTION-INDIKATOREN: 7 Phasen (0-6)
     const sectionIndicators = useMemo(() => (
         <div className="section-indicators">
-            <div style={{ fontSize: '10px', color: 'white', marginBottom: '5px', textAlign: 'center' }}>
-                Navigation
-            </div>
-            {/* Logo+Newsletter Button */}
+            {/* Phase 0: Logo/Newsletter */}
             <button
-                className={`section-indicator ${currentTitleIndex === -1 ? 'active' : ''} ${isScrollLocked ? 'locked' : ''}`}
-                onClick={() => {
-                    if (!isScrollLocked) {
-                        setCurrentTitleIndex(-1);
-                        setActiveTitle(null);
-                        gsap.to(window, {
-                            duration: 1.5,
-                            scrollTo: { y: 0 },
-                            ease: "power2.inOut"
-                        });
-                    }
-                }}
-                aria-label="Go to Logo+Newsletter"
-                disabled={isScrollLocked}
+                className={`section-indicator ${currentTitleIndex === 0 ? 'active logo-phase' : ''}`}
+                onClick={() => scrollToTitleIndex(0)}
+                aria-label="Go to Logo/Newsletter (Phase 0)"
+                title="Phase 0: Logo/Newsletter"
                 style={{
-                    opacity: isScrollLocked && currentTitleIndex !== -1 ? 0.3 : 1,
-                    cursor: isScrollLocked ? 'not-allowed' : 'pointer',
-                    backgroundColor: currentTitleIndex === -1 ? 'white' : 'rgba(255, 255, 255, 0.5)'
+                    backgroundColor: currentTitleIndex === 0 ? '#00ff00' : 'rgba(255, 255, 255, 0.5)'
                 }}
-                title="Logo + Newsletter"
             />
-            {/* Titel-Buttons */}
-            {config.titles && config.titles.map((title, index) => (
+
+            {/* Phase 1-6: Titel */}
+            {config.titles?.map((title, index) => (
                 <button
                     key={index}
-                    className={`section-indicator ${currentTitleIndex === index ? 'active' : ''} ${isScrollLocked ? 'locked' : ''}`}
-                    onClick={() => !isScrollLocked && snapToTitle(index)}
-                    aria-label={`Go to title: ${title.text}`}
-                    disabled={isScrollLocked}
+                    className={`section-indicator ${currentTitleIndex === index + 1 ? 'active title-phase' : ''}`}
+                    onClick={() => scrollToTitleIndex(index + 1)}
+                    aria-label={`Go to ${title.text} (Phase ${index + 1})`}
+                    title={`Phase ${index + 1}: ${title.text}`}
                     style={{
-                        opacity: isScrollLocked && currentTitleIndex !== index ? 0.3 : 1,
-                        cursor: isScrollLocked ? 'not-allowed' : 'pointer'
+                        backgroundColor: currentTitleIndex === index + 1 ? '#ffffff' : 'rgba(255, 255, 255, 0.5)'
                     }}
-                    title={title.text}
                 />
-            ))}
+            )) || []}
         </div>
-    ), [currentTitleIndex, isScrollLocked, config.titles, snapToTitle]);
+    ), [currentTitleIndex, scrollToTitleIndex, config.titles]);
 
-    // Alle Layer-Komponenten bleiben gleich
+    // Memoize the layers to prevent unnecessary re-renders
     const backgroundLayer = useMemo(() => (
         <BackgroundLayer
             scrollProgress={scrollProgress}
@@ -476,6 +462,7 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, config.leftCloudHinten, config.rightCloudHinten, config.imageSources?.leftCloudHinten, config.imageSources?.rightCloudHinten]);
 
+    // Logo-Layer: ZURÜCK ZU ORIGINAL (keine Phase-Kontrolle)
     const logoLayer = useMemo(() => (
         <LogoLayer
             scrollProgress={scrollProgress}
@@ -500,23 +487,22 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, config.leftCloud, config.rightCloud, config.imageSources?.leftCloud, config.imageSources?.rightCloud]);
 
-    // ✅ NEUER TitleLayer mit Lock-Snap Props
+    // Title-Layer: Nur interne Logik erweitert, visuell wie vorher
     const titleLayer = useMemo(() => (
         <TitleLayer
             scrollProgress={scrollProgress}
             titles={config.titles}
-            currentTitleIndex={currentTitleIndex}  // ✅ NEU
-            isScrollLocked={isScrollLocked}        // ✅ NEU
+            currentTitleIndex={currentTitleIndex}     // ✅ Interne Phase-Logik
+            isScrollLocked={isScrollLocked}
         />
     ), [scrollProgress, config.titles, currentTitleIndex, isScrollLocked]);
 
-    const newsletterLayer = useMemo(() => {
-        // ✅ Newsletter nur in Logo+Newsletter Phase (Index -1) sichtbar
-        if (currentTitleIndex !== -1) return null;
+    // Newsletter-Layer: ZURÜCK ZU ORIGINAL (keine Phase-Kontrolle)
+    const newsletterLayer = useMemo(() => (
+        <NewsletterLayer scrollProgress={scrollProgress} />
+    ), [scrollProgress]);
 
-        return <NewsletterLayer scrollProgress={scrollProgress} />;
-    }, [scrollProgress, currentTitleIndex]);
-
+    // Scroll-Indicator: ZURÜCK ZU ORIGINAL (nur activeSection-basiert)
     const scrollIndicator = useMemo(() => (
         <ScrollIndicator scrollProgress={scrollProgress} />
     ), [scrollProgress]);
@@ -527,7 +513,7 @@ const ParallaxContainerModular = React.memo(() => {
                 {/* Debug-Anzeige */}
                 {debugIndicator}
 
-                {/* Section-Indikatoren (jetzt für Titel-Navigation) */}
+                {/* Section-Indikatoren (Navigation) */}
                 {sectionIndicators}
 
                 {/* Hintergrund-Layer (fixiert) */}
@@ -568,6 +554,7 @@ const ParallaxContainerModular = React.memo(() => {
                         <MemoizedLayer>{mengeLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
+                    {/* Logo: ZURÜCK ZU ORIGINAL */}
                     <ErrorBoundary>
                         <MemoizedLayer>{logoLayer}</MemoizedLayer>
                     </ErrorBoundary>
@@ -580,17 +567,18 @@ const ParallaxContainerModular = React.memo(() => {
                         <MemoizedLayer>{wolkenHintenLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
-                    {/* ✅ TITEL-LAYER WIEDER AKTIVIERT */}
+                    {/* Titel: Mit interner Phase 0 Logik */}
                     <ErrorBoundary>
                         <MemoizedLayer>{titleLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
+                    {/* Newsletter: ZURÜCK ZU ORIGINAL */}
                     <ErrorBoundary>
                         <MemoizedLayer>{newsletterLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
-                    {/* ✅ SCROLL-INDICATOR: Nur in Logo+Newsletter Phase */}
-                    {currentTitleIndex === -1 && (
+                    {/* Scroll-Indicator: ZURÜCK ZU ORIGINAL */}
+                    {activeSection === 0 && (
                         <ErrorBoundary>
                             <MemoizedLayer>{scrollIndicator}</MemoizedLayer>
                         </ErrorBoundary>
