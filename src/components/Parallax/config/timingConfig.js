@@ -19,7 +19,7 @@ export const SCROLL_SEGMENT_PRESETS = {
             {
                 scrollStart: 0,
                 scrollEnd: 0.05,
-                snapTarget: 0,         // 0% scroll
+                snapTarget: 0,         // 0% von 0-1
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },

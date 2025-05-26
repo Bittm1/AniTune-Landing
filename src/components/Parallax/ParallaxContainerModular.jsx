@@ -14,6 +14,7 @@ import MengeLayer from './Elements/MengeLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
 import LogoLayer from './Elements/LogoLayer';
 import TitleLayer from './Elements/TitleLayer';
+import TitleAudioLayer from './Elements/TitleAudioLayer'; // ✅ NEU: Audio-Layer Import
 import NewsletterLayer from './Elements/NewsletterLayer';
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
@@ -570,6 +571,16 @@ const ParallaxContainerModular = React.memo(() => {
                     {/* Titel: Mit interner Phase 0 Logik */}
                     <ErrorBoundary>
                         <MemoizedLayer>{titleLayer}</MemoizedLayer>
+                    </ErrorBoundary>
+
+                    {/* ✅ NEU: Audio-Layer */}
+                    <ErrorBoundary>
+                        <MemoizedLayer>
+                            <TitleAudioLayer
+                                currentTitleIndex={currentTitleIndex}
+                                isScrollLocked={isScrollLocked}
+                            />
+                        </MemoizedLayer>
                     </ErrorBoundary>
 
                     {/* Newsletter: ZURÜCK ZU ORIGINAL */}
