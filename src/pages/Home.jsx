@@ -4,19 +4,28 @@ import ParallaxContainerModular from '../components/Parallax/ParallaxContainerMo
 import LoadingScreen from '../components/Loading/LoadingScreen';
 
 const Home = () => {
+    // 🛡️ FIX: Loading sollte initial TRUE sein
     const [isLoading, setIsLoading] = useState(false);
-    
+
     const handleLoadingComplete = () => {
+        console.log('📸 Loading abgeschlossen, zeige Parallax');
         setIsLoading(false);
     };
 
     return (
         <div className="min-h-screen relative">
+            {/* 🛡️ LOADING SCREEN */}
             {isLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
-            {/* Vorladen des Parallax-Containers, aber erst anzeigen, wenn geladen */}
-            <div style={{ display: isLoading ? 'none' : 'block' }}>
-                <ParallaxContainerModular />
-            </div>
+
+            {/* 🛡️ PARALLAX: Nur anzeigen wenn NICHT loading */}
+            {!isLoading && (
+                <div style={{
+                    opacity: isLoading ? 0 : 1,
+                    transition: 'opacity 0.5s ease-in-out'
+                }}>
+                    <ParallaxContainerModular />
+                </div>
+            )}
         </div>
     );
 };

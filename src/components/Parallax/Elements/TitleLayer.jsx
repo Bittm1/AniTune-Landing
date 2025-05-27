@@ -9,14 +9,13 @@ import './TitleLayer.css';
 const TitleLayer = React.memo(({
     scrollProgress,
     titles = [],
-    currentTitleIndex = 0,  // ✅ Interne Logik: 0=Logo-Phase, 1-6=Titel
+    currentTitleIndex = 0,  // ✅ Interne Logik: 0=Logo-Phase, 1-6=Titel, 7=Carousel
     isScrollLocked = false
 }) => {
     if (!titles || titles.length === 0) return null;
 
-    // ✅ INTERNE LOGIK: Phase 0 = keine Titel anzeigen (wie vorher bei currentTitleIndex = -1)
+    // ✅ PHASE 0: Logo/Newsletter - zeige keine Titel an
     if (currentTitleIndex === 0) {
-        // Phase 0: Logo/Newsletter - zeige keine Titel an (wie vorher)
         return (
             <ErrorBoundary>
                 <div
@@ -43,12 +42,40 @@ const TitleLayer = React.memo(({
         );
     }
 
-    // ✅ TITEL-PHASEN: Exakt wie vorher, nur Index-Mapping geändert
+    // ✅ NEU: PHASE 7: Carousel - zeige keine Titel an
+    if (currentTitleIndex === 7) {
+        return (
+            <ErrorBoundary>
+                <div
+                    className="title-layer-container carousel-phase"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 20,
+                        pointerEvents: 'none'
+                    }}
+                >
+                    {/* Debug-Info für Carousel-Phase */}
+                    {process.env.NODE_ENV === 'development' && (
+                        <CarouselPhaseDebugPanel
+                            currentTitleIndex={currentTitleIndex}
+                            isScrollLocked={isScrollLocked}
+                        />
+                    )}
+                </div>
+            </ErrorBoundary>
+        );
+    }
+
+    // ✅ TITEL-PHASEN 1-6: Exakt wie vorher
     const titleArrayIndex = currentTitleIndex - 1; // Index 1 → titles[0]
     const currentTitle = titles[titleArrayIndex];
 
     if (!currentTitle) {
-        console.warn(`TitleLayer: Kein Titel für Index ${currentTitleIndex} gefunden`);
+        console.warn(`TitleLayer: Kein Titel für Index ${currentTitleIndex} gefunden (Array-Index: ${titleArrayIndex})`);
         return null;
     }
 
@@ -327,11 +354,46 @@ const LogoPhaseDebugPanel = React.memo(({ currentTitleIndex, isScrollLocked }) =
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
                 🏠 Phase 0 - Logo/Newsletter
             </div>
-            <div>Phase: {currentTitleIndex}/6</div>
+            <div>Phase: {currentTitleIndex}/7</div>
             <div>Status: Logo + Newsletter sichtbar</div>
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
             <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
                 Scroll nach unten → Titel 1
+            </div>
+        </div>
+    );
+});
+
+// ✅ NEU: DEBUG-PANEL FÜR CAROUSEL-PHASE
+const CarouselPhaseDebugPanel = React.memo(({ currentTitleIndex, isScrollLocked }) => {
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                top: '60px',
+                left: '10px',
+                background: 'rgba(168,128,255,0.8)',
+                color: 'white',
+                padding: '12px',
+                fontSize: '11px',
+                borderRadius: '6px',
+                pointerEvents: 'all',
+                fontFamily: 'monospace',
+                lineHeight: '1.4'
+            }}
+        >
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                🎠 Phase 7 - AniTune Carousel
+            </div>
+            <div>Phase: {currentTitleIndex}/7</div>
+            <div>Status: Carousel aktiv</div>
+            <div>Kein Titel erforderlich</div>
+            <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+            <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
+                ↑ Phase 6 | Carousel Navigation über Karten
+            </div>
+            <div style={{ marginTop: '4px', fontSize: '9px', color: '#FFD700' }}>
+                🎨 Carousel läuft unabhängig von Titel-System
             </div>
         </div>
     );
@@ -366,7 +428,7 @@ const TitlePhaseDebugPanel = React.memo(({
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
                 🎭 Phase {currentTitleIndex} - Letter Reveal ({timingConfig.name})
             </div>
-            <div>Titel: {currentTitleIndex}/6 (Array: {arrayIndex}/5)</div>
+            <div>Titel: {currentTitleIndex}/7 (Array: {arrayIndex}/5)</div>
             <div>Text: "{currentTitle.text}" ({letterCount} Buchstaben)</div>
             <div>Effekt: Standard Reveal (wie Original)</div>
             <div>Stagger: 0.2s pro Buchstabe</div>
@@ -385,6 +447,7 @@ const TitlePhaseDebugPanel = React.memo(({
 TitleLayer.displayName = 'LetterRevealTitleLayer';
 LetterRevealSingleTitle.displayName = 'LetterRevealSingleTitle';
 LogoPhaseDebugPanel.displayName = 'LogoPhaseDebugPanel';
+CarouselPhaseDebugPanel.displayName = 'CarouselPhaseDebugPanel';
 TitlePhaseDebugPanel.displayName = 'TitlePhaseDebugPanel';
 
 export default TitleLayer;

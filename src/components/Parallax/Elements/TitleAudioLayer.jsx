@@ -141,7 +141,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
         });
     }, [stopAllAudio]);
 
-    // ✅ EINZIGER USEEFFECT - NUR MANUELLER MODUS
+    // ✅ KORRIGIERT: USEEFFECT - NUR MANUELLER MODUS + PHASE 7 UNTERSTÜTZUNG
     useEffect(() => {
         console.log(`📍 Phase: ${currentTitleIndex}, ScrollLocked: ${isScrollLocked}`);
 
@@ -149,6 +149,13 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
         if (currentTitleIndex === 0) {
             stopAllAudio();
             return;
+        }
+
+        // ✅ NEU: Phase 7: Carousel - Kein Audio, keine Blockierung
+        if (currentTitleIndex === 7) {
+            console.log(`🎠 Phase 7 (Carousel): Kein Audio erforderlich`);
+            stopAllAudio(); // Stoppe eventuell laufendes Audio
+            return; // ✅ WICHTIG: Keine weitere Logik, die blockieren könnte
         }
 
         // Phase 1-6: Nur manueller Audio-Modus
@@ -225,7 +232,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                 {isAudioEnabled ? '🔊' : '🔇'}
             </button>
 
-            {/* VEREINFACHTES DEBUG PANEL (ohne Auto-Play) */}
+            {/* ERWEITERTE DEBUG PANEL - PHASE 7 UNTERSTÜTZUNG */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
@@ -248,9 +255,17 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                     <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
                         🎵 NUR MANUELL
                     </div>
-                    <div>📍 Phase: {currentTitleIndex}/6</div>
+                    <div>📍 Phase: {currentTitleIndex}/7</div>
                     <div>🔊 Audio: {isAudioEnabled ? 'An' : 'Aus'}</div>
                     <div>🔒 Scroll Lock: {isScrollLocked ? 'Ja' : 'Nein'}</div>
+
+                    {/* ✅ NEU: Phase 7 Indikator */}
+                    {currentTitleIndex === 7 && (
+                        <div style={{ color: '#a880ff', fontSize: '10px' }}>
+                            🎠 Carousel-Phase (Kein Audio)
+                        </div>
+                    )}
+
                     <div style={{ fontSize: '9px', color: '#888', marginTop: '4px' }}>
                         🎶 Playing: {currentAudioRef.current ? 'Ja' : 'Nein'}
                     </div>
@@ -303,6 +318,11 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                         <br />✅ Set verhindert Doppel-Play
                         <br />✅ Clean & Einfach
                         <br />🚫 Kein Auto-Play
+                        {currentTitleIndex === 7 && (
+                            <>
+                                <br />🎠 Phase 7: Carousel OK
+                            </>
+                        )}
                     </div>
                 </div>
             )}

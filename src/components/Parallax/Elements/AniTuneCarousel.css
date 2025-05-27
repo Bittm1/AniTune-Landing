@@ -1,0 +1,390 @@
+/* src/components/Parallax/Elements/AniTuneCarousel.css */
+
+/* ===== CONTAINER ===== */
+.anitune-carousel-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    pointer-events: none;
+
+    /* Von unten hereinfahren */
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== TITEL SECTION ===== */
+.carousel-title-section {
+    position: relative;
+    text-align: center;
+    margin-bottom: 60px;
+    z-index: 2;
+}
+
+.fixed-title {
+    font-family: 'Lobster', cursive, sans-serif;
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.8), 0 3px 6px rgba(0, 0, 0, 0.6);
+    margin: 0 0 20px 0;
+    letter-spacing: 2px;
+}
+
+.sliding-title-container {
+    height: 60px;
+    /* Feste Höhe für smooth Wechsel */
+    overflow: hidden;
+    position: relative;
+}
+
+.sliding-title {
+    font-family: 'Lobster', cursive, sans-serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--title-color, #a880ff);
+    text-shadow: 0 0 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6);
+    margin: 0;
+    letter-spacing: 1px;
+
+    /* Slide-up Animation */
+    animation: slideUpTitle 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
+}
+
+@keyframes slideUpTitle {
+    0% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ===== NAVIGATION ===== */
+.carousel-navigation {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 40px;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.nav-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    pointer-events: all;
+
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+}
+
+.nav-button:active {
+    transform: scale(0.95);
+}
+
+/* ===== KARTEN CONTAINER ===== */
+.cards-container {
+    position: relative;
+    width: 100%;
+    max-width: 1400px;
+    /* ✅ ERWEITERT: Mehr Platz für 5 Karten */
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1200px;
+    /* ✅ ERWEITERT: Mehr 3D-Tiefe */
+    overflow: hidden;
+    /* ✅ Verhindere Scroll bei großen Transforms */
+}
+
+/* ===== EINZELNE KARTEN ===== */
+.carousel-card {
+    position: absolute;
+    /* ✅ GEÄNDERT: Absolute Positioning für bessere Kontrolle */
+    left: 50%;
+    /* ✅ GEÄNDERT: Zentriert als Ausgangspunkt */
+    width: 200px;
+    height: 280px;
+    border-radius: 20px;
+    background: linear-gradient(145deg,
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    pointer-events: all;
+
+    /* ✅ ERWEITERTE SMOOTH TRANSITION - Längere Dauer für bessere UX */
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+    /* Transform-Origin für bessere 3D-Effekte */
+    transform-origin: center center;
+    transform-style: preserve-3d;
+}
+
+/* ✅ ERWEITERTE Aktive Karte - Bessere Hervorhebung */
+.carousel-card.active {
+    background: linear-gradient(145deg,
+            rgba(255, 255, 255, 0.2),
+            rgba(255, 255, 255, 0.1));
+    border-color: var(--card-color);
+    box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.4),
+        0 0 40px var(--card-color, rgba(168, 128, 255, 0.4)),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+    /* ✅ Pulsing-Effekt für aktive Karte */
+    animation: activePulse 3s ease-in-out infinite;
+}
+
+@keyframes activePulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 25px 50px rgba(0, 0, 0, 0.4),
+            0 0 40px var(--card-color, rgba(168, 128, 255, 0.4)),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    50% {
+        box-shadow:
+            0 30px 60px rgba(0, 0, 0, 0.5),
+            0 0 50px var(--card-color, rgba(168, 128, 255, 0.6)),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* ✅ ERWEITERTE Inaktive Karten */
+.carousel-card.inactive {
+    opacity: 0.7;
+}
+
+.carousel-card.inactive:hover {
+    opacity: 0.9;
+    transform: var(--hover-transform, scale(1.05));
+    background: linear-gradient(145deg,
+            rgba(255, 255, 255, 0.15),
+            rgba(255, 255, 255, 0.08));
+}
+
+/* ✅ NEU: Spezielle Styles für Ring-Positionen */
+.carousel-card.position--2,
+.carousel-card.position-2 {
+    /* Äußere Karten - am stärksten reduziert */
+    filter: blur(1px);
+}
+
+.carousel-card.position--1,
+.carousel-card.position-1 {
+    /* Innere Seitenkarten - leicht reduziert */
+    filter: blur(0.5px);
+}
+
+.carousel-card.position-0 {
+    /* Zentrale Karte - voll sichtbar */
+    filter: none;
+}
+
+/* ✅ NEU: Hover-Effekte für Ring-Positionen */
+.carousel-card.position--1:hover,
+.carousel-card.position-1:hover {
+    filter: blur(0px);
+    transform: var(--current-transform) scale(1.05) !important;
+}
+
+.carousel-card.position--2:hover,
+.carousel-card.position-2:hover {
+    filter: blur(0px);
+    transform: var(--current-transform) scale(1.03) !important;
+}
+
+/* ===== KARTEN CONTENT ===== */
+.card-content {
+    padding: 30px 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.card-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s ease;
+}
+
+.carousel-card:hover .card-icon {
+    transform: scale(1.1) rotateY(10deg);
+}
+
+.card-title {
+    font-family: 'Lobster', cursive, sans-serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 10px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+.carousel-card.active .card-title {
+    color: var(--card-color, white);
+}
+
+.card-description {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    line-height: 1.4;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    transition: color 0.3s ease;
+}
+
+.carousel-card.active .card-description {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* ===== DEBUG INFO ===== */
+.carousel-debug {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: monospace;
+    line-height: 1.4;
+    pointer-events: all;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
+    .cards-container {
+        max-width: 900px;
+    }
+
+    .carousel-card {
+        width: 160px;
+        height: 240px;
+    }
+
+    .fixed-title {
+        font-size: 3rem;
+    }
+
+    .sliding-title {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .carousel-title-section {
+        margin-bottom: 40px;
+    }
+
+    .fixed-title {
+        font-size: 2.5rem;
+    }
+
+    .sliding-title {
+        font-size: 1.8rem;
+    }
+
+    .sliding-title-container {
+        height: 50px;
+    }
+
+    .cards-container {
+        height: 250px;
+    }
+
+    .carousel-card {
+        width: 140px;
+        height: 200px;
+    }
+
+    .card-content {
+        padding: 20px 15px;
+    }
+
+    .card-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+
+    .card-title {
+        font-size: 1.4rem;
+    }
+
+    .card-description {
+        font-size: 0.9rem;
+    }
+
+    .nav-button {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .carousel-navigation {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .carousel-card {
+        width: 120px;
+        height: 180px;
+    }
+
+    .fixed-title {
+        font-size: 2rem;
+    }
+
+    .sliding-title {
+        font-size: 1.5rem;
+    }
+}

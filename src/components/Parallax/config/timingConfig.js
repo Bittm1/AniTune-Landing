@@ -4,7 +4,8 @@
  * 🎛️ FINALE TIMING-KONFIGURATION
  * ✅ Phase 0: snapTarget = 0 (0% von 0-1)
  * ✅ Phase 1-6: Gleichmäßig über den vollen 0-1 Bereich verteilt
- * ✅ 6 Titel bei: 0%, 16.67%, 33.33%, 50%, 66.67%, 83.33%, 100%
+ * ✅ Phase 7: AniTune Carousel (ÜBER 100%)
+ * ✅ 8 Phasen bei: 0%, 16.67%, 33.33%, 50%, 66.67%, 83.33%, 100%, 108%
  */
 
 // ===== SCROLL-SEGMENT-PRESETS =====
@@ -12,7 +13,7 @@ export const SCROLL_SEGMENT_PRESETS = {
     // ⚡ SCHNELLE ÜBERGÄNGE
     fast_segments: {
         name: 'Fast Segments',
-        description: 'Alle 6 Titel gleichmäßig über 0-1 Bereich verteilt',
+        description: 'Alle 8 Phasen gleichmäßig über 0-1.2 Bereich verteilt',
 
         segments: [
             // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
@@ -63,11 +64,19 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
-            // ✅ Phase 6: Bei 100% - "AniTune" (Ende)
+            // ✅ Phase 6: Bei 100% - "AniTune"
             {
                 scrollStart: 0.92,
                 scrollEnd: 1.0,
-                snapTarget: 1.0,       // 100% von 0-1 (Ende!)
+                snapTarget: 1.0,       // 100% von 0-1
+                snapDuration: 0.8,
+                snapEase: "power3.out"
+            },
+            // ✅ NEU: Phase 7: AniTune Carousel (ÜBER 100%)
+            {
+                scrollStart: 1.0,
+                scrollEnd: 1.2,
+                snapTarget: 1.1,       // 110% = Mitte der Phase 7
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             }
@@ -77,7 +86,7 @@ export const SCROLL_SEGMENT_PRESETS = {
     // ⚖️ AUSGEWOGENE BEREICHE (Standard)
     balanced_segments: {
         name: 'Balanced Segments',
-        description: 'Alle 6 Titel gleichmäßig über 0-1 Bereich verteilt',
+        description: 'Alle 8 Phasen gleichmäßig über 0-1.2 Bereich verteilt',
 
         segments: [
             // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
@@ -128,11 +137,19 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 1.2,
                 snapEase: "power2.inOut"
             },
-            // ✅ Phase 6: Bei 100% - "AniTune" (Ende)
+            // ✅ Phase 6: Bei 100% - "AniTune"
             {
                 scrollStart: 0.92,
                 scrollEnd: 1.0,
                 snapTarget: 1.0,
+                snapDuration: 1.2,
+                snapEase: "power2.inOut"
+            },
+            // ✅ NEU: Phase 7: AniTune Carousel (ÜBER 100%)
+            {
+                scrollStart: 1.0,
+                scrollEnd: 1.2,
+                snapTarget: 1.1,       // 110% = Mitte der Phase 7
                 snapDuration: 1.2,
                 snapEase: "power2.inOut"
             }
@@ -142,7 +159,7 @@ export const SCROLL_SEGMENT_PRESETS = {
     // 🎬 LANGE BEREICHE (Cinematisch)
     cinematic_segments: {
         name: 'Cinematic Segments',
-        description: 'Alle 6 Titel gleichmäßig über 0-1 Bereich verteilt',
+        description: 'Alle 8 Phasen gleichmäßig über 0-1.2 Bereich verteilt',
 
         segments: [
             // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
@@ -193,11 +210,19 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
-            // ✅ Phase 6: Bei 100% - "AniTune" (Ende)
+            // ✅ Phase 6: Bei 100% - "AniTune"
             {
                 scrollStart: 0.92,
                 scrollEnd: 1.0,
                 snapTarget: 1.0,
+                snapDuration: 2.5,
+                snapEase: "power1.inOut"
+            },
+            // ✅ NEU: Phase 7: AniTune Carousel (ÜBER 100%)
+            {
+                scrollStart: 1.0,
+                scrollEnd: 1.2,
+                snapTarget: 1.1,       // 110% = Mitte der Phase 7
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             }
@@ -207,7 +232,7 @@ export const SCROLL_SEGMENT_PRESETS = {
     // 🎯 CUSTOM (Zum Experimentieren)
     custom_segments: {
         name: 'Custom Segments',
-        description: 'Alle 6 Titel gleichmäßig über 0-1 Bereich verteilt',
+        description: 'Alle 8 Phasen gleichmäßig über 0-1.2 Bereich verteilt',
 
         segments: [
             // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
@@ -258,11 +283,19 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
-            // ✅ Phase 6: Bei 100% - "AniTune" (Ende)
+            // ✅ Phase 6: Bei 100% - "AniTune"
             {
                 scrollStart: 0.92,
                 scrollEnd: 1.0,
                 snapTarget: 1.0,
+                snapDuration: 1.8,
+                snapEase: "power2.inOut"
+            },
+            // ✅ Phase 7: AniTune Carousel (ÜBER 100%)
+            {
+                scrollStart: 1.0,
+                scrollEnd: 1.2,
+                snapTarget: 1.1,       // 110% = Mitte der Phase 7
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             }

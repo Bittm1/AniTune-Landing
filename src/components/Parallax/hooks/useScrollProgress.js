@@ -61,8 +61,8 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const segmentConfig = getActiveScrollSegments();
         const segments = segmentConfig.segments;
 
-        // ✅ VALIDIERUNG: Index 0-6 sind jetzt gültig (7 Phasen total)
-        const maxIndex = 6; // 0-6 = 7 Phasen
+        // ✅ KORRIGIERT: Index 0-7 sind jetzt gültig (8 Phasen total)
+        const maxIndex = 7; // 0-7 = 8 Phasen
         if (targetIndex < 0 || targetIndex > maxIndex) return;
 
         console.log(`🔒 Lock-Snap zu Phase ${targetIndex}: ${targetIndex === 0 ? 'Logo/Newsletter' : titles[targetIndex - 1]?.text || 'Titel ' + targetIndex}`);
@@ -117,7 +117,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         });
     }, [isScrollLocked, isSnapping, titles, updateScrollProgress, snapTiming, currentTitleIndex]);
 
-    // ✅ SCROLL-EVENT-BEHANDLUNG (unverändert)
+    // ✅ KORRIGIERT: SCROLL-EVENT-BEHANDLUNG
     const handleScrollEvent = useCallback((event) => {
         if (isScrollLocked || isSnapping) {
             event.preventDefault();
@@ -132,7 +132,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         lastScrollEventRef.current = now;
         const delta = event.deltaY || event.detail || (event.wheelDelta * -1);
 
-        const maxIndex = 6; // 0-6 = 7 Phasen
+        const maxIndex = 7; // ✅ KORRIGIERT: 0-7 = 8 Phasen
 
         if (delta > 0) {
             // Scroll nach unten
@@ -149,7 +149,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // ✅ TOUCH-EVENT-BEHANDLUNG (angepasst für 7 Phasen)
+    // ✅ KORRIGIERT: TOUCH-EVENT-BEHANDLUNG
     const touchStartRef = useRef({ y: 0, time: 0 });
     const handleTouchStart = useCallback((event) => {
         if (event.touches.length === 1) {
@@ -166,7 +166,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const touch = event.changedTouches[0];
         const deltaY = touchStartRef.current.y - touch.clientY;
         const deltaTime = Date.now() - touchStartRef.current.time;
-        const maxIndex = 6; // 0-6 = 7 Phasen
+        const maxIndex = 7; // ✅ KORRIGIERT: 0-7 = 8 Phasen
 
         if (Math.abs(deltaY) > 30 && deltaTime < 500) {
             if (deltaY > 0) {
@@ -183,11 +183,11 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // ✅ KEYBOARD-NAVIGATION (angepasst für 7 Phasen)
+    // ✅ KORRIGIERT: KEYBOARD-NAVIGATION
     const handleKeyboardNavigation = useCallback((direction) => {
         if (isScrollLocked || isSnapping) return;
 
-        const maxIndex = 6; // 0-6 = 7 Phasen
+        const maxIndex = 7; // ✅ KORRIGIERT: 0-7 = 8 Phasen
 
         if (direction === 'next') {
             const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);
@@ -225,7 +225,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         };
     }, [handleScrollEvent, handleTouchStart, handleTouchEnd, titles]);
 
-    // Keyboard-Events (angepasst für 7 Phasen)
+    // Keyboard-Events (unverändert)
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
@@ -250,7 +250,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                     break;
                 case 'End':
                     e.preventDefault();
-                    snapToTitleIndex(6); // Phase 6
+                    snapToTitleIndex(7); // ✅ KORRIGIERT: Phase 7
                     break;
             }
         };
@@ -311,7 +311,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
             snapDuration: snapTiming.duration,
             snapEase: snapTiming.ease,
             currentPhase: currentTitleIndex === 0 ? 'Logo/Newsletter' : `Titel ${currentTitleIndex}`,
-            totalPhases: 7, // 0-6 = 7 Phasen
+            totalPhases: 8, // ✅ KORRIGIERT: 0-7 = 8 Phasen
             configurable: true // Alle Phasen sind jetzt konfigurierbar
         }
     };

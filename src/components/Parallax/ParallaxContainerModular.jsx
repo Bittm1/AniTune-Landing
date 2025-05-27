@@ -16,6 +16,7 @@ import LogoLayer from './Elements/LogoLayer';
 import TitleLayer from './Elements/TitleLayer';
 import TitleAudioLayer from './Elements/TitleAudioLayer';
 import NewsletterLayer from './Elements/NewsletterLayer';
+import AniTuneCarousel from './Elements/AniTuneCarousel';
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
 import gsap from 'gsap';
@@ -311,7 +312,7 @@ const ParallaxContainerModular = React.memo(() => {
         <div className="debug-indicator">
             Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/14
             <div style={{ fontSize: '10px', marginTop: '2px' }}>
-                Phase: {currentTitleIndex}/6 ({currentPhaseDescription})
+                Phase: {currentTitleIndex}/7 ({currentPhaseDescription})
             </div>
             <div style={{ fontSize: '10px' }}>
                 Timing: {timingInfo.preset} | Lock: {isScrollLocked ? '🔒' : '🔓'} | Konfig: ✅
@@ -334,7 +335,7 @@ const ParallaxContainerModular = React.memo(() => {
         </div>
     ), [formattedScrollProgress.absolute, activeSection, resetComponent, scrollProgress, currentTitleIndex, currentPhaseDescription, timingInfo, isScrollLocked]);
 
-    // ✅ ERWEITERTE SECTION-INDIKATOREN: 7 Phasen (0-6)
+    // ✅ ERWEITERTE SECTION-INDIKATOREN: 8 Phasen (0-7)
     const sectionIndicators = useMemo(() => (
         <div className="section-indicators">
             {/* Phase 0: Logo/Newsletter */}
@@ -361,6 +362,17 @@ const ParallaxContainerModular = React.memo(() => {
                     }}
                 />
             )) || []}
+
+            {/* ✅ NEU: Phase 7: Carousel */}
+            <button
+                className={`section-indicator ${currentTitleIndex === 7 ? 'active carousel-phase' : ''}`}
+                onClick={() => scrollToTitleIndex(7)}
+                aria-label="Go to AniTune Carousel (Phase 7)"
+                title="Phase 7: AniTune Carousel"
+                style={{
+                    backgroundColor: currentTitleIndex === 7 ? '#a880ff' : 'rgba(255, 255, 255, 0.5)'
+                }}
+            />
         </div>
     ), [currentTitleIndex, scrollToTitleIndex, config.titles]);
 
@@ -507,6 +519,15 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [currentTitleIndex, isScrollLocked, scrollToTitleIndex]);
 
+    // ✅ NEU HINZUFÜGEN:
+    const carouselLayer = useMemo(() => (
+        <AniTuneCarousel
+            scrollProgress={scrollProgress}
+            currentTitleIndex={currentTitleIndex}
+            isScrollLocked={isScrollLocked}
+        />
+    ), [scrollProgress, currentTitleIndex, isScrollLocked]);
+
     // Newsletter-Layer: ZURÜCK ZU ORIGINAL (keine Phase-Kontrolle)
     const newsletterLayer = useMemo(() => (
         <NewsletterLayer scrollProgress={scrollProgress} />
@@ -587,6 +608,11 @@ const ParallaxContainerModular = React.memo(() => {
                         <MemoizedLayer>{audioLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
+                    {/* AniTune Carousel Layer */}
+                    <ErrorBoundary>
+                        <MemoizedLayer>{carouselLayer}</MemoizedLayer>
+                    </ErrorBoundary>
+
                     {/* Newsletter: ZURÜCK ZU ORIGINAL */}
                     <ErrorBoundary>
                         <MemoizedLayer>{newsletterLayer}</MemoizedLayer>
@@ -602,7 +628,7 @@ const ParallaxContainerModular = React.memo(() => {
 
                 {/* Scroll-Abschnitte */}
                 <div className="gsap-sections-container">
-                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((index) => (
+                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19].map((index) => (
                         <section
                             key={`section-${index}-${resetCount}`}
                             ref={(el) => setSectionRef(el, index)}
