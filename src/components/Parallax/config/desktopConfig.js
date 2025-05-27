@@ -228,7 +228,7 @@ export const desktopConfig = {
             {
                 scrollStart: 0,
                 scrollEnd: 1,
-                posStart: -120,
+                posStart: -170,
                 posEnd: -20,
                 opacityStart: 0.0,
                 opacityEnd: 0.8

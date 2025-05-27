@@ -91,7 +91,7 @@ export const baseTitleStyle = {
 };
 
 export const titleTexts = [
-    'Von Uns Ist Für Uns',
+    'Von Uns Heißt Für Uns',
     'Der Weg',
     'Ist Das Ziel',
     'Die Community',

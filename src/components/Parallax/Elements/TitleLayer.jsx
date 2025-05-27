@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
 import ErrorBoundary from '../../ErrorBoundary';
-// ✅ NEUE IMPORT: Timing-Config
+// ✅ IMPORT: Timing-Config
 import { getAnimationTiming, getDeviceOptimizedTiming } from '../config/timingConfig';
 import './TitleLayer.css';
 
-// ✅ TitleLayer mit interner Phase 0 Logik, aber originalem visuellen Verhalten
+// ✅ TitleLayer mit korrigiertem Letter-Reveal (funktioniert bei allen Phasen)
 const TitleLayer = React.memo(({
     scrollProgress,
     titles = [],
@@ -66,7 +66,8 @@ const TitleLayer = React.memo(({
                     pointerEvents: 'none'
                 }}
             >
-                <SingleTitle
+                {/* ✅ LETTER-REVEAL TITEL (korrigiert für alle Phasen) */}
+                <LetterRevealSingleTitle
                     title={currentTitle}
                     isActive={true}
                     isScrollLocked={isScrollLocked}
@@ -74,7 +75,7 @@ const TitleLayer = React.memo(({
                     arrayIndex={titleArrayIndex}
                 />
 
-                {/* Debug-Info mit Timing-Details */}
+                {/* Debug-Info mit Letter-Reveal-Details */}
                 {process.env.NODE_ENV === 'development' && (
                     <TitlePhaseDebugPanel
                         currentTitleIndex={currentTitleIndex}
@@ -88,7 +89,224 @@ const TitleLayer = React.memo(({
     );
 });
 
-// ✅ DEBUG-PANEL FÜR LOGO-PHASE
+// ✅ KORRIGIERTE KOMPONENTE: Letter-Reveal SingleTitle (funktioniert bei allen Phasen)
+const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, titleIndex, arrayIndex }) => {
+    const titleRef = useRef(null);
+    const lettersRef = useRef([]);
+    const timelineRef = useRef(null);
+    const currentStateRef = useRef('hidden');
+
+    // ✅ LETTER-REVEAL KONFIGURATION (wie im Original-Code)
+    const config = useMemo(() => ({
+        duration: 0.5,        // Dauer pro Buchstabe
+        delay: 0.1,           // Kurze Anfangsverzögerung
+        stagger: 0.2,         // 0.2s zwischen Buchstaben (wie im Original)
+        ease: 'power2.out',   // Entspricht CSS ease-out
+        startScale: 0.8,      // Wie im Original
+        startBlur: 5,         // 5px Blur wie im Original
+    }), []);
+
+    // Buchstaben in Array aufteilen
+    const letters = useMemo(() => {
+        return title.text.split('').map((char, index) => ({
+            char: char === ' ' ? '\u00A0' : char, // Non-breaking space für Leerzeichen
+            index
+        }));
+    }, [title.text]);
+
+    // ✅ KORRIGIERT: Animation für Einblenden (funktioniert bei allen Phasen)
+    const animateIn = useCallback(() => {
+        if (!titleRef.current) return; // ✅ NUR DOM-Check, kein State-Check
+
+        console.log(`🎭 Letter Reveal: "${title.text}" (Phase ${titleIndex}) wird eingeblendet`);
+
+        // Stoppe vorherige Animation
+        if (timelineRef.current) {
+            timelineRef.current.kill();
+        }
+
+        currentStateRef.current = 'animating';
+
+        // GSAP Timeline erstellen
+        const tl = gsap.timeline({
+            onComplete: () => {
+                currentStateRef.current = 'visible';
+                console.log(`✅ Letter Reveal fertig: "${title.text}" (Phase ${titleIndex})`);
+            }
+        });
+
+        // ✅ ALLE BUCHSTABEN auf Startwerte setzen (wie im Original)
+        tl.set(lettersRef.current, {
+            opacity: 0,
+            scale: config.startScale,
+            filter: `blur(${config.startBlur}px)`,
+            force3D: true
+        });
+
+        // ✅ BUCHSTABEN NACHEINANDER einblenden (wie im Original)
+        tl.to(lettersRef.current, {
+            opacity: 1,
+            scale: 1,
+            filter: 'blur(0px)',
+            duration: config.duration,
+            ease: config.ease,
+            stagger: config.stagger, // 0.2s Verzögerung zwischen Buchstaben
+            force3D: true
+        }, config.delay);
+
+        timelineRef.current = tl;
+
+    }, [title.text, titleIndex, config]);
+
+    // ✅ KORRIGIERT: Animation für Ausblenden (funktioniert bei allen Phasen)
+    const animateOut = useCallback(() => {
+        if (!titleRef.current) return; // ✅ NUR DOM-Check, kein State-Check
+
+        console.log(`🎭 Letter Reveal: "${title.text}" (Phase ${titleIndex}) wird ausgeblendet`);
+
+        // Stoppe vorherige Animation
+        if (timelineRef.current) {
+            timelineRef.current.kill();
+        }
+
+        currentStateRef.current = 'animating';
+
+        // Schnelleres Ausblenden
+        const tl = gsap.timeline({
+            onComplete: () => {
+                currentStateRef.current = 'hidden';
+                console.log(`❌ Letter Reveal ausgeblendet: "${title.text}" (Phase ${titleIndex})`);
+            }
+        });
+
+        tl.to(lettersRef.current, {
+            opacity: 0,
+            scale: config.startScale * 0.9,
+            filter: `blur(${config.startBlur * 1.5}px)`,
+            duration: config.duration * 0.7,
+            ease: 'power2.in',
+            stagger: config.stagger * 0.5,
+            force3D: true
+        });
+
+        timelineRef.current = tl;
+
+    }, [title.text, titleIndex, config]);
+
+    // ✅ KORRIGIERT: Reagiere auf isActive UND titleIndex Änderungen
+    useEffect(() => {
+        if (isActive) {
+            // ✅ WICHTIG: Immer animieren wenn aktiv, egal was der State ist
+            console.log(`🎯 Phase ${titleIndex}: "${title.text}" wird aktiviert - starte Animation`);
+            setTimeout(animateIn, 100);
+        } else {
+            animateOut();
+        }
+    }, [isActive, titleIndex, animateIn, animateOut]); // ✅ titleIndex als Dependency
+
+    // ✅ KORRIGIERT: Initialisierung bei jedem Titel-Wechsel
+    useEffect(() => {
+        if (titleRef.current && lettersRef.current.length > 0) {
+            console.log(`🔧 Initialisiere Letter-Reveal für: "${title.text}" (Phase ${titleIndex})`);
+            gsap.set(lettersRef.current, {
+                opacity: 0,
+                scale: config.startScale,
+                filter: `blur(${config.startBlur}px)`
+            });
+            currentStateRef.current = 'hidden';
+        }
+    }, [title.text, titleIndex, config]); // ✅ Bei jedem Titel-Wechsel neu initialisieren
+
+    // ✅ KORRIGIERT: Cleanup bei Titel-Wechsel
+    useEffect(() => {
+        return () => {
+            if (timelineRef.current) {
+                timelineRef.current.kill();
+            }
+        };
+    }, [title.text, titleIndex]); // ✅ Cleanup bei jedem Titel-Wechsel
+
+    // Memoized styles
+    const titleStyles = useMemo(() => ({
+        position: 'absolute',
+        top: title.position.top,
+        left: title.position.left,
+        transform: 'translate(-50%, -50%)',
+        ...title.style,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        willChange: 'transform, opacity, filter',
+        backfaceVisibility: 'hidden',
+        perspective: 1000,
+        ...(isScrollLocked && {
+            filter: 'brightness(1.1)',
+        })
+    }), [title.position, title.style, isScrollLocked]);
+
+    // Letter-Styles
+    const letterStyles = useMemo(() => ({
+        display: 'inline-block',
+        opacity: 0,
+        willChange: 'transform, opacity, filter',
+        backfaceVisibility: 'hidden',
+        marginRight: '1px' // Minimal spacing zwischen Buchstaben
+    }), []);
+
+    // CSS-Klassen
+    const cssClasses = useMemo(() => {
+        const classes = [
+            'letter-reveal-title',
+            'lock-snap-title',
+            `title-${title.index + 1}`,
+            `phase-${titleIndex}`
+        ];
+
+        if (isActive) {
+            classes.push('active-title');
+        }
+
+        if (isScrollLocked) {
+            classes.push('scroll-locked');
+        }
+
+        return classes.join(' ');
+    }, [title.index, isActive, isScrollLocked, titleIndex]);
+
+    return (
+        <div
+            ref={titleRef}
+            className={cssClasses}
+            style={titleStyles}
+            data-title-id={title.id}
+            data-title-index={title.index}
+            data-phase-index={titleIndex}
+            data-array-index={arrayIndex}
+            data-is-active={isActive}
+            data-scroll-locked={isScrollLocked}
+        >
+            {letters.map((letter, index) => (
+                <span
+                    key={`${titleIndex}-${title.text}-${index}`} // ✅ Eindeutige Keys pro Phase
+                    ref={el => {
+                        if (el) {
+                            lettersRef.current[index] = el;
+                        }
+                    }}
+                    className={`letter letter-${index}`}
+                    style={letterStyles}
+                    data-letter={letter.char}
+                    data-index={index}
+                    data-phase={titleIndex}
+                >
+                    {letter.char}
+                </span>
+            ))}
+        </div>
+    );
+});
+
+// ✅ DEBUG-PANEL FÜR LOGO-PHASE (unverändert)
 const LogoPhaseDebugPanel = React.memo(({ currentTitleIndex, isScrollLocked }) => {
     return (
         <div
@@ -96,7 +314,7 @@ const LogoPhaseDebugPanel = React.memo(({ currentTitleIndex, isScrollLocked }) =
                 position: 'absolute',
                 top: '60px',
                 left: '10px',
-                background: 'rgba(0,100,0,0.8)', // Grün für Logo-Phase
+                background: 'rgba(0,100,0,0.8)',
                 color: 'white',
                 padding: '12px',
                 fontSize: '11px',
@@ -119,10 +337,15 @@ const LogoPhaseDebugPanel = React.memo(({ currentTitleIndex, isScrollLocked }) =
     );
 });
 
-// ✅ DEBUG-PANEL FÜR TITEL-PHASE (ERWEITERT)
-const TitlePhaseDebugPanel = React.memo(({ currentTitleIndex, arrayIndex, currentTitle, isScrollLocked }) => {
+// ✅ DEBUG-PANEL FÜR TITEL-PHASE
+const TitlePhaseDebugPanel = React.memo(({
+    currentTitleIndex,
+    arrayIndex,
+    currentTitle,
+    isScrollLocked
+}) => {
     const timingConfig = getDeviceOptimizedTiming();
-    const animationTiming = getAnimationTiming(currentTitle.animation?.type || 'fadeScale');
+    const letterCount = currentTitle.text.length;
 
     return (
         <div
@@ -141,246 +364,26 @@ const TitlePhaseDebugPanel = React.memo(({ currentTitleIndex, arrayIndex, curren
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🎬 Phase {currentTitleIndex} - Titel-Modus ({timingConfig.name})
+                🎭 Phase {currentTitleIndex} - Letter Reveal ({timingConfig.name})
             </div>
             <div>Titel: {currentTitleIndex}/6 (Array: {arrayIndex}/5)</div>
-            <div>Text: "{currentTitle.text}"</div>
-            <div>Animation: {currentTitle.animation?.type || 'fadeScale'}</div>
-            <div>Duration: {animationTiming.duration}s</div>
-            <div>Delay: {animationTiming.delay}s</div>
-            <div>Out Duration: {animationTiming.outDuration}s</div>
+            <div>Text: "{currentTitle.text}" ({letterCount} Buchstaben)</div>
+            <div>Effekt: Standard Reveal (wie Original)</div>
+            <div>Stagger: 0.2s pro Buchstabe</div>
+            <div>Total Zeit: ~{(letterCount * 0.2 + 0.6).toFixed(1)}s</div>
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
             <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
                 ↑ Phase {currentTitleIndex - 1} | ↓ Phase {currentTitleIndex + 1}
             </div>
+            <div style={{ marginTop: '4px', fontSize: '9px', color: '#4CAF50' }}>
+                🎨 Scale: 0.8→1 | Blur: 5px→0 | Opacity: 0→1 | Stagger: 0.2s
+            </div>
         </div>
     );
 });
 
-// ✅ EINZELNER TITEL (UNVERÄNDERT, aber mit mehr Debug-Info)
-const SingleTitle = React.memo(({ title, isActive, isScrollLocked, titleIndex, arrayIndex }) => {
-    const titleRef = useRef(null);
-    const animationRef = useRef(null);
-    const currentStateRef = useRef('hidden');
-
-    // ✅ TIMING AUS CONFIG LADEN
-    const animationTiming = useMemo(() => {
-        return getAnimationTiming(title.animation?.type || 'fadeScale');
-    }, [title.animation?.type]);
-
-    // Animation für Einblenden - MIT CONFIG-TIMING
-    const animateIn = useCallback(() => {
-        if (!titleRef.current || currentStateRef.current === 'visible') return;
-
-        const element = titleRef.current;
-        const animation = title.animation || {};
-
-        console.log(`🎬 Titel "${title.text}" (Phase ${titleIndex}) wird eingeblendet (${animation.type || 'fadeScale'})`);
-
-        if (animationRef.current) {
-            animationRef.current.kill();
-        }
-
-        currentStateRef.current = 'animating';
-
-        // ✅ VERWENDE CONFIG-WERTE STATT HART-KODIERTE
-        let animationProps = {
-            opacity: 1,
-            duration: animationTiming.duration,        // ← Aus timingConfig.js
-            ease: animation.ease || 'power2.out',
-            delay: animationTiming.delay,              // ← Aus timingConfig.js
-            force3D: true,
-            onComplete: () => {
-                currentStateRef.current = 'visible';
-            }
-        };
-
-        // Setze Startwerte und Animation basierend auf Typ
-        switch (animation.type) {
-            case 'fadeScale':
-                gsap.set(element, { opacity: 0, scale: 0.8, filter: 'blur(8px)' });
-                animationProps.scale = 1;
-                animationProps.filter = 'blur(0px)';
-                break;
-
-            case 'slideUp':
-                gsap.set(element, { opacity: 0, y: 40, filter: 'blur(5px)' });
-                animationProps.y = 0;
-                animationProps.filter = 'blur(0px)';
-                break;
-
-            case 'slideDown':
-                gsap.set(element, { opacity: 0, y: -40, filter: 'blur(5px)' });
-                animationProps.y = 0;
-                animationProps.filter = 'blur(0px)';
-                break;
-
-            case 'popIn':
-                gsap.set(element, { opacity: 0, scale: 0.3, filter: 'blur(10px)' });
-                animationProps.scale = 1;
-                animationProps.filter = 'blur(0px)';
-                animationProps.ease = 'back.out(1.7)';
-                break;
-
-            case 'fade':
-            default:
-                gsap.set(element, { opacity: 0, filter: 'blur(8px)' });
-                animationProps.filter = 'blur(0px)';
-                break;
-        }
-
-        animationRef.current = gsap.to(element, animationProps);
-
-    }, [title.animation, title.text, animationTiming, titleIndex]);
-
-    // Animation für Ausblenden - MIT CONFIG-TIMING
-    const animateOut = useCallback(() => {
-        if (!titleRef.current || currentStateRef.current === 'hidden') return;
-
-        const element = titleRef.current;
-        const animation = title.animation || {};
-
-        console.log(`🎬 Titel "${title.text}" (Phase ${titleIndex}) wird ausgeblendet`);
-
-        if (animationRef.current) {
-            animationRef.current.kill();
-        }
-
-        currentStateRef.current = 'animating';
-
-        // ✅ AUSBLENDE-DAUER AUS CONFIG
-        let animationProps = {
-            opacity: 0,
-            duration: animationTiming.outDuration,     // ← Aus timingConfig.js
-            ease: 'power2.in',
-            force3D: true,
-            onComplete: () => {
-                currentStateRef.current = 'hidden';
-            }
-        };
-
-        // Ausblende-Effekte basierend auf Typ
-        switch (animation.type) {
-            case 'fadeScale':
-                animationProps.scale = 0.7;
-                animationProps.filter = 'blur(10px)';
-                break;
-
-            case 'slideUp':
-                animationProps.y = -30;
-                animationProps.filter = 'blur(8px)';
-                break;
-
-            case 'slideDown':
-                animationProps.y = 30;
-                animationProps.filter = 'blur(8px)';
-                break;
-
-            case 'popIn':
-                animationProps.scale = 0.3;
-                animationProps.filter = 'blur(12px)';
-                break;
-
-            case 'fade':
-            default:
-                animationProps.filter = 'blur(10px)';
-                break;
-        }
-
-        animationRef.current = gsap.to(element, animationProps);
-
-    }, [title.animation, title.text, animationTiming, titleIndex]);
-
-    // Reagiere auf isActive-Änderungen
-    useEffect(() => {
-        if (isActive && currentStateRef.current === 'hidden') {
-            setTimeout(animateIn, 100);
-        } else if (!isActive && currentStateRef.current === 'visible') {
-            animateOut();
-        }
-    }, [isActive, animateIn, animateOut]);
-
-    // Initialisierung
-    useEffect(() => {
-        if (titleRef.current && currentStateRef.current === 'hidden') {
-            gsap.set(titleRef.current, {
-                opacity: 0,
-                scale: 0.8,
-                x: 0,
-                y: 0,
-                filter: 'blur(8px)'
-            });
-        }
-    }, []);
-
-    // Cleanup
-    useEffect(() => {
-        return () => {
-            if (animationRef.current) {
-                animationRef.current.kill();
-            }
-        };
-    }, []);
-
-    // Memoized styles
-    const titleStyles = useMemo(() => ({
-        position: 'absolute',
-        top: title.position.top,
-        left: title.position.left,
-        opacity: 0,
-        transform: 'translate(-50%, -50%)',
-        ...title.style,
-        willChange: 'transform, opacity, filter',
-        backfaceVisibility: 'hidden',
-        perspective: 1000,
-        ...(isScrollLocked && {
-            filter: 'brightness(1.1)',
-        })
-    }), [title.position, title.style, isScrollLocked]);
-
-    // CSS-Klassen
-    const cssClasses = useMemo(() => {
-        const classes = [
-            'title-element',
-            'lock-snap-title',
-            `title-${title.index + 1}`,
-            `animation-${title.animation?.type || 'fadeScale'}`,
-            `phase-${titleIndex}` // ✅ NEU: Phase-Klasse
-        ];
-
-        if (isActive) {
-            classes.push('active-title');
-        }
-
-        if (isScrollLocked) {
-            classes.push('scroll-locked');
-        }
-
-        return classes.join(' ');
-    }, [title.index, title.animation?.type, isActive, isScrollLocked, titleIndex]);
-
-    return (
-        <div
-            ref={titleRef}
-            className={cssClasses}
-            style={titleStyles}
-            data-title-id={title.id}
-            data-title-index={title.index}
-            data-phase-index={titleIndex}          // ✅ NEU: Phase-Index
-            data-array-index={arrayIndex}          // ✅ NEU: Array-Index
-            data-animation-type={title.animation?.type}
-            data-is-active={isActive}
-            data-scroll-locked={isScrollLocked}
-            data-timing-duration={animationTiming.duration}
-            data-timing-delay={animationTiming.delay}
-        >
-            {title.text}
-        </div>
-    );
-});
-
-TitleLayer.displayName = 'LockSnapTitleLayer';
-SingleTitle.displayName = 'SingleTitle';
+TitleLayer.displayName = 'LetterRevealTitleLayer';
+LetterRevealSingleTitle.displayName = 'LetterRevealSingleTitle';
 LogoPhaseDebugPanel.displayName = 'LogoPhaseDebugPanel';
 TitlePhaseDebugPanel.displayName = 'TitlePhaseDebugPanel';
 
