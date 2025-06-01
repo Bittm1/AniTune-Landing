@@ -40,7 +40,6 @@
 
 .sliding-title-container {
     height: 60px;
-    /* Feste Höhe für smooth Wechsel */
     overflow: hidden;
     position: relative;
 }
@@ -103,14 +102,22 @@
     justify-content: center;
 }
 
-.nav-button:hover {
+.nav-button:hover:not(.disabled) {
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
     transform: scale(1.1);
 }
 
-.nav-button:active {
+.nav-button:active:not(.disabled) {
     transform: scale(0.95);
+}
+
+/* ✅ NEU: Disabled State für Navigation */
+.nav-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(100, 100, 100, 0.1);
+    transform: none !important;
 }
 
 /* ===== KARTEN CONTAINER ===== */
@@ -118,23 +125,18 @@
     position: relative;
     width: 100%;
     max-width: 1400px;
-    /* ✅ ERWEITERT: Mehr Platz für 5 Karten */
     height: 300px;
     display: flex;
     justify-content: center;
     align-items: center;
     perspective: 1200px;
-    /* ✅ ERWEITERT: Mehr 3D-Tiefe */
     overflow: hidden;
-    /* ✅ Verhindere Scroll bei großen Transforms */
 }
 
-/* ===== EINZELNE KARTEN ===== */
+/* ===== EINZELNE KARTEN - SMART TRANSITION MIX ===== */
 .carousel-card {
     position: absolute;
-    /* ✅ GEÄNDERT: Absolute Positioning für bessere Kontrolle */
     left: 50%;
-    /* ✅ GEÄNDERT: Zentriert als Ausgangspunkt */
     width: 200px;
     height: 280px;
     border-radius: 20px;
@@ -146,15 +148,24 @@
     cursor: pointer;
     pointer-events: all;
 
-    /* ✅ ERWEITERTE SMOOTH TRANSITION - Längere Dauer für bessere UX */
+    /* ✅ SMART: CSS Transitions für normale Übergänge */
     transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-    /* Transform-Origin für bessere 3D-Effekte */
     transform-origin: center center;
     transform-style: preserve-3d;
+
+    /* ✅ PERFORMANCE: GPU-Acceleration */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
-/* ✅ ERWEITERTE Aktive Karte - Bessere Hervorhebung */
+/* ✅ GSAP Control - Nur für Wrap-Around Situationen */
+.carousel-card.gsap-animating {
+    transition: none !important;
+    /* GSAP übernimmt nur bei problematischen Übergängen */
+}
+
+/* ✅ ENHANCED Aktive Karte */
 .carousel-card.active {
     background: linear-gradient(145deg,
             rgba(255, 255, 255, 0.2),
@@ -165,8 +176,13 @@
         0 0 40px var(--card-color, rgba(168, 128, 255, 0.4)),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
 
-    /* ✅ Pulsing-Effekt für aktive Karte */
+    /* ✅ Pulsing-Effekt nur wenn nicht animiert */
     animation: activePulse 3s ease-in-out infinite;
+}
+
+.carousel-card.active.gsap-animating {
+    animation: none;
+    /* Stoppe CSS Animation während GSAP */
 }
 
 @keyframes activePulse {
@@ -187,48 +203,27 @@
     }
 }
 
-/* ✅ ERWEITERTE Inaktive Karten */
+/* ✅ ENHANCED Inaktive Karten */
 .carousel-card.inactive {
     opacity: 0.7;
 }
 
-.carousel-card.inactive:hover {
+.carousel-card.inactive:hover:not(.gsap-animating) {
     opacity: 0.9;
-    transform: var(--hover-transform, scale(1.05));
     background: linear-gradient(145deg,
             rgba(255, 255, 255, 0.15),
             rgba(255, 255, 255, 0.08));
 }
 
-/* ✅ NEU: Spezielle Styles für Ring-Positionen */
-.carousel-card.position--2,
-.carousel-card.position-2 {
-    /* Äußere Karten - am stärksten reduziert */
-    filter: blur(1px);
+/* ✅ GSAP Animation States */
+.carousel-card.gsap-animating {
+    /* Während GSAP Animation alle CSS Effekte deaktivieren */
+    pointer-events: none;
 }
 
-.carousel-card.position--1,
-.carousel-card.position-1 {
-    /* Innere Seitenkarten - leicht reduziert */
-    filter: blur(0.5px);
-}
-
-.carousel-card.position-0 {
-    /* Zentrale Karte - voll sichtbar */
-    filter: none;
-}
-
-/* ✅ NEU: Hover-Effekte für Ring-Positionen */
-.carousel-card.position--1:hover,
-.carousel-card.position-1:hover {
-    filter: blur(0px);
-    transform: var(--current-transform) scale(1.05) !important;
-}
-
-.carousel-card.position--2:hover,
-.carousel-card.position-2:hover {
-    filter: blur(0px);
-    transform: var(--current-transform) scale(1.03) !important;
+.carousel-card.gsap-animating:hover {
+    transform: var(--current-transform) !important;
+    /* Verhindere CSS Hover während GSAP Animation */
 }
 
 /* ===== KARTEN CONTENT ===== */
@@ -251,7 +246,7 @@
     transition: transform 0.3s ease;
 }
 
-.carousel-card:hover .card-icon {
+.carousel-card:hover:not(.gsap-animating) .card-icon {
     transform: scale(1.1) rotateY(10deg);
 }
 
@@ -283,21 +278,41 @@
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* ===== DEBUG INFO ===== */
+/* ===== DEBUG INFO - ENHANCED ===== */
 .carousel-debug {
     position: absolute;
     bottom: 20px;
     left: 20px;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     color: white;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 11px;
     font-family: monospace;
     line-height: 1.4;
     pointer-events: all;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 200px;
+}
+
+.carousel-debug button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.carousel-debug button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.carousel-debug button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
@@ -372,6 +387,15 @@
     .carousel-navigation {
         padding: 0 20px;
     }
+
+    /* ✅ NEU: Mobile Debug Panel */
+    .carousel-debug {
+        bottom: 10px;
+        left: 10px;
+        font-size: 10px;
+        padding: 8px;
+        min-width: 160px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -386,5 +410,62 @@
 
     .sliding-title {
         font-size: 1.5rem;
+    }
+
+    .carousel-debug {
+        font-size: 9px;
+        padding: 6px;
+        min-width: 140px;
+    }
+}
+
+/* ✅ NEU: Animation Performance Optimierungen */
+@media (prefers-reduced-motion: reduce) {
+    .carousel-card {
+        transition: opacity 0.3s ease !important;
+    }
+
+    .carousel-card.gsap-animating {
+        transition: none !important;
+    }
+
+    @keyframes activePulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.9;
+        }
+    }
+
+    @keyframes slideUpTitle {
+        0% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+}
+
+/* ✅ NEU: Touch-Vorbereitung */
+@media (hover: none) and (pointer: coarse) {
+
+    /* Touch Devices */
+    .carousel-card:hover {
+        /* Deaktiviere Hover-Effekte auf Touch-Geräten */
+        opacity: var(--original-opacity);
+        background: var(--original-background);
+        transform: var(--original-transform);
+    }
+
+    .nav-button {
+        /* Größere Touch-Targets */
+        min-width: 60px;
+        min-height: 60px;
     }
 }

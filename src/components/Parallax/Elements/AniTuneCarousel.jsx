@@ -1,11 +1,13 @@
-// src/components/Parallax/Elements/AniTuneCarousel.jsx
-import React, { useState, useMemo } from 'react';
+// src/components/Parallax/Elements/AniTuneCarousel.jsx - MATH FIX VERSION
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import './AniTuneCarousel.css';
 
 const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) => {
+    console.log("🧮 AniTuneCarousel loaded - Math Fix Version");
+
     // State für aktive Karte
-    const [activeCard, setActiveCard] = useState(2); // Mitte als Standard (Index 2 von 5)
+    const [activeCard, setActiveCard] = useState(2); // Mitte als Standard
 
     // 5 Test-Karten Daten
     const cards = useMemo(() => [
@@ -49,31 +51,53 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
     // Aktuelle Karte für Titel
     const currentCard = cards[activeCard];
 
-    // ✅ ERWEITERT: Karten-Klick Handler - Karte gleitet zur Mitte
-    const handleCardClick = (index) => {
+    // ✅ MATH-FIX: Beide Richtungen nutzen die gleiche mathematische Operation
+    const handlePrevious = useCallback(() => {
+        console.log("🧮 MATH-FIX: Links-Klick nutzt +4 (= -1 aber gleiche Richtung)");
+        // Statt activeCard - 1, nutze +4 für gleiche Animation-Richtung
+        setActiveCard(prev => (prev + 4) % cards.length);
+    }, [cards.length]);
+
+    const handleNext = useCallback(() => {
+        console.log("🧮 MATH-FIX: Rechts-Klick nutzt +1");
+        setActiveCard(prev => (prev + 1) % cards.length);
+    }, [cards.length]);
+
+    // Karten-Klick Handler
+    const handleCardClick = useCallback((index) => {
         if (index !== activeCard) {
-            console.log(`🎠 Karte ${index} (${cards[index].title}) wird zur Mitte bewegt`);
+            console.log(`🎯 Karte ${index} (${cards[index].title}) angeklickt`);
             setActiveCard(index);
         }
-    };
+    }, [activeCard, cards]);
 
-    // Navigation Buttons
-    const handlePrevious = () => {
-        setActiveCard(prev => prev > 0 ? prev - 1 : cards.length - 1);
-    };
+    // Keyboard Navigation
+    useEffect(() => {
+        const handleKeyPress = (e) => {
+            if (currentTitleIndex !== 7) return;
 
-    const handleNext = () => {
-        setActiveCard(prev => prev < cards.length - 1 ? prev + 1 : 0);
-    };
+            switch (e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    handlePrevious();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    handleNext();
+                    break;
+            }
+        };
 
-    // Zeige nur wenn Phase 7 aktiv ist (currentTitleIndex === 7)
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, [currentTitleIndex, handlePrevious, handleNext]);
+
+    // Zeige nur wenn Phase 7 aktiv ist
     if (currentTitleIndex !== 7) {
         return null;
     }
 
-    // ✅ KORRIGIERT: Container-Animation - Für Phase 7 IMMER sichtbar
     const containerStyle = {
-        // ✅ WICHTIG: In Phase 7 immer sichtbar, unabhängig vom isScrollLocked Status
         transform: 'translateY(0)',
         opacity: 1,
         transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -89,10 +113,9 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                 <div className="carousel-title-section">
                     <h1 className="fixed-title">AniTune</h1>
 
-                    {/* Wechselnder Untertitel */}
                     <div className="sliding-title-container">
                         <h2
-                            key={currentCard.id}
+                            key={`${currentCard.id}-${activeCard}`}
                             className="sliding-title"
                             style={{ '--title-color': currentCard.color }}
                         >
@@ -123,26 +146,22 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                 {/* Karten Container */}
                 <div className="cards-container">
                     {[-2, -1, 0, 1, 2].map((position) => {
-                        // ✅ MINIMALE ÄNDERUNG: Berechne welcher Inhalt an dieser festen Position gezeigt wird
                         const index = (activeCard + position + cards.length) % cards.length;
                         const card = cards[index];
                         const offset = position;
                         const isActive = position === 0;
 
-                        // ✅ KORREKTE ZENTRIERUNG: -50% für echte Mitte + CSS-Transitions beibehalten
                         const cardStyle = {
                             '--card-offset': offset,
                             '--card-color': card.color,
-                            // ✅ ZENTRIERT: translateX(-50% + offset) für echte Mitte
                             transform: `translateX(calc(-50% + ${offset * 60}px)) scale(${isActive ? 1.1 : Math.max(0.8, 1 - Math.abs(offset) * 0.1)}) rotateY(${offset * -15}deg) translateZ(${-Math.abs(offset) * 50}px)`,
                             zIndex: 10 - Math.abs(offset),
                             opacity: Math.max(0.4, 1 - Math.abs(offset) * 0.2)
-                            // ✅ KEINE TRANSITION HIER - CSS macht das schon!
                         };
 
                         return (
                             <div
-                                key={card.id} // ✅ ZURÜCK ZU card.id für smooth Transitions!
+                                key={card.id}
                                 className={`carousel-card ${isActive ? 'active' : 'inactive'}`}
                                 style={cardStyle}
                                 onClick={() => handleCardClick(index)}
@@ -157,17 +176,32 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                     })}
                 </div>
 
-                {/* ✅ ERWEITERTE Debug Info - zeigt mehr Details */}
+                {/* Debug Info */}
                 {process.env.NODE_ENV === 'development' && (
                     <div className="carousel-debug">
+                        <div style={{ color: '#FFD700', fontWeight: 'bold' }}>🧮 Math Fix</div>
                         <div>Phase: {currentTitleIndex}/7</div>
-                        <div>Active Card: {activeCard} ({currentCard.title})</div>
+                        <div>Active: {activeCard} ({currentCard.title})</div>
+                        <div>Links: +4 | Rechts: +1</div>
                         <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
-                        <div style={{ color: '#00ff00', fontSize: '10px' }}>
-                            ✅ Carousel IMMER sichtbar in Phase 7
+
+                        <div style={{ marginTop: '8px', fontSize: '10px', color: '#888' }}>
+                            🎯 Beide nutzen "positive" Animation
                         </div>
-                        <div style={{ color: '#a880ff', fontSize: '10px' }}>
-                            🎠 Feste Positionen, rotierender Inhalt
+
+                        <div style={{ marginTop: '8px' }}>
+                            <button
+                                onClick={handlePrevious}
+                                style={{ padding: '2px 6px', margin: '2px', fontSize: '10px' }}
+                            >
+                                ← +4
+                            </button>
+                            <button
+                                onClick={handleNext}
+                                style={{ padding: '2px 6px', margin: '2px', fontSize: '10px' }}
+                            >
+                                → +1
+                            </button>
                         </div>
                     </div>
                 )}

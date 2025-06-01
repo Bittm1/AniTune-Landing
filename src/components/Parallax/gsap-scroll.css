@@ -69,6 +69,33 @@
     pointer-events: none;
 }
 
+/* ✅ NEU: Newsletter klickbar machen */
+.fixed-layers input,
+.fixed-layers button,
+.fixed-layers form,
+.fixed-layers [class*="newsletter"],
+.fixed-layers [class*="Newsletter"] {
+    pointer-events: all !important;
+    cursor: pointer;
+    position: relative;
+    z-index: 50;
+}
+
+/* ✅ NEU: Spezifische Newsletter-Form Styles */
+.fixed-layers form {
+    pointer-events: all !important;
+}
+
+.fixed-layers form input {
+    pointer-events: all !important;
+    cursor: text !important;
+}
+
+.fixed-layers form button {
+    pointer-events: all !important;
+    cursor: pointer !important;
+}
+
 /* ✅ NEU: Audio-Controls Styling - Überschreibt alle anderen Regeln */
 button[style*="position: fixed"][style*="bottom: 80px"],
 button[style*="position: fixed"][style*="bottom: 20px"] {

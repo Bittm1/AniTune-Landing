@@ -15,7 +15,7 @@ import StarfieldLayer from './Elements/StarfieldLayer';
 import LogoLayer from './Elements/LogoLayer';
 import TitleLayer from './Elements/TitleLayer';
 import TitleAudioLayer from './Elements/TitleAudioLayer';
-import NewsletterLayer from './Elements/NewsletterLayer';
+import Newsletter from '../Newsletter/Newsletter';
 import AniTuneCarousel from './Elements/AniTuneCarousel';
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
@@ -528,11 +528,6 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, currentTitleIndex, isScrollLocked]);
 
-    // Newsletter-Layer: ZURÜCK ZU ORIGINAL (keine Phase-Kontrolle)
-    const newsletterLayer = useMemo(() => (
-        <NewsletterLayer scrollProgress={scrollProgress} />
-    ), [scrollProgress]);
-
     // Scroll-Indicator: ZURÜCK ZU ORIGINAL (nur activeSection-basiert)
     const scrollIndicator = useMemo(() => (
         <ScrollIndicator scrollProgress={scrollProgress} />
@@ -613,11 +608,6 @@ const ParallaxContainerModular = React.memo(() => {
                         <MemoizedLayer>{carouselLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
-                    {/* Newsletter: ZURÜCK ZU ORIGINAL */}
-                    <ErrorBoundary>
-                        <MemoizedLayer>{newsletterLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
                     {/* Scroll-Indicator: ZURÜCK ZU ORIGINAL */}
                     {activeSection === 0 && (
                         <ErrorBoundary>
@@ -625,6 +615,23 @@ const ParallaxContainerModular = React.memo(() => {
                         </ErrorBoundary>
                     )}
                 </div>
+                {/* Newsletter außerhalb fixed-layers für Klickbarkeit */}
+                <ErrorBoundary>
+                    <div style={{
+                        position: 'fixed',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '80%',
+                        maxWidth: '500px',
+                        zIndex: 25,
+                        pointerEvents: 'all',
+                        opacity: scrollProgress < 0.1 ? Math.max(0, 1 - (scrollProgress / 0.1)) : 0,
+                        transition: 'opacity 800ms ease-out'
+                    }}>
+                        {scrollProgress < 0.1 && <Newsletter />}
+                    </div>
+                </ErrorBoundary>
 
                 {/* Scroll-Abschnitte */}
                 <div className="gsap-sections-container">

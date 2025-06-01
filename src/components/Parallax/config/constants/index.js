@@ -18,7 +18,7 @@ export const zIndices = {
     menge: 9,          
     logo: 10,             // Logo (über Landschaft)
     titles: 20,           // Titel-Texte
-    newsletter: 30,       // Newsletter-Form
+    newsletter: 999,       // Newsletter-Form
     scrollIndicator: 40,  // Scroll-Hinweis
     debug: 1000           // Debug-Elemente (immer ganz vorne)
 };
