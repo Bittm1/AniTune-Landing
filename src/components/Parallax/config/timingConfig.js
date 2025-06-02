@@ -85,74 +85,29 @@ export const SCROLL_SEGMENT_PRESETS = {
 
     // ⚖️ AUSGEWOGENE BEREICHE (Standard)
     balanced_segments: {
-        name: 'Balanced Segments',
-        description: 'Alle 8 Phasen gleichmäßig über 0-1.2 Bereich verteilt',
+        name: 'Balanced Segments - Professional Scale',
+        description: '15 Phasen gleichmäßig über 0-3 Bereich verteilt',
 
         segments: [
-            // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
-            {
-                scrollStart: 0,
-                scrollEnd: 0.04,
-                snapTarget: 0,
-                snapDuration: 1.2,
-                snapEase: "power2.inOut"
-            },
-            // ✅ Phase 1: Bei 16.67% - "Von Uns Ist Für Uns"
-            {
-                scrollStart: 0.04,
-                scrollEnd: 0.25,
-                snapTarget: 0.1667,
-                snapDuration: 1.2,
-                snapEase: "power2.inOut"
-            },
-            // ✅ Phase 2: Bei 33.33% - "Der Weg"
-            {
-                scrollStart: 0.25,
-                scrollEnd: 0.42,
-                snapTarget: 0.3333,
-                snapDuration: 1.2,
-                snapEase: "power2.inOut"
-            },
-            // ✅ Phase 3: Bei 50% - "Ist Das Ziel"
-            {
-                scrollStart: 0.42,
-                scrollEnd: 0.58,
-                snapTarget: 0.5,
-                snapDuration: 1.2,
-                snapEase: "power2.inOut"
-            },
-            // ✅ Phase 4: Bei 66.67% - "Die Community"
-            {
-                scrollStart: 0.58,
-                scrollEnd: 0.75,
-                snapTarget: 0.6667,
-                snapDuration: 1.2,
-                snapEase: "power2.inOut"
-            },
-            // ✅ Phase 5: Bei 83.33% - "Heißt"
-            {
-                scrollStart: 0.75,
-                scrollEnd: 0.92,
-                snapTarget: 0.8333,
-                snapDuration: 1.2,
-                snapEase: "power2.inOut"
-            },
-            // ✅ Phase 6: Bei 100% - "AniTune"
-            {
-                scrollStart: 0.92,
-                scrollEnd: 1.0,
-                snapTarget: 1.0,
-                snapDuration: 1.2,
-                snapEase: "power2.inOut"
-            },
-            // ✅ NEU: Phase 7: AniTune Carousel (ÜBER 100%)
-            {
-                scrollStart: 1.0,
-                scrollEnd: 1.2,
-                snapTarget: 1.1,       // 110% = Mitte der Phase 7
-                snapDuration: 1.2,
-                snapEase: "power2.inOut"
-            }
+            // Phase 0: Logo/Newsletter
+            { scrollStart: 0, scrollEnd: 0.04, snapTarget: 0, snapDuration: 1.2, snapEase: "power2.inOut" },
+            // Phase 1-6: Titel-Phasen  
+            { scrollStart: 0.04, scrollEnd: 0.24, snapTarget: 0.2, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 0.24, scrollEnd: 0.44, snapTarget: 0.4, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 0.44, scrollEnd: 0.64, snapTarget: 0.6, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 0.64, scrollEnd: 0.84, snapTarget: 0.8, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 0.84, scrollEnd: 1.04, snapTarget: 1.0, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 1.04, scrollEnd: 1.24, snapTarget: 1.2, snapDuration: 1.2, snapEase: "power2.inOut" },
+            // Phase 7: AniTune Carousel (JETZT richtig platziert)
+            { scrollStart: 1.24, scrollEnd: 1.44, snapTarget: 1.4, snapDuration: 1.2, snapEase: "power2.inOut" },
+            // Phase 8-14: Zukünftige Features
+            { scrollStart: 1.44, scrollEnd: 1.64, snapTarget: 1.6, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 1.64, scrollEnd: 1.84, snapTarget: 1.8, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 1.84, scrollEnd: 2.04, snapTarget: 2.0, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 2.04, scrollEnd: 2.24, snapTarget: 2.2, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 2.24, scrollEnd: 2.44, snapTarget: 2.4, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 2.44, scrollEnd: 2.64, snapTarget: 2.6, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 2.64, scrollEnd: 3.0, snapTarget: 2.8, snapDuration: 1.2, snapEase: "power2.inOut" }
         ]
     },
 

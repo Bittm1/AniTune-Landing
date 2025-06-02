@@ -61,8 +61,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const segmentConfig = getActiveScrollSegments();
         const segments = segmentConfig.segments;
 
-        // ✅ KORRIGIERT: Index 0-7 sind jetzt gültig (8 Phasen total)
-        const maxIndex = 7; // 0-7 = 8 Phasen
+        const maxIndex = 14; // 0-14 = 15 Phasen (professionell skaliert)
         if (targetIndex < 0 || targetIndex > maxIndex) return;
 
         console.log(`🔒 Lock-Snap zu Phase ${targetIndex}: ${targetIndex === 0 ? 'Logo/Newsletter' : titles[targetIndex - 1]?.text || 'Titel ' + targetIndex}`);
@@ -132,7 +131,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         lastScrollEventRef.current = now;
         const delta = event.deltaY || event.detail || (event.wheelDelta * -1);
 
-        const maxIndex = 7; // ✅ KORRIGIERT: 0-7 = 8 Phasen
+        const maxIndex = 14; // 0-14 = 15 Phasen (professionell skaliert)
 
         if (delta > 0) {
             // Scroll nach unten
@@ -166,7 +165,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const touch = event.changedTouches[0];
         const deltaY = touchStartRef.current.y - touch.clientY;
         const deltaTime = Date.now() - touchStartRef.current.time;
-        const maxIndex = 7; // ✅ KORRIGIERT: 0-7 = 8 Phasen
+        const maxIndex = 14; // 0-14 = 15 Phasen (professionell skaliert)
 
         if (Math.abs(deltaY) > 30 && deltaTime < 500) {
             if (deltaY > 0) {
@@ -187,7 +186,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
     const handleKeyboardNavigation = useCallback((direction) => {
         if (isScrollLocked || isSnapping) return;
 
-        const maxIndex = 7; // ✅ KORRIGIERT: 0-7 = 8 Phasen
+        const maxIndex = 14; // 0-14 = 15 Phasen (professionell skaliert)
 
         if (direction === 'next') {
             const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);

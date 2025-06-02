@@ -1,13 +1,23 @@
 // src/components/Parallax/Elements/AniTuneCarousel.jsx
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
+import { getPositionFromSegments } from '../utils/animationUtils';
 import './AniTuneCarousel.css';
 
 const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) => {
-    // ✅ ALLE STATE HOOKS AM ANFANG (React Rules!)
-    const [activeCard, setActiveCard] = useState(2); // Mitte als Standard (Index 2 von 5)
+    // ✅ NUR die notwendigen States - keine Animation States!
+    const [activeCard, setActiveCard] = useState(2);
     const [transitionDirection, setTransitionDirection] = useState(null);
-    const [animationProgress, setAnimationProgress] = useState(0);
+
+    // ✅ PROFESSIONELL: Segment-Definition wie andere Layer
+    const carouselSegment = useMemo(() => [{
+        scrollStart: 1.24,    // Phase 7 startet jetzt bei 124%
+        scrollEnd: 1.44,      // Phase 7 endet bei 144%  
+        posStart: 100,        // Startet 100vh unten
+        posEnd: 0,            // Endet bei normaler Position
+        opacityStart: 0.2,
+        opacityEnd: 1.0
+    }], []);
 
     // 5 Test-Karten Daten
     const cards = useMemo(() => [
@@ -48,43 +58,31 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         }
     ], []);
 
-    // ✅ ANIMATION EFFECT - Mit Rückwärts-Animation
-    useEffect(() => {
-        if (currentTitleIndex === 7) {
-            const timer = setTimeout(() => {
-                setAnimationProgress(1);
-            }, 100);
-            return () => clearTimeout(timer);
-        } else {
-            // Beim Verlassen von Phase 7: Graduelle Rückwärts-Animation
-            if (animationProgress > 0) {
-                const timer = setTimeout(() => {
-                    setAnimationProgress(0);
-                }, 50);
-                return () => clearTimeout(timer);
-            }
-        }
-    }, [currentTitleIndex]);
+    // ✅ PROFESSIONELL: Scroll-basierte Position wie andere Layer
+    const verticalPosition = getPositionFromSegments(carouselSegment, scrollProgress, 'posStart', 'posEnd');
+    const opacity = getPositionFromSegments(carouselSegment, scrollProgress, 'opacityStart', 'opacityEnd');
+
+    // ✅ Animation Progress für Karten-Sichtbarkeit (0-1 innerhalb Phase 7)
+    const phase7Progress = scrollProgress >= 1.24 && scrollProgress <= 1.44
+        ? (scrollProgress - 1.24) / 0.2  // 0-1 innerhalb der Phase 7
+        : scrollProgress > 1.44 ? 1 : 0; // 1 wenn darüber, 0 wenn darunter
 
     // Aktuelle Karte für Titel
     const currentCard = cards[activeCard];
 
-    // ✅ INTELLIGENTE Position-Berechnung
+    // ✅ Intelligente Position-Berechnung (unverändert - funktioniert gut)
     const getSmartCardPosition = (cardIndex, activeIndex, direction) => {
         const totalCards = cards.length;
         let position = cardIndex - activeIndex;
 
-        // Bei Links-Navigation: Spezielle Logik für Wrap-around
         if (direction === 'left' && activeIndex === 0 && cardIndex === totalCards - 1) {
-            return -1; // Zeige die letzte Karte links neben der ersten
+            return -1;
         }
 
-        // Bei Rechts-Navigation: Spezielle Logik für Wrap-around  
         if (direction === 'right' && activeIndex === totalCards - 1 && cardIndex === 0) {
-            return 1; // Zeige die erste Karte rechts neben der letzten
+            return 1;
         }
 
-        // Standard-Wrap-around für andere Fälle
         if (position > totalCards / 2) {
             position -= totalCards;
         } else if (position < -totalCards / 2) {
@@ -94,17 +92,15 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         return position;
     };
 
-    // ✅ Karten-Klick Handler mit intelligenter Richtung
+    // ✅ Navigation Handlers (unverändert - funktionieren gut)
     const handleCardClick = (index) => {
         if (index !== activeCard) {
-            // Berechne kürzesten Weg
             const totalCards = cards.length;
             const currentPos = activeCard;
             const targetPos = index;
 
             let distance = targetPos - currentPos;
 
-            // Optimiere für kürzesten Weg (Wrap-around berücksichtigen)
             if (distance > totalCards / 2) {
                 distance -= totalCards;
                 setTransitionDirection('left');
@@ -118,12 +114,10 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
             console.log(`🎠 Karte ${index} (${cards[index].title}) wird zur Mitte bewegt`);
             setActiveCard(index);
 
-            // Reset direction nach Animation
             setTimeout(() => setTransitionDirection(null), 600);
         }
     };
 
-    // ✅ Navigation Buttons mit Richtungs-Detection
     const handlePrevious = () => {
         setTransitionDirection('left');
         setActiveCard(prev => {
@@ -144,17 +138,14 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         setTimeout(() => setTransitionDirection(null), 600);
     };
 
-    // ✅ STYLE BERECHNUNG (nach allen State-Definitionen)
-    const translateY = (1 - animationProgress) * 100;
-    const opacity = Math.max(0.2, animationProgress);
+    // ✅ PROFESSIONELL: Container Style wie andere Layer
     const containerStyle = {
-        transform: `translateY(${translateY}vh)`,
-        opacity: opacity,
-        transition: 'all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+        transform: `translateY(${verticalPosition}vh)`,
+        opacity: Math.max(0, Math.min(1, opacity)),
+        transition: isScrollLocked ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out'
     };
 
-    // ✅ EARLY RETURN - Zeige auch während Rückwärts-Animation
-    if (currentTitleIndex !== 7 && animationProgress <= 0) {
+    if (scrollProgress < 1.20 || scrollProgress > 1.50) {
         return null;
     }
 
@@ -199,7 +190,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                     </button>
                 </div>
 
-                {/* ✅ KARTEN CONTAINER */}
+                {/* ✅ PROFESSIONELL: Karten mit scroll-basierter Sichtbarkeit */}
                 <div className="cards-container">
                     {cards.map((card, cardIndex) => {
                         const smartPosition = getSmartCardPosition(cardIndex, activeCard, transitionDirection);
@@ -211,8 +202,10 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                         const isActive = smartPosition === 0;
                         const distance = Math.abs(smartPosition);
 
-                        // ✅ KORRIGIERT: Nur mittlere Karte während ersten 50% der Animation
-                        const showCard = animationProgress > 0.5 || isActive;
+                        // ✅ PROFESSIONELL: Scroll-basierte Karten-Sichtbarkeit
+                        // Erste 60% der Animation: Nur aktive Karte
+                        // Letzte 40%: Alle Karten
+                        const showCard = phase7Progress > 0.6 || isActive;
 
                         const cardStyle = {
                             '--card-color': card.color,
@@ -243,17 +236,17 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                 {/* Debug Info */}
                 {process.env.NODE_ENV === 'development' && (
                     <div className="carousel-debug">
-                        <div>Phase: {currentTitleIndex}/7</div>
+                        <div>ScrollProgress: {scrollProgress.toFixed(2)}</div>
+                        <div>Phase7Progress: {(phase7Progress * 100).toFixed(0)}%</div>
+                        <div>VerticalPos: {verticalPosition.toFixed(0)}vh</div>
+                        <div>Opacity: {opacity.toFixed(2)}</div>
                         <div>Active Card: {activeCard} ({currentCard.title})</div>
-                        <div>Direction: {transitionDirection || 'none'}</div>
                         <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
-                        <div>Animation: {(animationProgress * 100).toFixed(0)}%</div>
-                        <div>TranslateY: {translateY.toFixed(0)}vh</div>
                         <div style={{ color: '#00ff00', fontSize: '10px' }}>
-                            ✅ Parallax Animation Active
+                            ✅ Scroll-basierte Animation (Profi-Level)
                         </div>
                         <div style={{ color: '#a880ff', fontSize: '10px' }}>
-                            🎠 Z-Index: 6 (hinter Road)
+                            🎠 Gleiche Logic wie andere Layer
                         </div>
                     </div>
                 )}
