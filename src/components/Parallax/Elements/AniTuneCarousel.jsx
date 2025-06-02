@@ -1,13 +1,13 @@
 // src/components/Parallax/Elements/AniTuneCarousel.jsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import './AniTuneCarousel.css';
 
 const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) => {
-    // State für aktive Karte
+    // ✅ ALLE STATE HOOKS AM ANFANG (React Rules!)
     const [activeCard, setActiveCard] = useState(2); // Mitte als Standard (Index 2 von 5)
-    // ✅ NEU: State für Transition-Richtung
     const [transitionDirection, setTransitionDirection] = useState(null);
+    const [animationProgress, setAnimationProgress] = useState(0);
 
     // 5 Test-Karten Daten
     const cards = useMemo(() => [
@@ -48,10 +48,28 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         }
     ], []);
 
+    // ✅ ANIMATION EFFECT - Mit Rückwärts-Animation
+    useEffect(() => {
+        if (currentTitleIndex === 7) {
+            const timer = setTimeout(() => {
+                setAnimationProgress(1);
+            }, 100);
+            return () => clearTimeout(timer);
+        } else {
+            // Beim Verlassen von Phase 7: Graduelle Rückwärts-Animation
+            if (animationProgress > 0) {
+                const timer = setTimeout(() => {
+                    setAnimationProgress(0);
+                }, 50);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [currentTitleIndex]);
+
     // Aktuelle Karte für Titel
     const currentCard = cards[activeCard];
 
-    // ✅ NEU: Intelligente Position-Berechnung
+    // ✅ INTELLIGENTE Position-Berechnung
     const getSmartCardPosition = (cardIndex, activeIndex, direction) => {
         const totalCards = cards.length;
         let position = cardIndex - activeIndex;
@@ -76,7 +94,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         return position;
     };
 
-    // ✅ GEÄNDERT: Karten-Klick Handler mit intelligenter Richtung
+    // ✅ Karten-Klick Handler mit intelligenter Richtung
     const handleCardClick = (index) => {
         if (index !== activeCard) {
             // Berechne kürzesten Weg
@@ -105,7 +123,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         }
     };
 
-    // ✅ GEÄNDERT: Navigation Buttons mit Richtungs-Detection
+    // ✅ Navigation Buttons mit Richtungs-Detection
     const handlePrevious = () => {
         setTransitionDirection('left');
         setActiveCard(prev => {
@@ -126,17 +144,19 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         setTimeout(() => setTransitionDirection(null), 600);
     };
 
-    // Zeige nur wenn Phase 7 aktiv ist (currentTitleIndex === 7)
-    if (currentTitleIndex !== 7) {
+    // ✅ STYLE BERECHNUNG (nach allen State-Definitionen)
+    const translateY = (1 - animationProgress) * 100;
+    const opacity = Math.max(0.2, animationProgress);
+    const containerStyle = {
+        transform: `translateY(${translateY}vh)`,
+        opacity: opacity,
+        transition: 'all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+    };
+
+    // ✅ EARLY RETURN - Zeige auch während Rückwärts-Animation
+    if (currentTitleIndex !== 7 && animationProgress <= 0) {
         return null;
     }
-
-    // Container-Animation - Für Phase 7 IMMER sichtbar
-    const containerStyle = {
-        transform: 'translateY(0)',
-        opacity: 1,
-        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
-    };
 
     return (
         <ErrorBoundary>
@@ -179,13 +199,11 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                     </button>
                 </div>
 
-                {/* ✅ KOMPLETT NEUES Karten Container - Intelligentes Rendering */}
+                {/* ✅ KARTEN CONTAINER */}
                 <div className="cards-container">
                     {cards.map((card, cardIndex) => {
-                        // Intelligente Position basierend auf Richtung
                         const smartPosition = getSmartCardPosition(cardIndex, activeCard, transitionDirection);
 
-                        // Nur Karten in sichtbarem Bereich rendern (-2 bis +2)
                         if (Math.abs(smartPosition) > 2) {
                             return null;
                         }
@@ -193,14 +211,16 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                         const isActive = smartPosition === 0;
                         const distance = Math.abs(smartPosition);
 
-                        // Bessere Transform-Berechnung
+                        // ✅ KORRIGIERT: Nur mittlere Karte während ersten 50% der Animation
+                        const showCard = animationProgress > 0.5 || isActive;
+
                         const cardStyle = {
                             '--card-color': card.color,
                             transform: `translateX(calc(-50% + ${smartPosition * 60}px)) scale(${isActive ? 1.1 : Math.max(0.8, 1 - distance * 0.1)}) rotateY(${smartPosition * -15}deg) translateZ(${-distance * 50}px)`,
                             zIndex: 10 - distance,
-                            opacity: Math.max(0.4, 1 - distance * 0.2),
-                            // WICHTIG: Smooth transition für alle Richtungen
-                            transition: transitionDirection ? 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'all 0.3s ease'
+                            opacity: showCard ? Math.max(0.4, 1 - distance * 0.2) : 0,
+                            transition: transitionDirection ? 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'all 0.3s ease',
+                            visibility: showCard ? 'visible' : 'hidden'
                         };
 
                         return (
@@ -227,11 +247,13 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                         <div>Active Card: {activeCard} ({currentCard.title})</div>
                         <div>Direction: {transitionDirection || 'none'}</div>
                         <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+                        <div>Animation: {(animationProgress * 100).toFixed(0)}%</div>
+                        <div>TranslateY: {translateY.toFixed(0)}vh</div>
                         <div style={{ color: '#00ff00', fontSize: '10px' }}>
-                            ✅ Smart Direction Fix Active
+                            ✅ Parallax Animation Active
                         </div>
                         <div style={{ color: '#a880ff', fontSize: '10px' }}>
-                            🎠 Links/Rechts beide smooth
+                            🎠 Z-Index: 6 (hinter Road)
                         </div>
                     </div>
                 )}

@@ -11,7 +11,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 20;
+    z-index: 6;
     pointer-events: none;
 
     /* Von unten hereinfahren */
@@ -468,4 +468,14 @@
         min-width: 60px;
         min-height: 60px;
     }
+}
+/* ✅ NEU: Verstecke alle Karten während Animation */
+.anitune-carousel-container.animating .carousel-card:not(.active) {
+    display: none !important;
+}
+
+.anitune-carousel-container.animating .carousel-card.active {
+    transform: translateX(-50%) scale(1.1) !important;
+    left: 50% !important;
+    position: absolute !important;
 }
