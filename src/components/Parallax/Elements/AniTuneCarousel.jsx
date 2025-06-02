@@ -11,11 +11,11 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
 
     // ✅ PROFESSIONELL: Segment-Definition wie andere Layer
     const carouselSegment = useMemo(() => [{
-        scrollStart: 1.24,    // Phase 7 startet jetzt bei 124%
-        scrollEnd: 1.44,      // Phase 7 endet bei 144%  
-        posStart: 100,        // Startet 100vh unten
-        posEnd: 0,            // Endet bei normaler Position
-        opacityStart: 0.2,
+        scrollStart: 1.20,    // Phase 7 startet jetzt bei 124%
+        scrollEnd: 1.80,      // Phase 7 endet bei 144%  
+        posStart: 60,        // Startet 100vh unten
+        posEnd: -100,        // Endet bei -100,         // Endet bei -80,         // Endet bei -120,     // Endet bei -80,         // Endet bei -120,          // Endet bei -80,            // Endet bei normaler Position
+        opacityStart: 1.0, // Startet voll sichtbar
         opacityEnd: 1.0
     }], []);
 

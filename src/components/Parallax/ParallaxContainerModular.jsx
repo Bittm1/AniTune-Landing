@@ -635,7 +635,7 @@ const ParallaxContainerModular = React.memo(() => {
 
                 {/* Scroll-Abschnitte */}
                 <div className="gsap-sections-container">
-                    {Array.from({ length: 30 }, (_, i) => i).map((index) => (
+                    {Array.from({ length: 35 }, (_, i) => i).map((index) => (
                         <section
                             key={`section-${index}-${resetCount}`}
                             ref={(el) => setSectionRef(el, index)}
