@@ -1,13 +1,13 @@
-// src/components/Parallax/Elements/AniTuneCarousel.jsx - MATH FIX VERSION
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+// src/components/Parallax/Elements/AniTuneCarousel.jsx
+import React, { useState, useMemo } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import './AniTuneCarousel.css';
 
 const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) => {
-    console.log("🧮 AniTuneCarousel loaded - Math Fix Version");
-
     // State für aktive Karte
-    const [activeCard, setActiveCard] = useState(2); // Mitte als Standard
+    const [activeCard, setActiveCard] = useState(2); // Mitte als Standard (Index 2 von 5)
+    // ✅ NEU: State für Transition-Richtung
+    const [transitionDirection, setTransitionDirection] = useState(null);
 
     // 5 Test-Karten Daten
     const cards = useMemo(() => [
@@ -51,52 +51,87 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
     // Aktuelle Karte für Titel
     const currentCard = cards[activeCard];
 
-    // ✅ MATH-FIX: Beide Richtungen nutzen die gleiche mathematische Operation
-    const handlePrevious = useCallback(() => {
-        console.log("🧮 MATH-FIX: Links-Klick nutzt +4 (= -1 aber gleiche Richtung)");
-        // Statt activeCard - 1, nutze +4 für gleiche Animation-Richtung
-        setActiveCard(prev => (prev + 4) % cards.length);
-    }, [cards.length]);
+    // ✅ NEU: Intelligente Position-Berechnung
+    const getSmartCardPosition = (cardIndex, activeIndex, direction) => {
+        const totalCards = cards.length;
+        let position = cardIndex - activeIndex;
 
-    const handleNext = useCallback(() => {
-        console.log("🧮 MATH-FIX: Rechts-Klick nutzt +1");
-        setActiveCard(prev => (prev + 1) % cards.length);
-    }, [cards.length]);
-
-    // Karten-Klick Handler
-    const handleCardClick = useCallback((index) => {
-        if (index !== activeCard) {
-            console.log(`🎯 Karte ${index} (${cards[index].title}) angeklickt`);
-            setActiveCard(index);
+        // Bei Links-Navigation: Spezielle Logik für Wrap-around
+        if (direction === 'left' && activeIndex === 0 && cardIndex === totalCards - 1) {
+            return -1; // Zeige die letzte Karte links neben der ersten
         }
-    }, [activeCard, cards]);
 
-    // Keyboard Navigation
-    useEffect(() => {
-        const handleKeyPress = (e) => {
-            if (currentTitleIndex !== 7) return;
+        // Bei Rechts-Navigation: Spezielle Logik für Wrap-around  
+        if (direction === 'right' && activeIndex === totalCards - 1 && cardIndex === 0) {
+            return 1; // Zeige die erste Karte rechts neben der letzten
+        }
 
-            switch (e.key) {
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    handlePrevious();
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    handleNext();
-                    break;
+        // Standard-Wrap-around für andere Fälle
+        if (position > totalCards / 2) {
+            position -= totalCards;
+        } else if (position < -totalCards / 2) {
+            position += totalCards;
+        }
+
+        return position;
+    };
+
+    // ✅ GEÄNDERT: Karten-Klick Handler mit intelligenter Richtung
+    const handleCardClick = (index) => {
+        if (index !== activeCard) {
+            // Berechne kürzesten Weg
+            const totalCards = cards.length;
+            const currentPos = activeCard;
+            const targetPos = index;
+
+            let distance = targetPos - currentPos;
+
+            // Optimiere für kürzesten Weg (Wrap-around berücksichtigen)
+            if (distance > totalCards / 2) {
+                distance -= totalCards;
+                setTransitionDirection('left');
+            } else if (distance < -totalCards / 2) {
+                distance += totalCards;
+                setTransitionDirection('right');
+            } else {
+                setTransitionDirection(distance > 0 ? 'right' : 'left');
             }
-        };
 
-        window.addEventListener('keydown', handleKeyPress);
-        return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [currentTitleIndex, handlePrevious, handleNext]);
+            console.log(`🎠 Karte ${index} (${cards[index].title}) wird zur Mitte bewegt`);
+            setActiveCard(index);
 
-    // Zeige nur wenn Phase 7 aktiv ist
+            // Reset direction nach Animation
+            setTimeout(() => setTransitionDirection(null), 600);
+        }
+    };
+
+    // ✅ GEÄNDERT: Navigation Buttons mit Richtungs-Detection
+    const handlePrevious = () => {
+        setTransitionDirection('left');
+        setActiveCard(prev => {
+            const newIndex = prev > 0 ? prev - 1 : cards.length - 1;
+            console.log(`🎠 Previous: ${prev} → ${newIndex}`);
+            return newIndex;
+        });
+        setTimeout(() => setTransitionDirection(null), 600);
+    };
+
+    const handleNext = () => {
+        setTransitionDirection('right');
+        setActiveCard(prev => {
+            const newIndex = prev < cards.length - 1 ? prev + 1 : 0;
+            console.log(`🎠 Next: ${prev} → ${newIndex}`);
+            return newIndex;
+        });
+        setTimeout(() => setTransitionDirection(null), 600);
+    };
+
+    // Zeige nur wenn Phase 7 aktiv ist (currentTitleIndex === 7)
     if (currentTitleIndex !== 7) {
         return null;
     }
 
+    // Container-Animation - Für Phase 7 IMMER sichtbar
     const containerStyle = {
         transform: 'translateY(0)',
         opacity: 1,
@@ -113,9 +148,10 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                 <div className="carousel-title-section">
                     <h1 className="fixed-title">AniTune</h1>
 
+                    {/* Wechselnder Untertitel */}
                     <div className="sliding-title-container">
                         <h2
-                            key={`${currentCard.id}-${activeCard}`}
+                            key={currentCard.id}
                             className="sliding-title"
                             style={{ '--title-color': currentCard.color }}
                         >
@@ -143,20 +179,28 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                     </button>
                 </div>
 
-                {/* Karten Container */}
+                {/* ✅ KOMPLETT NEUES Karten Container - Intelligentes Rendering */}
                 <div className="cards-container">
-                    {[-2, -1, 0, 1, 2].map((position) => {
-                        const index = (activeCard + position + cards.length) % cards.length;
-                        const card = cards[index];
-                        const offset = position;
-                        const isActive = position === 0;
+                    {cards.map((card, cardIndex) => {
+                        // Intelligente Position basierend auf Richtung
+                        const smartPosition = getSmartCardPosition(cardIndex, activeCard, transitionDirection);
 
+                        // Nur Karten in sichtbarem Bereich rendern (-2 bis +2)
+                        if (Math.abs(smartPosition) > 2) {
+                            return null;
+                        }
+
+                        const isActive = smartPosition === 0;
+                        const distance = Math.abs(smartPosition);
+
+                        // Bessere Transform-Berechnung
                         const cardStyle = {
-                            '--card-offset': offset,
                             '--card-color': card.color,
-                            transform: `translateX(calc(-50% + ${offset * 60}px)) scale(${isActive ? 1.1 : Math.max(0.8, 1 - Math.abs(offset) * 0.1)}) rotateY(${offset * -15}deg) translateZ(${-Math.abs(offset) * 50}px)`,
-                            zIndex: 10 - Math.abs(offset),
-                            opacity: Math.max(0.4, 1 - Math.abs(offset) * 0.2)
+                            transform: `translateX(calc(-50% + ${smartPosition * 60}px)) scale(${isActive ? 1.1 : Math.max(0.8, 1 - distance * 0.1)}) rotateY(${smartPosition * -15}deg) translateZ(${-distance * 50}px)`,
+                            zIndex: 10 - distance,
+                            opacity: Math.max(0.4, 1 - distance * 0.2),
+                            // WICHTIG: Smooth transition für alle Richtungen
+                            transition: transitionDirection ? 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'all 0.3s ease'
                         };
 
                         return (
@@ -164,7 +208,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                                 key={card.id}
                                 className={`carousel-card ${isActive ? 'active' : 'inactive'}`}
                                 style={cardStyle}
-                                onClick={() => handleCardClick(index)}
+                                onClick={() => handleCardClick(cardIndex)}
                             >
                                 <div className="card-content">
                                     <div className="card-icon">{card.icon}</div>
@@ -179,29 +223,15 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                 {/* Debug Info */}
                 {process.env.NODE_ENV === 'development' && (
                     <div className="carousel-debug">
-                        <div style={{ color: '#FFD700', fontWeight: 'bold' }}>🧮 Math Fix</div>
                         <div>Phase: {currentTitleIndex}/7</div>
-                        <div>Active: {activeCard} ({currentCard.title})</div>
-                        <div>Links: +4 | Rechts: +1</div>
+                        <div>Active Card: {activeCard} ({currentCard.title})</div>
+                        <div>Direction: {transitionDirection || 'none'}</div>
                         <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
-
-                        <div style={{ marginTop: '8px', fontSize: '10px', color: '#888' }}>
-                            🎯 Beide nutzen "positive" Animation
+                        <div style={{ color: '#00ff00', fontSize: '10px' }}>
+                            ✅ Smart Direction Fix Active
                         </div>
-
-                        <div style={{ marginTop: '8px' }}>
-                            <button
-                                onClick={handlePrevious}
-                                style={{ padding: '2px 6px', margin: '2px', fontSize: '10px' }}
-                            >
-                                ← +4
-                            </button>
-                            <button
-                                onClick={handleNext}
-                                style={{ padding: '2px 6px', margin: '2px', fontSize: '10px' }}
-                            >
-                                → +1
-                            </button>
+                        <div style={{ color: '#a880ff', fontSize: '10px' }}>
+                            🎠 Links/Rechts beide smooth
                         </div>
                     </div>
                 )}

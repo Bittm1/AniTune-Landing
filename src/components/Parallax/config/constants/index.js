@@ -128,7 +128,7 @@ export const assetPaths = {
         fallback: '/Parallax/fallback-cloud.png'
     },    
     logo: {
-        default: '/Parallax/Logo.png',
+        default: '/Parallax/Logo.svg',
         fallback: '/Parallax/fallback-logo.png'
     }
 };
