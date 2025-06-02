@@ -1,4 +1,5 @@
-// src/components/Parallax/ParallaxContainerModular.jsx
+// src/components/Parallax/ParallaxContainerModular.jsx - ERWEITERT für Phase 8
+
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { getConfig } from './config';
 import BackgroundLayer from './Elements/BackgroundLayer';
@@ -17,6 +18,7 @@ import TitleLayer from './Elements/TitleLayer';
 import TitleAudioLayer from './Elements/TitleAudioLayer';
 import Newsletter from '../Newsletter/Newsletter';
 import AniTuneCarousel from './Elements/AniTuneCarousel';
+import Phase8NewsletterLayer from './Elements/Phase8NewsletterLayer'; // ✅ NEU
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
 import gsap from 'gsap';
@@ -56,6 +58,10 @@ const ParallaxContainerModular = React.memo(() => {
     const [resetCount, setResetCount] = useState(0);
     const [isResetting, setIsResetting] = useState(false);
 
+    // ✅ NEU: Newsletter Subscription Tracking
+    const [hasSubscribed, setHasSubscribed] = useState(false);
+    const [subscriptionSource, setSubscriptionSource] = useState(null); // 'phase0' oder 'phase8'
+
     // Refs
     const containerRef = useRef(null);
     const sectionsRef = useRef([]);
@@ -71,7 +77,7 @@ const ParallaxContainerModular = React.memo(() => {
         lastRenderTime: 0
     });
 
-    // ✅ ERWEITERTE SCROLL-PROGRESS mit Phase 0 Support
+    // ✅ ERWEITERTE SCROLL-PROGRESS mit Phase 8 Support
     const {
         scrollProgress,
         activeSection,
@@ -84,14 +90,55 @@ const ParallaxContainerModular = React.memo(() => {
         snapToTitle,
         scrollToTitleIndex,
         handleKeyboardNavigation,
-        currentTitleIndex,        // ✅ Jetzt 0-6 (0=Logo, 1-6=Titel)
+        currentTitleIndex,        // ✅ Jetzt 0-8 (0=Logo, 1-6=Titel, 7=Carousel, 8=Newsletter)
         isScrollLocked,
-        // ✅ NEUE PHASE-HELPER
+        // ✅ ERWEITERTE PHASE-HELPER
         isLogoPhase,             // true wenn currentTitleIndex === 0
-        isTitlePhase,            // true wenn currentTitleIndex > 0
+        isTitlePhase,            // true wenn currentTitleIndex 1-6
+        isCarouselPhase,         // ✅ NEU: true wenn currentTitleIndex === 7
+        isNewsletterPhase,       // ✅ NEU: true wenn currentTitleIndex === 8
         currentPhaseDescription, // String-Beschreibung der aktuellen Phase
         timingInfo               // Debug-Info
     } = useScrollProgress(containerRef, sectionsRef, config.titles);
+
+    // ✅ NEU: Newsletter Subscription Handler
+    const handleSubscriptionChange = useCallback((subscribed, source = 'unknown') => {
+        console.log(`📧 Newsletter-Anmeldung: ${subscribed} (Quelle: ${source})`);
+        setHasSubscribed(subscribed);
+        setSubscriptionSource(source);
+
+        // Optional: LocalStorage für Persistierung
+        if (typeof window !== 'undefined') {
+            try {
+                window.localStorage.setItem('anitune_newsletter_subscribed', JSON.stringify({
+                    subscribed,
+                    source,
+                    timestamp: Date.now()
+                }));
+            } catch (error) {
+                console.warn('LocalStorage nicht verfügbar:', error);
+            }
+        }
+    }, []);
+
+    // ✅ NEU: Newsletter Status aus LocalStorage laden
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const stored = window.localStorage.getItem('anitune_newsletter_subscribed');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (parsed.subscribed) {
+                        setHasSubscribed(true);
+                        setSubscriptionSource(parsed.source);
+                        console.log(`📧 Newsletter-Status geladen: ${parsed.source} (${new Date(parsed.timestamp).toLocaleString()})`);
+                    }
+                }
+            } catch (error) {
+                console.warn('Fehler beim Laden des Newsletter-Status:', error);
+            }
+        }
+    }, []);
 
     // ScrollTrigger komplett abbauen - Optimiert
     const destroyScrollTrigger = useCallback(() => {
@@ -307,15 +354,18 @@ const ParallaxContainerModular = React.memo(() => {
         </div>
     ), [resetComponent]);
 
-    // ✅ ERWEITERTE DEBUG-ANZEIGE: 7 Phasen (0-6)
+    // ✅ ERWEITERTE DEBUG-ANZEIGE: 9 Phasen (0-8)
     const debugIndicator = useMemo(() => (
         <div className="debug-indicator">
-            Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/14
+            Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/40
             <div style={{ fontSize: '10px', marginTop: '2px' }}>
-                Phase: {currentTitleIndex}/7 ({currentPhaseDescription})
+                Phase: {currentTitleIndex}/8 ({currentPhaseDescription})
             </div>
             <div style={{ fontSize: '10px' }}>
-                Timing: {timingInfo.preset} | Lock: {isScrollLocked ? '🔒' : '🔓'} | Konfig: ✅
+                Newsletter: {hasSubscribed ? '✅' : '❌'} | Lock: {isScrollLocked ? '🔒' : '🔓'}
+            </div>
+            <div style={{ fontSize: '9px' }}>
+                Timing: {timingInfo.preset} | Quelle: {subscriptionSource || 'none'}
             </div>
             <button
                 onClick={resetComponent}
@@ -333,9 +383,9 @@ const ParallaxContainerModular = React.memo(() => {
                 ↻
             </button>
         </div>
-    ), [formattedScrollProgress.absolute, activeSection, resetComponent, scrollProgress, currentTitleIndex, currentPhaseDescription, timingInfo, isScrollLocked]);
+    ), [formattedScrollProgress.absolute, activeSection, resetComponent, scrollProgress, currentTitleIndex, currentPhaseDescription, timingInfo, isScrollLocked, hasSubscribed, subscriptionSource]);
 
-    // ✅ ERWEITERTE SECTION-INDIKATOREN: 8 Phasen (0-7)
+    // ✅ ERWEITERTE SECTION-INDIKATOREN: 9 Phasen (0-8)
     const sectionIndicators = useMemo(() => (
         <div className="section-indicators">
             {/* Phase 0: Logo/Newsletter */}
@@ -363,7 +413,7 @@ const ParallaxContainerModular = React.memo(() => {
                 />
             )) || []}
 
-            {/* ✅ NEU: Phase 7: Carousel */}
+            {/* Phase 7: Carousel */}
             <button
                 className={`section-indicator ${currentTitleIndex === 7 ? 'active carousel-phase' : ''}`}
                 onClick={() => scrollToTitleIndex(7)}
@@ -373,10 +423,24 @@ const ParallaxContainerModular = React.memo(() => {
                     backgroundColor: currentTitleIndex === 7 ? '#a880ff' : 'rgba(255, 255, 255, 0.5)'
                 }}
             />
-        </div>
-    ), [currentTitleIndex, scrollToTitleIndex, config.titles]);
 
-    // Memoize the layers to prevent unnecessary re-renders
+            {/* ✅ NEU: Phase 8: Newsletter CTA */}
+            <button
+                className={`section-indicator ${currentTitleIndex === 8 ? 'active newsletter-phase' : ''} ${hasSubscribed ? 'subscribed' : ''}`}
+                onClick={() => scrollToTitleIndex(8)}
+                aria-label="Go to Newsletter CTA (Phase 8)"
+                title={hasSubscribed ? "Phase 8: Bereits angemeldet ✅" : "Phase 8: Newsletter CTA"}
+                style={{
+                    backgroundColor: currentTitleIndex === 8 ? '#ff6b6b' :
+                        hasSubscribed ? '#4CAF50' :
+                            'rgba(255, 255, 255, 0.5)',
+                    opacity: hasSubscribed ? 0.5 : 1
+                }}
+            />
+        </div>
+    ), [currentTitleIndex, scrollToTitleIndex, config.titles, hasSubscribed]);
+
+    // Memoize the layers to prevent unnecessary re-renders (alle bestehenden Layer)
     const backgroundLayer = useMemo(() => (
         <BackgroundLayer
             scrollProgress={scrollProgress}
@@ -510,7 +574,7 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, config.titles, currentTitleIndex, isScrollLocked]);
 
-    // ✅ KORRIGIERT: Nur EINE TitleAudioLayer mit allen Props
+    // Audio-Layer: Erweitert für Phase 8
     const audioLayer = useMemo(() => (
         <TitleAudioLayer
             currentTitleIndex={currentTitleIndex}
@@ -519,7 +583,7 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [currentTitleIndex, isScrollLocked, scrollToTitleIndex]);
 
-    // ✅ NEU HINZUFÜGEN:
+    // AniTune Carousel Layer: Unverändert
     const carouselLayer = useMemo(() => (
         <AniTuneCarousel
             scrollProgress={scrollProgress}
@@ -527,6 +591,17 @@ const ParallaxContainerModular = React.memo(() => {
             isScrollLocked={isScrollLocked}
         />
     ), [scrollProgress, currentTitleIndex, isScrollLocked]);
+
+    // ✅ NEU: Phase 8 Newsletter Layer
+    const phase8NewsletterLayer = useMemo(() => (
+        <Phase8NewsletterLayer
+            scrollProgress={scrollProgress}
+            currentTitleIndex={currentTitleIndex}
+            isScrollLocked={isScrollLocked}
+            hasSubscribed={hasSubscribed}
+            onSubscriptionChange={(subscribed) => handleSubscriptionChange(subscribed, 'phase8')}
+        />
+    ), [scrollProgress, currentTitleIndex, isScrollLocked, hasSubscribed, handleSubscriptionChange]);
 
     // Scroll-Indicator: ZURÜCK ZU ORIGINAL (nur activeSection-basiert)
     const scrollIndicator = useMemo(() => (
@@ -598,7 +673,7 @@ const ParallaxContainerModular = React.memo(() => {
                         <MemoizedLayer>{titleLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
-                    {/* ✅ KORRIGIERT: Nur EINE Audio-Layer mit allen Props */}
+                    {/* Audio-Layer */}
                     <ErrorBoundary>
                         <MemoizedLayer>{audioLayer}</MemoizedLayer>
                     </ErrorBoundary>
@@ -608,6 +683,11 @@ const ParallaxContainerModular = React.memo(() => {
                         <MemoizedLayer>{carouselLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
+                    {/* ✅ NEU: Phase 8 Newsletter Layer */}
+                    <ErrorBoundary>
+                        <MemoizedLayer>{phase8NewsletterLayer}</MemoizedLayer>
+                    </ErrorBoundary>
+
                     {/* Scroll-Indicator: ZURÜCK ZU ORIGINAL */}
                     {activeSection === 0 && (
                         <ErrorBoundary>
@@ -615,7 +695,8 @@ const ParallaxContainerModular = React.memo(() => {
                         </ErrorBoundary>
                     )}
                 </div>
-                {/* Newsletter außerhalb fixed-layers für Klickbarkeit */}
+
+                {/* ✅ ERWEITERT: Newsletter mit Subscription-Tracking */}
                 <ErrorBoundary>
                     <div style={{
                         position: 'fixed',
@@ -629,13 +710,36 @@ const ParallaxContainerModular = React.memo(() => {
                         opacity: scrollProgress < 0.1 ? Math.max(0, 1 - (scrollProgress / 0.1)) : 0,
                         transition: 'opacity 800ms ease-out'
                     }}>
-                        {scrollProgress < 0.1 && <Newsletter />}
+                        {scrollProgress < 0.1 && !hasSubscribed && (
+                            <Newsletter
+                                onSubscriptionChange={(subscribed) => handleSubscriptionChange(subscribed, 'phase0')}
+                            />
+                        )}
+
+                        {/* ✅ NEU: Success Message für Phase 0 wenn bereits angemeldet */}
+                        {scrollProgress < 0.1 && hasSubscribed && (
+                            <div style={{
+                                textAlign: 'center',
+                                background: 'rgba(76, 175, 80, 0.9)',
+                                padding: '20px',
+                                borderRadius: '15px',
+                                color: 'white',
+                                backdropFilter: 'blur(20px)'
+                            }}>
+                                <h3 style={{ margin: '0 0 10px 0', fontFamily: 'Lobster, cursive' }}>
+                                    ✅ Bereits angemeldet!
+                                </h3>
+                                <p style={{ margin: 0, fontSize: '1rem' }}>
+                                    Du erhältst bereits unsere Updates.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </ErrorBoundary>
 
-                {/* Scroll-Abschnitte */}
+                {/* ✅ ERWEITERTE Scroll-Abschnitte für Phase 8 */}
                 <div className="gsap-sections-container">
-                    {Array.from({ length: 35 }, (_, i) => i).map((index) => (
+                    {Array.from({ length: 50 }, (_, i) => i).map((index) => ( // ✅ ERWEITERT: 50 Sections für mehr Scroll-Platz
                         <section
                             key={`section-${index}-${resetCount}`}
                             ref={(el) => setSectionRef(el, index)}

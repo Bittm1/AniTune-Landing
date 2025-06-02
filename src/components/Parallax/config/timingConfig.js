@@ -1,19 +1,20 @@
 // src/components/Parallax/config/timingConfig.js
 
 /**
- * 🎛️ FINALE TIMING-KONFIGURATION
+ * 🎛️ FINALE TIMING-KONFIGURATION MIT PHASE 8
  * ✅ Phase 0: snapTarget = 0 (0% von 0-1)
- * ✅ Phase 1-6: Gleichmäßig über den vollen 0-1 Bereich verteilt
+ * ✅ Phase 1-6: Gleichmäßig über den vollen 0-1 Bereich verteilt  
  * ✅ Phase 7: AniTune Carousel (ÜBER 100%)
- * ✅ 8 Phasen bei: 0%, 16.67%, 33.33%, 50%, 66.67%, 83.33%, 100%, 108%
+ * ✅ Phase 8: Newsletter CTA (NEU!)
+ * ✅ 9 Phasen bei: 0%, 16.67%, 33.33%, 50%, 66.67%, 83.33%, 100%, 108%, 116%
  */
 
 // ===== SCROLL-SEGMENT-PRESETS =====
 export const SCROLL_SEGMENT_PRESETS = {
-    // ⚡ SCHNELLE ÜBERGÄNGE
+    // ⚡ SCHNELLE ÜBERGÄNGE - ERWEITERT für Phase 8
     fast_segments: {
-        name: 'Fast Segments',
-        description: 'Alle 8 Phasen gleichmäßig über 0-1.2 Bereich verteilt',
+        name: 'Fast Segments mit Phase 8',
+        description: 'Alle 9 Phasen gleichmäßig über 0-1.4 Bereich verteilt',
 
         segments: [
             // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
@@ -24,7 +25,7 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
-            // ✅ Phase 1: Bei 16.67% - "Von Uns Ist Für Uns"
+            // ✅ Phase 1-6: Titel bei 16.67%, 33.33%, 50%, 66.67%, 83.33%, 100%
             {
                 scrollStart: 0.05,
                 scrollEnd: 0.25,
@@ -32,7 +33,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
-            // ✅ Phase 2: Bei 33.33% - "Der Weg"
             {
                 scrollStart: 0.25,
                 scrollEnd: 0.42,
@@ -40,7 +40,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
-            // ✅ Phase 3: Bei 50% - "Ist Das Ziel"
             {
                 scrollStart: 0.42,
                 scrollEnd: 0.58,
@@ -48,7 +47,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
-            // ✅ Phase 4: Bei 66.67% - "Die Community"
             {
                 scrollStart: 0.58,
                 scrollEnd: 0.75,
@@ -56,7 +54,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
-            // ✅ Phase 5: Bei 83.33% - "Heißt"
             {
                 scrollStart: 0.75,
                 scrollEnd: 0.92,
@@ -64,7 +61,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
-            // ✅ Phase 6: Bei 100% - "AniTune"
             {
                 scrollStart: 0.92,
                 scrollEnd: 1.0,
@@ -72,21 +68,29 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             },
-            // ✅ NEU: Phase 7: AniTune Carousel (ÜBER 100%)
+            // ✅ Phase 7: AniTune Carousel (ÜBER 100%)
             {
                 scrollStart: 1.0,
-                scrollEnd: 1.2,
+                scrollEnd: 1.20,
                 snapTarget: 1.1,       // 110% = Mitte der Phase 7
+                snapDuration: 0.8,
+                snapEase: "power3.out"
+            },
+            // ✅ NEU: Phase 8: Newsletter CTA
+            {
+                scrollStart: 1.20,
+                scrollEnd: 1.40,
+                snapTarget: 1.3,       // 130% = Mitte der Phase 8
                 snapDuration: 0.8,
                 snapEase: "power3.out"
             }
         ]
     },
 
-    // ⚖️ AUSGEWOGENE BEREICHE (Standard)
+    // ⚖️ AUSGEWOGENE BEREICHE (Standard) - ERWEITERT für Phase 8
     balanced_segments: {
-        name: 'Balanced Segments - Professional Scale',
-        description: '15 Phasen gleichmäßig über 0-3 Bereich verteilt',
+        name: 'Balanced Segments - Professional Scale mit Phase 8',
+        description: '16 Phasen gleichmäßig über 0-3 Bereich verteilt',
 
         segments: [
             // Phase 0: Logo/Newsletter
@@ -98,23 +102,23 @@ export const SCROLL_SEGMENT_PRESETS = {
             { scrollStart: 0.64, scrollEnd: 0.84, snapTarget: 0.8, snapDuration: 1.2, snapEase: "power2.inOut" },
             { scrollStart: 0.84, scrollEnd: 1.04, snapTarget: 1.0, snapDuration: 1.2, snapEase: "power2.inOut" },
             { scrollStart: 1.04, scrollEnd: 1.24, snapTarget: 1.2, snapDuration: 1.2, snapEase: "power2.inOut" },
-            // Phase 7: AniTune Carousel (JETZT richtig platziert)
-            { scrollStart: 1.24, scrollEnd: 1.44, snapTarget: 1.4, snapDuration: 1.2, snapEase: "power2.inOut" },
-            // Phase 8-14: Zukünftige Features
-            { scrollStart: 1.44, scrollEnd: 1.64, snapTarget: 1.6, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 1.64, scrollEnd: 1.84, snapTarget: 1.8, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 1.84, scrollEnd: 2.04, snapTarget: 2.0, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 2.04, scrollEnd: 2.24, snapTarget: 2.2, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 2.24, scrollEnd: 2.44, snapTarget: 2.4, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 2.44, scrollEnd: 2.64, snapTarget: 2.6, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 2.64, scrollEnd: 3.0, snapTarget: 2.8, snapDuration: 1.2, snapEase: "power2.inOut" }
+            // Phase 7: AniTune Carousel 
+            { scrollStart: 1.24, scrollEnd: 1.60, snapTarget: 1.4, snapDuration: 1.2, snapEase: "power2.inOut" },
+            // ✅ NEU: Phase 8: Newsletter CTA
+            { scrollStart: 1.60, scrollEnd: 2.00, snapTarget: 1.8, snapDuration: 1.2, snapEase: "power2.inOut" },
+            // Phase 9-15: Zukünftige Features
+            { scrollStart: 2.00, scrollEnd: 2.20, snapTarget: 2.1, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 2.20, scrollEnd: 2.40, snapTarget: 2.3, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 2.40, scrollEnd: 2.60, snapTarget: 2.5, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 2.60, scrollEnd: 2.80, snapTarget: 2.7, snapDuration: 1.2, snapEase: "power2.inOut" },
+            { scrollStart: 2.80, scrollEnd: 3.00, snapTarget: 2.9, snapDuration: 1.2, snapEase: "power2.inOut" }
         ]
     },
 
-    // 🎬 LANGE BEREICHE (Cinematisch)
+    // 🎬 LANGE BEREICHE (Cinematisch) - ERWEITERT für Phase 8
     cinematic_segments: {
-        name: 'Cinematic Segments',
-        description: 'Alle 8 Phasen gleichmäßig über 0-1.2 Bereich verteilt',
+        name: 'Cinematic Segments mit Phase 8',
+        description: 'Alle 9 Phasen gleichmäßig über 0-1.6 Bereich verteilt',
 
         segments: [
             // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
@@ -125,7 +129,7 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
-            // ✅ Phase 1: Bei 16.67% - "Von Uns Ist Für Uns"
+            // ✅ Phase 1-6: Titel
             {
                 scrollStart: 0.04,
                 scrollEnd: 0.25,
@@ -133,7 +137,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
-            // ✅ Phase 2: Bei 33.33% - "Der Weg"
             {
                 scrollStart: 0.25,
                 scrollEnd: 0.42,
@@ -141,7 +144,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
-            // ✅ Phase 3: Bei 50% - "Ist Das Ziel"
             {
                 scrollStart: 0.42,
                 scrollEnd: 0.58,
@@ -149,7 +151,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
-            // ✅ Phase 4: Bei 66.67% - "Die Community"
             {
                 scrollStart: 0.58,
                 scrollEnd: 0.75,
@@ -157,7 +158,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
-            // ✅ Phase 5: Bei 83.33% - "Heißt"
             {
                 scrollStart: 0.75,
                 scrollEnd: 0.92,
@@ -165,7 +165,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
-            // ✅ Phase 6: Bei 100% - "AniTune"
             {
                 scrollStart: 0.92,
                 scrollEnd: 1.0,
@@ -173,21 +172,29 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             },
-            // ✅ NEU: Phase 7: AniTune Carousel (ÜBER 100%)
+            // ✅ Phase 7: AniTune Carousel
             {
                 scrollStart: 1.0,
-                scrollEnd: 1.2,
-                snapTarget: 1.1,       // 110% = Mitte der Phase 7
+                scrollEnd: 1.30,
+                snapTarget: 1.15,
+                snapDuration: 2.5,
+                snapEase: "power1.inOut"
+            },
+            // ✅ NEU: Phase 8: Newsletter CTA
+            {
+                scrollStart: 1.30,
+                scrollEnd: 1.60,
+                snapTarget: 1.45,
                 snapDuration: 2.5,
                 snapEase: "power1.inOut"
             }
         ]
     },
 
-    // 🎯 CUSTOM (Zum Experimentieren)
+    // 🎯 CUSTOM (Zum Experimentieren) - ERWEITERT für Phase 8
     custom_segments: {
-        name: 'Custom Segments',
-        description: 'Alle 8 Phasen gleichmäßig über 0-1.2 Bereich verteilt',
+        name: 'Custom Segments mit Phase 8',
+        description: 'Alle 9 Phasen gleichmäßig über 0-1.8 Bereich verteilt',
 
         segments: [
             // ✅ Phase 0: Bei 0% - Logo/Newsletter Phase
@@ -198,7 +205,7 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
-            // ✅ Phase 1: Bei 16.67% - "Von Uns Ist Für Uns"
+            // ✅ Phase 1-6: Titel
             {
                 scrollStart: 0.04,
                 scrollEnd: 0.25,
@@ -206,7 +213,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
-            // ✅ Phase 2: Bei 33.33% - "Der Weg"
             {
                 scrollStart: 0.25,
                 scrollEnd: 0.42,
@@ -214,7 +220,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
-            // ✅ Phase 3: Bei 50% - "Ist Das Ziel"
             {
                 scrollStart: 0.42,
                 scrollEnd: 0.58,
@@ -222,7 +227,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
-            // ✅ Phase 4: Bei 66.67% - "Die Community"
             {
                 scrollStart: 0.58,
                 scrollEnd: 0.75,
@@ -230,7 +234,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
-            // ✅ Phase 5: Bei 83.33% - "Heißt"
             {
                 scrollStart: 0.75,
                 scrollEnd: 0.92,
@@ -238,7 +241,6 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
-            // ✅ Phase 6: Bei 100% - "AniTune"
             {
                 scrollStart: 0.92,
                 scrollEnd: 1.0,
@@ -246,11 +248,19 @@ export const SCROLL_SEGMENT_PRESETS = {
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             },
-            // ✅ Phase 7: AniTune Carousel (ÜBER 100%)
+            // ✅ Phase 7: AniTune Carousel
             {
                 scrollStart: 1.0,
-                scrollEnd: 1.2,
-                snapTarget: 1.1,       // 110% = Mitte der Phase 7
+                scrollEnd: 1.35,
+                snapTarget: 1.175,
+                snapDuration: 1.8,
+                snapEase: "power2.inOut"
+            },
+            // ✅ NEU: Phase 8: Newsletter CTA
+            {
+                scrollStart: 1.35,
+                scrollEnd: 1.70,
+                snapTarget: 1.525,
                 snapDuration: 1.8,
                 snapEase: "power2.inOut"
             }
@@ -258,7 +268,7 @@ export const SCROLL_SEGMENT_PRESETS = {
     }
 };
 
-// ===== TIMING-PRESETS (unverändert) =====
+// ===== TIMING-PRESETS (für Animationen) =====
 export const TIMING_PRESETS = {
     fast: {
         name: 'Fast & Responsive',
@@ -427,11 +437,131 @@ export function getTimingDebugInfo() {
         segmentName: segmentConfig.name,
         snapDuration: timingConfig.snapDuration,
         totalSegments: segmentConfig.segments.length,
+        totalPhases: 9, // ✅ ERWEITERT: 0-8 = 9 Phasen
         averageSegmentLength: segmentConfig.segments.reduce((avg, seg) =>
-            avg + (seg.scrollEnd - seg.scrollStart), 0) / segmentConfig.segments.length
+            avg + (seg.scrollEnd - seg.scrollStart), 0) / segmentConfig.segments.length,
+        configurable: true // Alle Phasen sind jetzt konfigurierbar
     };
 }
 
+// ===== ERWEITERTE UTILITY-FUNKTIONEN für Phase 8 =====
+
+/**
+ * ✅ NEU: Phase-spezifische Timing-Konfiguration
+ */
+export function getPhaseSpecificTiming(phaseIndex) {
+    const segmentConfig = getActiveScrollSegments();
+    const timingConfig = getActiveTimingConfig();
+
+    if (phaseIndex < 0 || phaseIndex >= segmentConfig.segments.length) {
+        console.warn(`Phase ${phaseIndex} existiert nicht. Verwende Standard-Timing.`);
+        return timingConfig;
+    }
+
+    const segment = segmentConfig.segments[phaseIndex];
+
+    return {
+        ...timingConfig,
+        snapDuration: segment.snapDuration,
+        snapEase: segment.snapEase,
+        // Phase-spezifische Anpassungen
+        phaseSpecific: {
+            scrollStart: segment.scrollStart,
+            scrollEnd: segment.scrollEnd,
+            snapTarget: segment.snapTarget,
+            duration: segment.scrollEnd - segment.scrollStart,
+            phaseType: getPhaseType(phaseIndex)
+        }
+    };
+}
+
+/**
+ * ✅ NEU: Phase-Typ bestimmen
+ */
+export function getPhaseType(phaseIndex) {
+    if (phaseIndex === 0) return 'logo';
+    if (phaseIndex >= 1 && phaseIndex <= 6) return 'title';
+    if (phaseIndex === 7) return 'carousel';
+    if (phaseIndex === 8) return 'newsletter';
+    return 'future';
+}
+
+/**
+ * ✅ NEU: Alle verfügbaren Presets auflisten
+ */
+export function getAvailablePresets() {
+    return {
+        timing: Object.keys(TIMING_PRESETS).map(key => ({
+            key,
+            name: TIMING_PRESETS[key].name,
+            description: TIMING_PRESETS[key].description
+        })),
+        segments: Object.keys(SCROLL_SEGMENT_PRESETS).map(key => ({
+            key,
+            name: SCROLL_SEGMENT_PRESETS[key].name,
+            description: SCROLL_SEGMENT_PRESETS[key].description
+        }))
+    };
+}
+
+/**
+ * ✅ NEU: Preset wechseln (für Live-Testing)
+ */
+export function switchPreset(timingPreset = null, segmentPreset = null) {
+    if (timingPreset && TIMING_PRESETS[timingPreset]) {
+        console.log(`🎛️ Timing Preset gewechselt zu: ${timingPreset}`);
+        // In einer echten Implementierung würde man hier den aktiven Preset ändern
+    }
+
+    if (segmentPreset && SCROLL_SEGMENT_PRESETS[segmentPreset]) {
+        console.log(`📐 Segment Preset gewechselt zu: ${segmentPreset}`);
+        // In einer echten Implementierung würde man hier den aktiven Preset ändern
+    }
+
+    return {
+        timing: getActiveTimingConfig(),
+        segments: getActiveScrollSegments()
+    };
+}
+
+/**
+ * ✅ NEU: Performance-optimierte Segment-Suche
+ */
+export function findSegmentForProgress(scrollProgress) {
+    const segmentConfig = getActiveScrollSegments();
+
+    // Binäre Suche für bessere Performance bei vielen Segmenten
+    let left = 0;
+    let right = segmentConfig.segments.length - 1;
+
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        const segment = segmentConfig.segments[mid];
+
+        if (scrollProgress >= segment.scrollStart && scrollProgress <= segment.scrollEnd) {
+            return {
+                index: mid,
+                segment: segment,
+                progress: (scrollProgress - segment.scrollStart) / (segment.scrollEnd - segment.scrollStart),
+                phaseType: getPhaseType(mid)
+            };
+        } else if (scrollProgress < segment.scrollStart) {
+            right = mid - 1;
+        } else {
+            left = mid + 1;
+        }
+    }
+
+    // Fallback: Nächstes Segment finden
+    return {
+        index: -1,
+        segment: null,
+        progress: 0,
+        phaseType: 'unknown'
+    };
+}
+
+// ===== STANDARD-EXPORT =====
 export default {
     timingPresets: TIMING_PRESETS,
     segmentPresets: SCROLL_SEGMENT_PRESETS,
@@ -443,5 +573,12 @@ export default {
     getSnap: getSnapTiming,
     getBackToLogo: getBackToLogoTiming,
     getDeviceOptimized: getDeviceOptimizedTiming,
-    getDebugInfo: getTimingDebugInfo
+    getDebugInfo: getTimingDebugInfo,
+
+    // ✅ NEU: Phase 8 Erweiterungen
+    getPhaseSpecific: getPhaseSpecificTiming,
+    getPhaseType: getPhaseType,
+    getAvailablePresets: getAvailablePresets,
+    switchPreset: switchPreset,
+    findSegmentForProgress: findSegmentForProgress
 };

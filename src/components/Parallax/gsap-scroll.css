@@ -1,4 +1,5 @@
-/* src/components/Parallax/gsap-scroll.css */
+/* src/components/Parallax/gsap-scroll.css - KOMPLETT mit Phase 8 */
+
 .gsap-parallax-container {
     position: relative;
     width: 100%;
@@ -6,10 +7,11 @@
     overflow: hidden;
 }
 
-/* Container für GSAP-Abschnitte */
+/* Container für GSAP-Abschnitte - ERWEITERT für Phase 8 */
 .gsap-sections-container {
     width: 100%;
-    height: 3000vh;
+    height: 5000vh;
+    /* ✅ ERWEITERT: Von 3000vh auf 5000vh für Phase 8 */
 }
 
 /* Einzelne GSAP-Abschnitte */
@@ -19,19 +21,35 @@
     position: relative;
 }
 
-/* Debug-Anzeige */
+/* Debug-Anzeige - ERWEITERT für Phase 8 */
 .debug-indicator {
     position: fixed;
     top: 0;
     right: 0;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     color: white;
-    padding: 4px 8px;
-    font-size: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
     z-index: 1000;
+    border-bottom-left-radius: 8px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: monospace;
+    line-height: 1.3;
+    max-width: 300px;
 }
 
-/* Section-Indikatoren (Navigation dots) */
+/* ✅ NEU: Newsletter-Status Indikator */
+.debug-indicator .newsletter-status {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.debug-indicator .newsletter-status.not-subscribed {
+    color: #ff6b6b;
+}
+
+/* Section-Indikatoren (Navigation dots) - ERWEITERT für Phase 8 */
 .section-indicators {
     position: fixed;
     top: 50%;
@@ -39,7 +57,8 @@
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    /* ✅ VERKLEINERT: Von 10px auf 8px für mehr Platz */
     z-index: 1000;
 }
 
@@ -52,11 +71,79 @@
     padding: 0;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .section-indicator.active {
     background-color: white;
     transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+/* ✅ NEU: Spezielle Styles für Phase-Types */
+.section-indicator.logo-phase.active {
+    background-color: #00ff00;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+}
+
+.section-indicator.title-phase.active {
+    background-color: #ffffff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+}
+
+.section-indicator.carousel-phase.active {
+    background-color: #a880ff;
+    box-shadow: 0 0 15px rgba(168, 128, 255, 0.8);
+}
+
+.section-indicator.newsletter-phase.active {
+    background-color: #ff6b6b;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.8);
+}
+
+/* ✅ NEU: Subscribed State für Newsletter-Indikator */
+.section-indicator.subscribed {
+    background-color: #4CAF50 !important;
+    opacity: 0.7;
+    cursor: default;
+}
+
+.section-indicator.subscribed:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+
+/* ✅ NEU: Tooltips für Section Indicators */
+.section-indicator:hover::after {
+    content: attr(title);
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1001;
+    pointer-events: none;
+
+    /* Animation */
+    opacity: 0;
+    animation: tooltipFadeIn 0.3s ease-out 0.5s forwards;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50%) translateX(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
 }
 
 /* Fixierte Layer-Container */
@@ -69,7 +156,7 @@
     pointer-events: none;
 }
 
-/* ✅ NEU: Newsletter klickbar machen */
+/* ✅ Newsletter klickbar machen */
 .fixed-layers input,
 .fixed-layers button,
 .fixed-layers form,
@@ -81,7 +168,7 @@
     z-index: 50;
 }
 
-/* ✅ NEU: Spezifische Newsletter-Form Styles */
+/* ✅ Spezifische Newsletter-Form Styles */
 .fixed-layers form {
     pointer-events: all !important;
 }
@@ -96,7 +183,7 @@
     cursor: pointer !important;
 }
 
-/* ✅ NEU: Audio-Controls Styling - Überschreibt alle anderen Regeln */
+/* ✅ Audio-Controls Styling - Überschreibt alle anderen Regeln */
 button[style*="position: fixed"][style*="bottom: 80px"],
 button[style*="position: fixed"][style*="bottom: 20px"] {
     /* Sicherstellen dass Audio-Buttons immer klickbar sind */
@@ -118,28 +205,28 @@ button[style*="position: fixed"][style*="bottom: 20px"] {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* ✅ NEU: Hover-Effekte für Audio-Buttons */
+/* ✅ Hover-Effekte für Audio-Buttons */
 button[style*="position: fixed"][style*="bottom: 80px"]:hover,
 button[style*="position: fixed"][style*="bottom: 20px"]:hover {
     transform: scale(1.1) !important;
     transition: transform 0.2s ease !important;
 }
 
-/* ✅ NEU: Focus-States für Barrierefreiheit */
+/* ✅ Focus-States für Barrierefreiheit */
 button[style*="position: fixed"][style*="bottom: 80px"]:focus,
 button[style*="position: fixed"][style*="bottom: 20px"]:focus {
     outline: 2px solid rgba(255, 255, 255, 0.8) !important;
     outline-offset: 2px !important;
 }
 
-/* ✅ NEU: Disabled-State für Auto-Play Button */
+/* ✅ Disabled-State für Auto-Play Button */
 button[style*="position: fixed"][style*="bottom: 80px"]:disabled {
     opacity: 0.5 !important;
     cursor: not-allowed !important;
     transform: none !important;
 }
 
-/* ✅ NEU: Mobile-Optimierungen */
+/* ✅ Mobile-Optimierungen */
 @media (max-width: 768px) {
     button[style*="position: fixed"][style*="bottom: 80px"] {
         bottom: 100px !important;
@@ -155,26 +242,136 @@ button[style*="position: fixed"][style*="bottom: 80px"]:disabled {
 
     .section-indicators {
         right: 10px;
-        gap: 8px;
+        gap: 6px;
+        /* ✅ Noch enger auf Mobile für 9 Phasen */
     }
 
     .section-indicator {
         width: 10px;
         height: 10px;
     }
+
+    .debug-indicator {
+        font-size: 10px;
+        padding: 4px 8px;
+        max-width: 250px;
+    }
 }
 
-/* ✅ NEU: Sicherstellen dass alle Interactive Elemente über Fixed Layers sind */
+@media (max-width: 480px) {
+    .section-indicators {
+        gap: 5px;
+        /* ✅ Sehr eng für kleine Bildschirme */
+    }
+
+    .section-indicator {
+        width: 8px;
+        height: 8px;
+    }
+
+    .debug-indicator {
+        font-size: 9px;
+        padding: 3px 6px;
+        max-width: 200px;
+    }
+}
+
+/* ✅ Sicherstellen dass alle Interactive Elemente über Fixed Layers sind */
 .interactive-controls {
     position: relative;
     z-index: 10000;
     pointer-events: all;
 }
 
-/* ✅ NEU: Debug-Panel Styling verbessern */
+/* ✅ Debug-Panel Styling verbessern */
 div[style*="position: fixed"][style*="top: 120px"] {
     z-index: 10001 !important;
     pointer-events: all !important;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ✅ NEU: Phase 8 Newsletter Layer Unterstützung */
+.phase8-newsletter-container button,
+.phase8-newsletter-container input,
+.phase8-newsletter-container form {
+    pointer-events: all !important;
+    cursor: pointer !important;
+    z-index: 26 !important;
+}
+
+.phase8-newsletter-container input {
+    cursor: text !important;
+}
+
+/* ✅ NEU: Success Message Animation Support */
+@keyframes successBounce {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ✅ NEU: Bessere Responsive Tooltips */
+@media (max-width: 768px) {
+    .section-indicator:hover::after {
+        display: none;
+        /* Tooltips auf Touch-Geräten ausblenden */
+    }
+}
+
+/* ✅ NEU: Accessibility Support */
+@media (prefers-reduced-motion: reduce) {
+
+    .section-indicator,
+    .debug-indicator,
+    button[style*="position: fixed"] {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .section-indicator:hover::after {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+}
+
+/* ✅ NEU: High Contrast Mode */
+@media (prefers-contrast: high) {
+    .section-indicator {
+        border: 2px solid white;
+    }
+
+    .section-indicator.active {
+        background-color: yellow !important;
+        color: black !important;
+    }
+
+    .debug-indicator {
+        border: 2px solid white;
+        background-color: black !important;
+    }
+}
+
+/* ✅ NEU: Print Styles */
+@media print {
+
+    .section-indicators,
+    .debug-indicator,
+    button[style*="position: fixed"] {
+        display: none !important;
+    }
 }

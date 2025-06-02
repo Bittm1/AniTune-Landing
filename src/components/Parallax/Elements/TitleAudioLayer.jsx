@@ -1,4 +1,5 @@
-// src/components/Parallax/Elements/TitleAudioLayer.jsx
+// src/components/Parallax/Elements/TitleAudioLayer.jsx - KOMPLETT mit Phase 8
+
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import ErrorBoundary from '../../ErrorBoundary';
@@ -141,7 +142,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
         });
     }, [stopAllAudio]);
 
-    // ✅ KORRIGIERT: USEEFFECT - NUR MANUELLER MODUS + PHASE 7 UNTERSTÜTZUNG
+    // ✅ KORRIGIERT: USEEFFECT - NUR MANUELLER MODUS + PHASE 8 UNTERSTÜTZUNG
     useEffect(() => {
         console.log(`📍 Phase: ${currentTitleIndex}, ScrollLocked: ${isScrollLocked}`);
 
@@ -151,11 +152,18 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
             return;
         }
 
-        // ✅ NEU: Phase 7: Carousel - Kein Audio, keine Blockierung
+        // ✅ Phase 7: Carousel - Kein Audio, keine Blockierung
         if (currentTitleIndex === 7) {
             console.log(`🎠 Phase 7 (Carousel): Kein Audio erforderlich`);
             stopAllAudio(); // Stoppe eventuell laufendes Audio
-            return; // ✅ WICHTIG: Keine weitere Logik, die blockieren könnte
+            return;
+        }
+
+        // ✅ NEU: Phase 8: Newsletter - Kein Audio, keine Blockierung
+        if (currentTitleIndex === 8) {
+            console.log(`📧 Phase 8 (Newsletter): Kein Audio erforderlich`);
+            stopAllAudio(); // Stoppe eventuell laufendes Audio
+            return;
         }
 
         // Phase 1-6: Nur manueller Audio-Modus
@@ -232,7 +240,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                 {isAudioEnabled ? '🔊' : '🔇'}
             </button>
 
-            {/* ERWEITERTE DEBUG PANEL - PHASE 7 UNTERSTÜTZUNG */}
+            {/* ERWEITERTE DEBUG PANEL - PHASE 8 UNTERSTÜTZUNG */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
@@ -255,14 +263,21 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                     <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
                         🎵 NUR MANUELL
                     </div>
-                    <div>📍 Phase: {currentTitleIndex}/7</div>
+                    <div>📍 Phase: {currentTitleIndex}/8</div>
                     <div>🔊 Audio: {isAudioEnabled ? 'An' : 'Aus'}</div>
                     <div>🔒 Scroll Lock: {isScrollLocked ? 'Ja' : 'Nein'}</div>
 
-                    {/* ✅ NEU: Phase 7 Indikator */}
+                    {/* Phase 7 Indikator */}
                     {currentTitleIndex === 7 && (
                         <div style={{ color: '#a880ff', fontSize: '10px' }}>
                             🎠 Carousel-Phase (Kein Audio)
+                        </div>
+                    )}
+
+                    {/* ✅ NEU: Phase 8 Indikator */}
+                    {currentTitleIndex === 8 && (
+                        <div style={{ color: '#ff6b6b', fontSize: '10px' }}>
+                            📧 Newsletter-Phase (Kein Audio)
                         </div>
                     )}
 
@@ -321,6 +336,11 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                         {currentTitleIndex === 7 && (
                             <>
                                 <br />🎠 Phase 7: Carousel OK
+                            </>
+                        )}
+                        {currentTitleIndex === 8 && (
+                            <>
+                                <br />📧 Phase 8: Newsletter OK
                             </>
                         )}
                     </div>
