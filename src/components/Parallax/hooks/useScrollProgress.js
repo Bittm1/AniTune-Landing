@@ -1,12 +1,20 @@
-// src/components/Parallax/hooks/useScrollProgress.js - ANGEPASST für neue Segment-Aufteilung
+// src/components/Parallax/hooks/useScrollProgress.js - ANGEPASST für snapConfig
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import gsap from 'gsap';
 import { findNearestSnapTarget, findAdjacentTitle, getCurrentActiveTitle } from '../config/baseConfig';
 import { getSnapTiming, getBackToLogoTiming, getDeviceOptimizedTiming, getActiveScrollSegments } from '../config/timingConfig';
 
+// ✅ NEU: Import der Snap-Konfiguration
+import {
+    getSnapDurationForTransition,
+    getSnapEasingForTransition,
+    getSnapLockDelayForTransition,
+    getSnapConfigDebugInfo
+} from '../config/snapConfig';
+
 export function useScrollProgress(containerRef, sectionsRef, titles = []) {
-    // States
+    // States (unverändert)
     const [scrollProgress, setScrollProgress] = useState(0);
     const [activeSection, setActiveSection] = useState(0);
     const [activeTitle, setActiveTitle] = useState(null);
@@ -14,32 +22,31 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
     const [currentTitleIndex, setCurrentTitleIndex] = useState(0);
     const [isScrollLocked, setIsScrollLocked] = useState(false);
 
-    // Refs
+    // Refs (unverändert)
     const scrollTimeoutRef = useRef(null);
     const snapTimeoutRef = useRef(null);
     const lastScrollTime = useRef(0);
     const scrollDirection = useRef(0);
     const lastScrollEventRef = useRef(0);
 
-    // ✅ TIMING-CONFIG LADEN
+    // ✅ TIMING-CONFIG LADEN (unverändert)
     const timingConfig = getDeviceOptimizedTiming();
     const snapTiming = getSnapTiming();
 
-    // Manuelles Update des Scroll-Fortschritts
+    // Manuelles Update des Scroll-Fortschritts (unverändert)
     const updateScrollProgress = useCallback(() => {
         if (!containerRef.current || typeof window === 'undefined') return;
 
         const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
         const currentScroll = window.scrollY;
-        const progress = Math.max(0, Math.min(2.5, (currentScroll / totalHeight) * 2.5)); // 0-2.5 für alle Phasen
+        const progress = Math.max(0, Math.min(2.5, (currentScroll / totalHeight) * 2.5));
 
         setScrollProgress(progress);
 
-        // Phase-Logik für alle Phasen (0-7: Logo, 3 Titel, Carousel, Newsletter, etc.)
         if (currentTitleIndex === 0) {
-            setActiveTitle(null); // Phase 0 = Logo/Newsletter
+            setActiveTitle(null);
         } else if (titles.length > 0 && titles[currentTitleIndex - 1]) {
-            setActiveTitle(titles[currentTitleIndex - 1]); // Index 1+ → titles[0+]
+            setActiveTitle(titles[currentTitleIndex - 1]);
         }
 
         const sectionCount = sectionsRef.current.length;
@@ -55,68 +62,40 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [containerRef, sectionsRef, titles, currentTitleIndex]);
 
-    // ✅ SNAP-FUNKTION: Für neue Segment-Aufteilung
+    // ✅ KOMPLETT ÜBERARBEITETE SNAP-FUNKTION: Nutzt snapConfig
     const snapToTitleIndex = useCallback((targetIndex, direction = 'next') => {
         if (isScrollLocked || isSnapping) return;
 
-        // ✅ NEU: Lade segments aus timingConfig
         const segmentConfig = getActiveScrollSegments();
         const segments = segmentConfig.segments;
+        const maxIndex = 7;
 
-        // ✅ ANGEPASST: maxIndex basierend auf verfügbaren Segmenten
-        const maxIndex = segments.length - 1; // Dynamisch basierend auf Segmenten
         if (targetIndex < 0 || targetIndex > maxIndex) return;
 
-        // ✅ PHASE-BESCHREIBUNG für neue Aufteilung
-        let phaseDescription = 'Unbekannt';
-        if (targetIndex === 0) phaseDescription = 'Logo/Newsletter';
-        else if (targetIndex >= 1 && targetIndex <= 3) {
-            const titlePhaseNames = ['Von Uns Heißt Für Uns', 'Der Weg Ist Das Ziel', 'Die Community Heißt'];
-            phaseDescription = titlePhaseNames[targetIndex - 1] || `Titel ${targetIndex}`;
-        }
-        else if (targetIndex === 4) phaseDescription = 'Phase 4 (noch zu definieren)';
-        else if (targetIndex === 5) phaseDescription = 'AniTune Carousel';
-        else if (targetIndex === 6) phaseDescription = 'Newsletter CTA';
+        // ✅ NEU: Snap-Konfiguration aus snapConfig.js
+        const snapDuration = getSnapDurationForTransition(currentTitleIndex, targetIndex);
+        const snapEase = getSnapEasingForTransition(currentTitleIndex, targetIndex);
+        const lockDelay = getSnapLockDelayForTransition(currentTitleIndex, targetIndex);
 
-        console.log(`🔒 Lock-Snap zu Phase ${targetIndex}: ${phaseDescription}`);
+        console.log(`🎯 PROFESSIONELLER SNAP: ${currentTitleIndex}→${targetIndex}`);
+        console.log(`⏱️ Dauer: ${snapDuration}s | Easing: ${snapEase} | Lock: ${lockDelay}ms`);
 
         setIsScrollLocked(true);
         setIsSnapping(true);
 
-        // ✅ SCROLL-ZIEL-BERECHNUNG: Aus timingConfig segments
+        // Scroll-Ziel berechnen
         let targetScroll = 0;
-        let animationDuration = snapTiming.duration;
-        let animationEase = snapTiming.ease;
-
         if (segments[targetIndex]) {
             const targetSegment = segments[targetIndex];
             const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
             targetScroll = targetSegment.snapTarget * totalHeight / 2.5;
-
-            // ✅ SPEZIALFALL: Phase 0 → Phase 1 (langsame Animation für Zoom)
-            if (currentTitleIndex === 0 && targetIndex === 1) {
-                animationDuration = 2.5;
-                animationEase = 'power2.inOut';
-                console.log('🎬 Phase 0→1: Langsame Animation für Zoom-Effekt');
-            }
-            // ✅ NEUE SEGMENT-SPEZIALFÄLLE
-            else if (currentTitleIndex >= 1 && currentTitleIndex <= 3 && targetIndex >= 1 && targetIndex <= 3) {
-                // Zwischen Titel-Phasen: Mittlere Geschwindigkeit
-                animationDuration = 1.8;
-                animationEase = 'power2.inOut';
-                console.log(`🎭 Titel-Wechsel: Phase ${currentTitleIndex}→${targetIndex}`);
-            }
-            else {
-                animationDuration = targetSegment.snapDuration || snapTiming.duration;
-                animationEase = targetSegment.snapEase || snapTiming.ease;
-            }
         }
 
-        // GSAP-Animation
+        // ✅ GSAP-Animation mit snapConfig Werten
         gsap.to(window, {
-            duration: animationDuration,
+            duration: snapDuration,      // Aus snapConfig
             scrollTo: { y: targetScroll },
-            ease: animationEase,
+            ease: snapEase,              // Aus snapConfig
             onUpdate: () => {
                 updateScrollProgress();
             },
@@ -125,21 +104,22 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
 
                 if (targetIndex === 0) {
                     setActiveTitle(null);
-                } else if (targetIndex <= 3 && titles[targetIndex - 1]) { // ✅ ANGEPASST: nur Titel 1-3
+                } else if (targetIndex <= 5) {
                     setActiveTitle(titles[targetIndex - 1]);
                 } else {
-                    setActiveTitle(null); // Andere Phasen haben keine Titel
+                    setActiveTitle(null);
                 }
 
+                // ✅ Lock-Delay aus snapConfig
                 setTimeout(() => {
                     setIsScrollLocked(false);
                     setIsSnapping(false);
-                }, snapTiming.lockDelay);
+                }, lockDelay);
             }
         });
-    }, [isScrollLocked, isSnapping, titles, updateScrollProgress, snapTiming, currentTitleIndex]);
+    }, [isScrollLocked, isSnapping, titles, updateScrollProgress, currentTitleIndex]);
 
-    // ✅ SCROLL-EVENT-BEHANDLUNG mit neuer Segment-Aufteilung
+    // ✅ SCROLL-EVENT-BEHANDLUNG (unverändert - nutzt die neue snapToTitleIndex)
     const handleScrollEvent = useCallback((event) => {
         if (isScrollLocked || isSnapping) {
             event.preventDefault();
@@ -153,19 +133,14 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
 
         lastScrollEventRef.current = now;
         const delta = event.deltaY || event.detail || (event.wheelDelta * -1);
-
-        // ✅ ANGEPASST: maxIndex dynamisch aus Segmenten
-        const segmentConfig = getActiveScrollSegments();
-        const maxIndex = segmentConfig.segments.length - 1;
+        const maxIndex = 7;
 
         if (delta > 0) {
-            // Scroll nach unten
             const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);
             if (nextIndex !== currentTitleIndex) {
                 snapToTitleIndex(nextIndex, 'next');
             }
         } else if (delta < 0) {
-            // Scroll nach oben
             const prevIndex = Math.max(currentTitleIndex - 1, 0);
             if (prevIndex !== currentTitleIndex) {
                 snapToTitleIndex(prevIndex, 'prev');
@@ -173,7 +148,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // ✅ TOUCH-EVENT-BEHANDLUNG mit neuer Segment-Aufteilung
+    // ✅ TOUCH-EVENTS (unverändert - nutzen die neue snapToTitleIndex)
     const touchStartRef = useRef({ y: 0, time: 0 });
     const handleTouchStart = useCallback((event) => {
         if (event.touches.length === 1) {
@@ -190,10 +165,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const touch = event.changedTouches[0];
         const deltaY = touchStartRef.current.y - touch.clientY;
         const deltaTime = Date.now() - touchStartRef.current.time;
-
-        // ✅ ANGEPASST: maxIndex dynamisch
-        const segmentConfig = getActiveScrollSegments();
-        const maxIndex = segmentConfig.segments.length - 1;
+        const maxIndex = 7;
 
         if (Math.abs(deltaY) > 30 && deltaTime < 500) {
             if (deltaY > 0) {
@@ -210,13 +182,11 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // ✅ KEYBOARD-NAVIGATION mit neuer Segment-Aufteilung
+    // ✅ KEYBOARD-NAVIGATION (unverändert - nutzt die neue snapToTitleIndex)
     const handleKeyboardNavigation = useCallback((direction) => {
         if (isScrollLocked || isSnapping) return;
 
-        // ✅ ANGEPASST: maxIndex dynamisch
-        const segmentConfig = getActiveScrollSegments();
-        const maxIndex = segmentConfig.segments.length - 1;
+        const maxIndex = 7;
 
         if (direction === 'next') {
             const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);
@@ -254,15 +224,12 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         };
     }, [handleScrollEvent, handleTouchStart, handleTouchEnd, titles]);
 
-    // Keyboard-Events mit neuer Segment-Unterstützung
+    // Keyboard-Events (unverändert)
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
                 return;
             }
-
-            const segmentConfig = getActiveScrollSegments();
-            const maxIndex = segmentConfig.segments.length - 1;
 
             switch (e.key) {
                 case 'ArrowDown':
@@ -278,11 +245,11 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                     break;
                 case 'Home':
                     e.preventDefault();
-                    snapToTitleIndex(0); // Phase 0
+                    snapToTitleIndex(0);
                     break;
                 case 'End':
                     e.preventDefault();
-                    snapToTitleIndex(maxIndex); // ✅ ANGEPASST: Letzte Phase dynamisch
+                    snapToTitleIndex(7);
                     break;
             }
         };
@@ -298,7 +265,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [titles, updateScrollProgress]);
 
-    // Legacy-Funktionen für Kompatibilität
+    // Legacy-Funktionen für Kompatibilität (unverändert)
     const scrollToSection = useCallback((index) => {
         snapToTitleIndex(index);
     }, [snapToTitleIndex]);
@@ -307,7 +274,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         snapToTitleIndex(index);
     }, [snapToTitleIndex]);
 
-    // Formatierter Progress
+    // Formatierter Progress (unverändert)
     const formattedScrollProgress = {
         normalized: (Math.min(2.5, Math.max(0, scrollProgress)) * 40).toFixed(0),
         absolute: (scrollProgress * 40).toFixed(0),
@@ -317,11 +284,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         percentage: (scrollProgress * 40).toFixed(0) + '%'
     };
 
-    // ✅ ERWEITERTE Helper für neue Phase-Erkennung
-    const segmentConfig = getActiveScrollSegments();
-    const totalPhases = segmentConfig.segments.length;
-
-    // Return-Werte - ANGEPASST für neue Segment-Aufteilung
+    // ✅ ERWEITERTE Return-Werte mit snapConfig Debug-Info
     return {
         scrollProgress,
         activeSection,
@@ -337,42 +300,30 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         currentTitleIndex,
         isScrollLocked,
 
-        // Helper für Phase-Erkennung - ANGEPASST für neue Aufteilung
+        // Helper für Phase-Erkennung (unverändert)
         isLogoPhase: currentTitleIndex === 0,
-        isTitlePhase: currentTitleIndex >= 1 && currentTitleIndex <= 3, // ✅ ANGEPASST: 1-3 statt 1-5
-        isCarouselPhase: currentTitleIndex === 5, // ✅ ANGEPASST: Index 5
-        isNewsletterPhase: currentTitleIndex === 6, // ✅ ANGEPASST: Index 6
+        isTitlePhase: currentTitleIndex >= 1 && currentTitleIndex <= 5,
+        isCarouselPhase: currentTitleIndex === 6,
+        isNewsletterPhase: currentTitleIndex === 7,
         currentPhaseDescription:
             currentTitleIndex === 0 ? 'Logo/Newsletter' :
-                currentTitleIndex === 1 ? 'Von Uns Heißt Für Uns' :
-                    currentTitleIndex === 2 ? 'Der Weg Ist Das Ziel' :
-                        currentTitleIndex === 3 ? 'Die Community Heißt' :
-                            currentTitleIndex === 4 ? 'Phase 4 (noch zu definieren)' :
-                                currentTitleIndex === 5 ? 'AniTune Carousel' :
-                                    currentTitleIndex === 6 ? 'Newsletter CTA' :
-                                        `Phase ${currentTitleIndex}`,
+                currentTitleIndex === 6 ? 'AniTune Carousel' :
+                    currentTitleIndex === 7 ? 'Newsletter CTA' :
+                        titles[currentTitleIndex - 1]?.text || `Titel ${currentTitleIndex}`,
 
-        // ✅ ANGEPASSTE Timing-Debug-Info
+        // ✅ ERWEITERTE Debug-Info mit snapConfig
         timingInfo: {
             preset: timingConfig.name,
             snapDuration: snapTiming.duration,
             snapEase: snapTiming.ease,
             currentPhase: currentTitleIndex === 0 ? 'Logo/Newsletter' :
-                currentTitleIndex === 1 ? 'Von Uns Heißt Für Uns' :
-                    currentTitleIndex === 2 ? 'Der Weg Ist Das Ziel' :
-                        currentTitleIndex === 3 ? 'Die Community Heißt' :
-                            currentTitleIndex === 4 ? 'Phase 4 (noch zu definieren)' :
-                                currentTitleIndex === 5 ? 'AniTune Carousel' :
-                                    currentTitleIndex === 6 ? 'Newsletter CTA' :
-                                        `Phase ${currentTitleIndex}`,
-            totalPhases: totalPhases, // ✅ DYNAMISCH: Basierend auf Segmenten
+                currentTitleIndex === 6 ? 'AniTune Carousel' :
+                    currentTitleIndex === 7 ? 'Newsletter CTA' :
+                        `Titel ${currentTitleIndex}`,
+            totalPhases: 8,
             configurable: true,
-            // ✅ NEU: Debug-Info für neue Segment-Aufteilung
-            segmentInfo: {
-                phase1: "bis 16% Debug (0.4 scrollProgress)",
-                phase2: "bis 32% Debug (0.8 scrollProgress)",
-                phase3: "bis 40% Debug (1.0 scrollProgress)"
-            }
+            // ✅ NEU: snapConfig Debug-Info
+            snapConfig: getSnapConfigDebugInfo()
         }
     };
 }

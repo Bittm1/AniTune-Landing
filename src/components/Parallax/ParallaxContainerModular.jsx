@@ -22,6 +22,7 @@ import Phase8NewsletterLayer from './Elements/Phase8NewsletterLayer'; // ✅ NEU
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
 import gsap from 'gsap';
+import { getSnapConfigDebugInfo, validateSnapConfig } from './config/snapConfig';
 
 // Hooks Import
 import { useScrollProgress } from './hooks/useScrollProgress';
@@ -321,6 +322,22 @@ const ParallaxContainerModular = React.memo(() => {
         }
     }, [resetCount]);
 
+    // ✅ NEUEN useEffect GANZ UNTEN HINZUFÜGEN (vor dem return Statement):
+    useEffect(() => {
+        if (process.env.NODE_ENV === 'development') {
+            const debugInfo = getSnapConfigDebugInfo();
+            const warnings = validateSnapConfig();
+
+            console.log('🎯 Snap-Config Geladen:', debugInfo);
+
+            if (warnings.length > 0) {
+                console.warn('⚠️ Snap-Config Warnungen:', warnings);
+            } else {
+                console.log('✅ Snap-Config vollständig validiert');
+            }
+        }
+    }, []);
+
     // Memoize the fallback component to prevent unnecessary re-renders
     const errorFallback = useMemo(() => (
         <div style={{
@@ -355,35 +372,73 @@ const ParallaxContainerModular = React.memo(() => {
     ), [resetComponent]);
 
     // ✅ ERWEITERTE DEBUG-ANZEIGE: 9 Phasen (0-8)
-    const debugIndicator = useMemo(() => (
-        <div className="debug-indicator">
-            Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/40
-            <div style={{ fontSize: '10px', marginTop: '2px' }}>
-                Phase: {currentTitleIndex}/8 ({currentPhaseDescription})
+    const debugIndicator = useMemo(() => {
+        // ✅ NEU: Snap-Config Debug-Info
+        const snapDebug = getSnapConfigDebugInfo();
+        const snapWarnings = validateSnapConfig();
+
+        return (
+            <div className="debug-indicator">
+                <div style={{ borderBottom: '1px solid #333', paddingBottom: '4px', marginBottom: '4px' }}>
+                    Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/50
+                </div>
+
+                <div style={{ fontSize: '10px', marginTop: '2px' }}>
+                    Phase: {currentTitleIndex}/8 ({currentPhaseDescription})
+                </div>
+
+                <div style={{ fontSize: '10px' }}>
+                    Newsletter: {hasSubscribed ? '✅' : '❌'} | Lock: {isScrollLocked ? '🔒' : '🔓'}
+                </div>
+
+                {/* ✅ NEU: Snap-Speed Info */}
+                <div style={{ fontSize: '9px', color: '#a880ff', marginTop: '2px' }}>
+                    📱 Device: {snapDebug.device} | Next Speed:
+                </div>
+                <div style={{ fontSize: '8px', color: '#4CAF50' }}>
+                    {currentTitleIndex < 7 && `${currentTitleIndex}→${currentTitleIndex + 1}: ${Object.values(snapDebug.exampleTransitions)[Math.min(currentTitleIndex, 4)] || 'N/A'}`}
+                </div>
+
+                {/* ✅ Warnungen anzeigen (falls vorhanden) */}
+                {snapWarnings.length > 0 && (
+                    <div style={{ fontSize: '8px', color: '#ff6b6b', marginTop: '2px' }}>
+                        Config Issues: {snapWarnings.length}
+                    </div>
+                )}
+
+                <div style={{ fontSize: '9px', marginTop: '2px' }}>
+                    Original: {timingInfo.preset} | Quelle: {subscriptionSource || 'none'}
+                </div>
+
+                <button
+                    onClick={resetComponent}
+                    style={{
+                        marginLeft: '10px',
+                        padding: '2px 8px',
+                        fontSize: '12px',
+                        background: '#555',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    ↻
+                </button>
             </div>
-            <div style={{ fontSize: '10px' }}>
-                Newsletter: {hasSubscribed ? '✅' : '❌'} | Lock: {isScrollLocked ? '🔒' : '🔓'}
-            </div>
-            <div style={{ fontSize: '9px' }}>
-                Timing: {timingInfo.preset} | Quelle: {subscriptionSource || 'none'}
-            </div>
-            <button
-                onClick={resetComponent}
-                style={{
-                    marginLeft: '10px',
-                    padding: '2px 8px',
-                    fontSize: '12px',
-                    background: '#555',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                }}
-            >
-                ↻
-            </button>
-        </div>
-    ), [formattedScrollProgress.absolute, activeSection, resetComponent, scrollProgress, currentTitleIndex, currentPhaseDescription, timingInfo, isScrollLocked, hasSubscribed, subscriptionSource]);
+        );
+    }, [
+        formattedScrollProgress.absolute,
+        activeSection,
+        resetComponent,
+        scrollProgress,
+        currentTitleIndex,
+        currentPhaseDescription,
+        timingInfo,
+        isScrollLocked,
+        hasSubscribed,
+        subscriptionSource
+    ]);
 
     // ✅ ERWEITERTE SECTION-INDIKATOREN: 9 Phasen (0-8)
     const sectionIndicators = useMemo(() => (
