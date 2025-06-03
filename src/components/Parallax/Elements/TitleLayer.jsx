@@ -1,32 +1,31 @@
-// src/components/Parallax/Elements/TitleLayer.jsx - NEUE SEGMENT-AUFTEILUNG
+// src/components/Parallax/Elements/TitleLayer.jsx - MIT ZENTRALER PHASE-DEFINITION
 
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
 import ErrorBoundary from '../../ErrorBoundary';
-import { getAnimationTiming, getDeviceOptimizedTiming } from '../config/timingConfig';
+import { getDeviceOptimizedTiming } from '../config/timingConfig';
+
+// ✅ SCHRITT 3: Import der zentralen Phase-Definition
+import {
+    getActivePhaseFromScroll,
+    getTitleTextForPhase,
+    getPhaseDebugInfo
+} from '../utils/phaseUtils';
+
 import './TitleLayer.css';
 
 const TitleLayer = React.memo(({
     scrollProgress,
     titles = [],
-    currentTitleIndex = 0,  // ✅ Nur noch für Snap-Navigation
+    currentTitleIndex = 0,
     isScrollLocked = false
 }) => {
     if (!titles || titles.length === 0) return null;
 
-    // ✅ NEUE SEGMENT-AUFTEILUNG: 16%, 32%, 40%, 48% Debug-Werte
-    const getActivePhaseFromScroll = useCallback((progress) => {
-        // Umrechnung: Debug-Wert = scrollProgress * 40
-        // 16% Debug = 0.4 scrollProgress, 32% = 0.8, 40% = 1.0, 48% = 1.2
-        if (progress >= 0.05 && progress < 0.4) return 1;       // Phase 1: Von Uns Heißt Für Uns (bis 16% Debug)
-        else if (progress >= 0.4 && progress < 0.8) return 2;   // Phase 2: Der Weg Ist Das Ziel (bis 32% Debug)
-        else if (progress >= 0.8 && progress < 1.0) return 3;   // Phase 3: Die Community Heißt (bis 40% Debug)
-        return 0; // Logo-Phase oder andere
-    }, []);
-
+    // ✅ SCHRITT 3A: Nutze zentrale Phase-Funktion statt lokaler Definition
     const activePhase = getActivePhaseFromScroll(scrollProgress);
 
-    // ✅ PHASE 0: Logo/Newsletter - zeige keine Titel an
+    // ✅ SCHRITT 3B: Phase 0 = Logo/Newsletter - zeige keine Titel
     if (activePhase === 0) {
         return (
             <ErrorBoundary>
@@ -55,13 +54,27 @@ const TitleLayer = React.memo(({
         );
     }
 
-    // ✅ TITEL-PHASEN 1-3: Basierend auf scrollProgress
+    // ✅ SCHRITT 3C: Titel-Phasen 1-3 - Zentrale Logik
     const titleArrayIndex = activePhase - 1; // Phase 1 → titles[0]
     const currentTitle = titles[titleArrayIndex];
 
     if (!currentTitle) {
-        console.warn(`TitleLayer: Kein Titel für Phase ${activePhase} gefunden (Array-Index: ${titleArrayIndex})`);
+        console.warn(`❌ TITEL-FEHLER: Kein Titel für Phase ${activePhase} gefunden (Array-Index: ${titleArrayIndex})`);
+
+        // ✅ SCHRITT 3D: Zeige zentrale Debug-Info bei Fehlern
+        const debugInfo = getPhaseDebugInfo(scrollProgress);
+        console.warn('📊 Phase Debug Info:', debugInfo);
+
         return null;
+    }
+
+    // ✅ SCHRITT 3E: Validiere dass Titel und zentrale Definition übereinstimmen
+    const expectedTitleText = getTitleTextForPhase(activePhase);
+    if (currentTitle.text !== expectedTitleText) {
+        console.warn(`⚠️ TITEL-MISMATCH: 
+            Phase ${activePhase}: 
+            Erwartet: "${expectedTitleText}" 
+            Gefunden: "${currentTitle.text}"`);
     }
 
     return (
@@ -78,8 +91,8 @@ const TitleLayer = React.memo(({
                     pointerEvents: 'none'
                 }}
             >
-                {/* ✅ SCROLL-BASIERTER TITEL */}
-                <ScrollBasedTitle
+                {/* ✅ SCHRITT 3F: Titel mit zentraler Phase-Logik */}
+                <CentralizedTitle
                     title={currentTitle}
                     isActive={true}
                     isScrollLocked={isScrollLocked}
@@ -88,15 +101,16 @@ const TitleLayer = React.memo(({
                     scrollProgress={scrollProgress}
                 />
 
-                {/* Debug-Info mit neuen Segment-Bereichen */}
+                {/* ✅ SCHRITT 3G: Erweiterte Debug-Info mit zentraler Validierung */}
                 {process.env.NODE_ENV === 'development' && (
-                    <ScrollTitleDebugPanel
+                    <CentralizedDebugPanel
                         scrollProgress={scrollProgress}
                         activePhase={activePhase}
                         titleArrayIndex={titleArrayIndex}
                         currentTitle={currentTitle}
                         isScrollLocked={isScrollLocked}
                         currentTitleIndex={currentTitleIndex}
+                        expectedTitleText={expectedTitleText}
                     />
                 )}
             </div>
@@ -104,8 +118,8 @@ const TitleLayer = React.memo(({
     );
 });
 
-// ✅ SCROLL-BASIERTE TITEL-KOMPONENTE (unverändert)
-const ScrollBasedTitle = React.memo(({
+// ✅ SCHRITT 3H: Titel-Komponente mit zentraler Phase-Logik
+const CentralizedTitle = React.memo(({
     title,
     isActive,
     isScrollLocked,
@@ -119,7 +133,7 @@ const ScrollBasedTitle = React.memo(({
     const currentStateRef = useRef('hidden');
     const lastActivePhaseRef = useRef(0);
 
-    // ✅ LETTER-REVEAL KONFIGURATION (wie im Original)
+    // Letter-Reveal Konfiguration (unverändert)
     const config = useMemo(() => ({
         duration: 0.5,
         delay: 0.1,
@@ -137,11 +151,11 @@ const ScrollBasedTitle = React.memo(({
         }));
     }, [title.text]);
 
-    // ✅ SCROLL-BASIERTE ANIMATION
+    // Animation Funktionen (unverändert)
     const animateIn = useCallback(() => {
         if (!titleRef.current) return;
 
-        console.log(`🎭 SCROLL-REVEAL: "${title.text}" (Phase ${activePhase}) wird eingeblendet`);
+        console.log(`🎭 CENTRALIZED-REVEAL: "${title.text}" (Phase ${activePhase}) wird eingeblendet`);
 
         if (timelineRef.current) {
             timelineRef.current.kill();
@@ -152,11 +166,10 @@ const ScrollBasedTitle = React.memo(({
         const tl = gsap.timeline({
             onComplete: () => {
                 currentStateRef.current = 'visible';
-                console.log(`✅ SCROLL-REVEAL fertig: "${title.text}" (Phase ${activePhase})`);
+                console.log(`✅ CENTRALIZED-REVEAL fertig: "${title.text}" (Phase ${activePhase})`);
             }
         });
 
-        // ✅ Startwerte setzen
         tl.set(lettersRef.current, {
             opacity: 0,
             scale: config.startScale,
@@ -164,7 +177,6 @@ const ScrollBasedTitle = React.memo(({
             force3D: true
         });
 
-        // ✅ Einblenden
         tl.to(lettersRef.current, {
             opacity: 1,
             scale: 1,
@@ -182,7 +194,7 @@ const ScrollBasedTitle = React.memo(({
     const animateOut = useCallback(() => {
         if (!titleRef.current) return;
 
-        console.log(`🎭 SCROLL-HIDE: "${title.text}" (Phase ${activePhase}) wird ausgeblendet`);
+        console.log(`🎭 CENTRALIZED-HIDE: "${title.text}" (Phase ${activePhase}) wird ausgeblendet`);
 
         if (timelineRef.current) {
             timelineRef.current.kill();
@@ -193,7 +205,7 @@ const ScrollBasedTitle = React.memo(({
         const tl = gsap.timeline({
             onComplete: () => {
                 currentStateRef.current = 'hidden';
-                console.log(`❌ SCROLL-HIDE ausgeblendet: "${title.text}"`);
+                console.log(`❌ CENTRALIZED-HIDE ausgeblendet: "${title.text}"`);
             }
         });
 
@@ -211,10 +223,11 @@ const ScrollBasedTitle = React.memo(({
 
     }, [title.text, activePhase, config]);
 
-    // ✅ REAGIERE AUF PHASE-ÄNDERUNGEN (scroll-basiert)
+    // ✅ SCHRITT 3I: Reagiere auf zentrale Phase-Änderungen
     useEffect(() => {
         if (activePhase !== lastActivePhaseRef.current) {
-            console.log(`🔄 TITEL Phase-Wechsel: ${lastActivePhaseRef.current} → ${activePhase}`);
+            console.log(`🔄 CENTRALIZED TITEL Phase-Wechsel: ${lastActivePhaseRef.current} → ${activePhase}`);
+            console.log(`📊 Phase Debug:`, getPhaseDebugInfo(scrollProgress));
 
             if (isActive && activePhase > 0) {
                 setTimeout(animateIn, 100);
@@ -224,12 +237,12 @@ const ScrollBasedTitle = React.memo(({
 
             lastActivePhaseRef.current = activePhase;
         }
-    }, [activePhase, isActive, animateIn, animateOut]);
+    }, [activePhase, isActive, animateIn, animateOut, scrollProgress]);
 
-    // ✅ INITIALISIERUNG bei Phase-Wechsel
+    // Initialisierung bei Phase-Wechsel
     useEffect(() => {
         if (titleRef.current && lettersRef.current.length > 0) {
-            console.log(`🔧 Initialisiere SCROLL-Titel: "${title.text}" (Phase ${activePhase})`);
+            console.log(`🔧 Initialisiere CENTRALIZED-Titel: "${title.text}" (Phase ${activePhase})`);
             gsap.set(lettersRef.current, {
                 opacity: 0,
                 scale: config.startScale,
@@ -239,7 +252,7 @@ const ScrollBasedTitle = React.memo(({
         }
     }, [title.text, activePhase, config]);
 
-    // ✅ CLEANUP
+    // Cleanup
     useEffect(() => {
         return () => {
             if (timelineRef.current) {
@@ -248,7 +261,7 @@ const ScrollBasedTitle = React.memo(({
         };
     }, [title.text, activePhase]);
 
-    // Styles
+    // Styles (unverändert)
     const titleStyles = useMemo(() => ({
         position: 'absolute',
         top: title.position.top,
@@ -276,10 +289,10 @@ const ScrollBasedTitle = React.memo(({
 
     const cssClasses = useMemo(() => {
         const classes = [
-            'scroll-reveal-title',
+            'centralized-title',
             'letter-reveal-title',
             `title-${title.index + 1}`,
-            `scroll-phase-${activePhase}`
+            `centralized-phase-${activePhase}`
         ];
 
         if (isActive) {
@@ -326,8 +339,10 @@ const ScrollBasedTitle = React.memo(({
     );
 });
 
-// ✅ DEBUG-PANEL FÜR LOGO-PHASE
+// ✅ SCHRITT 3J: Debug-Panel für Logo-Phase
 const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollLocked }) => {
+    const debugInfo = getPhaseDebugInfo(scrollProgress);
+
     return (
         <div
             style={{
@@ -345,30 +360,32 @@ const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollL
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🏠 Phase 0 - Logo/Newsletter (NEUE SEGMENTE)
+                🏠 Phase 0 - Logo/Newsletter (CENTRALIZED)
             </div>
-            <div>ScrollProgress: {scrollProgress.toFixed(3)}</div>
-            <div>Active Phase: {activePhase}</div>
-            <div>Debug: {(scrollProgress * 40).toFixed(1)}%</div>
+            <div>ScrollProgress: {debugInfo.scrollProgress}</div>
+            <div>Active Phase: {debugInfo.phase}</div>
+            <div>Debug %: {debugInfo.debugPercentage}</div>
+            <div>Range: {debugInfo.phaseRange}</div>
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
-            <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
-                ✅ Neue Aufteilung: 16%, 32%, 40%, 48%
+            <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8, color: '#90EE90' }}>
+                ✅ Nutzt zentrale phaseUtils.js
             </div>
         </div>
     );
 });
 
-// ✅ DEBUG-PANEL FÜR SCROLL-TITEL mit neuen Bereichen
-const ScrollTitleDebugPanel = React.memo(({
+// ✅ SCHRITT 3K: Erweiterte Debug-Info mit Validierung
+const CentralizedDebugPanel = React.memo(({
     scrollProgress,
     activePhase,
     titleArrayIndex,
     currentTitle,
     isScrollLocked,
-    currentTitleIndex
+    currentTitleIndex,
+    expectedTitleText
 }) => {
-    const timingConfig = getDeviceOptimizedTiming();
-    const letterCount = currentTitle.text.length;
+    const debugInfo = getPhaseDebugInfo(scrollProgress);
+    const isValidMapping = currentTitle.text === expectedTitleText;
 
     return (
         <div
@@ -386,45 +403,51 @@ const ScrollTitleDebugPanel = React.memo(({
                 lineHeight: '1.4'
             }}
         >
-            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🎭 NEUE SEGMENT-AUFTEILUNG (SYNCHRONISIERT)
+            <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
+                🎭 CENTRALIZED TITEL (SCHRITT 3)
             </div>
-            <div>ScrollProgress: {scrollProgress.toFixed(3)}</div>
-            <div>Debug: {(scrollProgress * 40).toFixed(1)}%</div>
-            <div>Active Phase: {activePhase}/3 (Array: {titleArrayIndex}/2)</div>
+
+            {/* Zentrale Debug-Info */}
+            <div>ScrollProgress: {debugInfo.scrollProgress}</div>
+            <div>Debug %: {debugInfo.debugPercentage}</div>
+            <div>Active Phase: {debugInfo.phase}/3 (Array: {titleArrayIndex}/2)</div>
+            <div>Range: {debugInfo.phaseRange}</div>
             <div>Snap Index: {currentTitleIndex}/8 (nur Navigation)</div>
-            <div>Text: "{currentTitle.text}" ({letterCount} Buchstaben)</div>
-            <div>Stagger: 0.2s pro Buchstabe</div>
+
+            {/* Titel-Validierung */}
+            <div style={{
+                marginTop: '4px',
+                color: isValidMapping ? '#4CAF50' : '#ff6b6b',
+                fontSize: '10px'
+            }}>
+                {isValidMapping ? '✅' : '❌'} Titel-Mapping: "{currentTitle.text}"
+            </div>
+
+            {!isValidMapping && (
+                <div style={{ fontSize: '9px', color: '#ff6b6b' }}>
+                    Erwartet: "{expectedTitleText}"
+                </div>
+            )}
+
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
 
             <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
-                ✅ NEUE BEREICHE mit Audio-System
-            </div>
-            <div style={{ marginTop: '4px', fontSize: '9px', color: '#4CAF50' }}>
-                🎵 Phase 1: 5%-40% (bis 16% Debug)
+                ✅ Nutzt zentrale phaseUtils.js
             </div>
             <div style={{ marginTop: '2px', fontSize: '9px', color: '#4CAF50' }}>
-                🎵 Phase 2: 40%-80% (bis 32% Debug)
-            </div>
-            <div style={{ marginTop: '2px', fontSize: '9px', color: '#4CAF50' }}>
-                🎵 Phase 3: 80%-100% (bis 40% Debug)
+                📍 {debugInfo.phaseRange}: {debugInfo.titleText || 'Kein Titel'}
             </div>
             <div style={{ marginTop: '2px', fontSize: '9px', color: '#a880ff' }}>
-                📍 Aktuelle Phase {activePhase}: {
-                    activePhase === 1 ? '5%-40% (Von Uns Heißt Für Uns)' :
-                        activePhase === 2 ? '40%-80% (Der Weg Ist Das Ziel)' :
-                            activePhase === 3 ? '80%-100% (Die Community Heißt)' :
-                                'Unbekannt'
-                }
+                🔧 SCHRITT 3: Titel folgen zentraler Phase-Definition
             </div>
         </div>
     );
 });
 
 // Display Names
-TitleLayer.displayName = 'ScrollBasedTitleLayer';
-ScrollBasedTitle.displayName = 'ScrollBasedTitle';
+TitleLayer.displayName = 'CentralizedTitleLayer';
+CentralizedTitle.displayName = 'CentralizedTitle';
 LogoPhaseDebugPanel.displayName = 'LogoPhaseDebugPanel';
-ScrollTitleDebugPanel.displayName = 'ScrollTitleDebugPanel';
+CentralizedDebugPanel.displayName = 'CentralizedDebugPanel';
 
 export default TitleLayer;
