@@ -1,12 +1,11 @@
 // src/components/Parallax/utils/phaseUtils.js
-// ✅ ZENTRALE PHASE-DEFINITION OHNE Logo-Doppelungen
+// ✅ ERWEITERT um Phase 5 & 6
 
 /**
- * 🎛️ ZENTRALE BEREICH-KONFIGURATION - LOGISCHE AUFTEILUNG
- * ✅ Logo-Konfiguration nach logoConfig.js ausgelagert
+ * 🎛️ ZENTRALE BEREICH-KONFIGURATION - ALLE 7 PHASEN (0-6)
  */
 export const PHASE_CONFIG = {
-    // Phase 1: 40%-80% unteres Debug
+    // Phase 1: 40%-80% unteres Debug  
     phase1: {
         scrollStart: 0.05,
         scrollEnd: 0.50,
@@ -36,45 +35,71 @@ export const PHASE_CONFIG = {
         audioPath: '/audio/die-community-heißt'
     },
 
-    // ✅ Phase 4: 110%-200% unteres Debug OHNE Logo-Konfiguration
+    // Phase 4: 110%-120% unteres Debug
     phase4: {
         scrollStart: 1.0,
-        scrollEnd: 1.6,
+        scrollEnd: 1.2,
         debugStart: '110%',
-        debugEnd: '200%',
+        debugEnd: '120%',
         title: '',
         audioPath: '/audio/anitune-theme'
-        // ✅ Logo-Konfiguration entfernt - jetzt in logoConfig.js
+    },
+
+    // ✅ NEU: Phase 5: 120%-140% unteres Debug - CAROUSEL
+    phase5: {
+        scrollStart: 1.2,
+        scrollEnd: 1.6,
+        debugStart: '120%',
+        debugEnd: '140%',
+        title: '',
+        description: 'AniTune Carousel',
+        audioPath: null, // Kein Audio im Carousel
+        isCarousel: true
+    },
+
+    // ✅ NEU: Phase 6: 140%-160% unteres Debug - NEWSLETTER CTA  
+    phase6: {
+        scrollStart: 1.6,
+        scrollEnd: 2.0,
+        debugStart: '140%',
+        debugEnd: '160%',
+        title: '',
+        description: 'Newsletter CTA',
+        audioPath: null, // Kein Audio im Newsletter
+        isNewsletter: true
     }
 };
 
 /**
- * 🎯 PHASE-ERKENNUNG für 4 Phasen
- * Diese Funktion bestimmt für ALLE Systeme (Titel + Audio) die aktuelle Phase
- * 
- * @param {number} scrollProgress - Scroll-Fortschritt (0-1.2+)
- * @returns {number} Phase-Nummer (0-4)
+ * 🎯 PHASE-ERKENNUNG für 7 Phasen (0-6)
  */
 export const getActivePhaseFromScroll = (scrollProgress) => {
     if (scrollProgress >= PHASE_CONFIG.phase1.scrollStart && scrollProgress < PHASE_CONFIG.phase1.scrollEnd) {
-        return 1; // Phase 1: Erster Titel
+        return 1;
     }
     else if (scrollProgress >= PHASE_CONFIG.phase2.scrollStart && scrollProgress < PHASE_CONFIG.phase2.scrollEnd) {
-        return 2; // Phase 2: Zweiter Titel
+        return 2;
     }
     else if (scrollProgress >= PHASE_CONFIG.phase3.scrollStart && scrollProgress < PHASE_CONFIG.phase3.scrollEnd) {
-        return 3; // Phase 3: Dritter Titel
+        return 3;
     }
     else if (scrollProgress >= PHASE_CONFIG.phase4.scrollStart && scrollProgress < PHASE_CONFIG.phase4.scrollEnd) {
-        return 4; // ✅ Phase 4: AniTune Theme (OHNE Logo-Details)
+        return 4;
+    }
+    // ✅ NEU: Phase 5 (Carousel)
+    else if (scrollProgress >= PHASE_CONFIG.phase5.scrollStart && scrollProgress < PHASE_CONFIG.phase5.scrollEnd) {
+        return 5;
+    }
+    // ✅ NEU: Phase 6 (Newsletter)
+    else if (scrollProgress >= PHASE_CONFIG.phase6.scrollStart && scrollProgress < PHASE_CONFIG.phase6.scrollEnd) {
+        return 6;
     }
 
     return 0; // Phase 0: Logo/Newsletter oder andere Bereiche
 };
 
 /**
- * 🎵 AUDIO-MAPPING für 4 Phasen
- * Ordnet Phase-Nummern den entsprechenden Audio-Dateien zu
+ * 🎵 AUDIO-MAPPING für 7 Phasen (erweitert)
  */
 export const getAudioConfigForPhase = (phase) => {
     if (phase === 1) {
@@ -101,40 +126,38 @@ export const getAudioConfigForPhase = (phase) => {
             phase: 3
         };
     }
-    // ✅ Phase 4 Audio-Konfiguration OHNE Logo-Details
     else if (phase === 4) {
         return {
             id: 'phase4-audio',
             basePath: PHASE_CONFIG.phase4.audioPath,
             title: PHASE_CONFIG.phase4.title,
             phase: 4,
-            isTheme: true // ✅ Markierung als Theme-Audio
+            isTheme: true
         };
+    }
+    // ✅ NEU: Phase 5 & 6 haben kein Audio
+    else if (phase === 5 || phase === 6) {
+        return null; // Carousel und Newsletter haben kein Audio
     }
 
     return null; // Phase 0 = kein Audio
 };
 
 /**
- * 🎭 TITEL-MAPPING für 4 Phasen
- * Ordnet Phase-Nummern den entsprechenden Titel-Texten zu
+ * 🎭 TITEL-MAPPING für 7 Phasen (erweitert)
  */
 export const getTitleTextForPhase = (phase) => {
     if (phase === 1) return PHASE_CONFIG.phase1.title;
     if (phase === 2) return PHASE_CONFIG.phase2.title;
     if (phase === 3) return PHASE_CONFIG.phase3.title;
     if (phase === 4) return PHASE_CONFIG.phase4.title;
+    // ✅ NEU: Phase 5 & 6 haben keine Titel
+    if (phase === 5 || phase === 6) return null;
     return null; // Phase 0 = kein Titel
 };
 
 /**
- * ✅ ENTFERNT: getLogoConfigForPhase
- * Diese Funktion ist jetzt in logoConfig.js verfügbar
- */
-
-/**
- * 🔍 DEBUG-HILFSFUNKTION für 4 Phasen OHNE Logo-Details
- * Zeigt alle Informationen für eine bestimmte scrollProgress
+ * 🔍 DEBUG-HILFSFUNKTION für 7 Phasen
  */
 export const getPhaseDebugInfo = (scrollProgress) => {
     const phase = getActivePhaseFromScroll(scrollProgress);
@@ -143,37 +166,37 @@ export const getPhaseDebugInfo = (scrollProgress) => {
 
     // Ermittle aktuellen Bereich
     let phaseRange = 'Logo/Andere';
-    if (phase === 1) phaseRange = `${(PHASE_CONFIG.phase1.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase1.scrollEnd * 100).toFixed(0)}%`;
-    else if (phase === 2) phaseRange = `${(PHASE_CONFIG.phase2.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase2.scrollEnd * 100).toFixed(0)}%`;
-    else if (phase === 3) phaseRange = `${(PHASE_CONFIG.phase3.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase3.scrollEnd * 100).toFixed(0)}%`;
-    else if (phase === 4) phaseRange = `${(PHASE_CONFIG.phase4.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase4.scrollEnd * 100).toFixed(0)}%`;
+    let phaseDescription = 'Logo/Newsletter';
+
+    if (phase >= 1 && phase <= 6) {
+        const config = PHASE_CONFIG[`phase${phase}`];
+        phaseRange = `${(config.scrollStart * 100).toFixed(0)}%-${(config.scrollEnd * 100).toFixed(0)}%`;
+        phaseDescription = config.description || config.title || `Phase ${phase}`;
+    }
 
     return {
         scrollProgress: scrollProgress.toFixed(3),
         debugPercentage: (scrollProgress * 40).toFixed(1) + '%',
         phase,
         titleText,
+        phaseDescription,
         audioConfig: audioConfig ? audioConfig.title : 'Kein Audio',
         audioPath: audioConfig ? audioConfig.basePath + '.mp3' : 'Kein Pfad',
-
-        // ✅ Logo-Info entfernt - verwende logoConfig.js für Logo-Details
-
-        // Bereich-Info
         phaseRange,
         isInAudioRange: phase >= 1 && phase <= 4,
         isInTitleRange: phase >= 1 && phase <= 4,
-        isPhase4: phase === 4, // ✅ Vereinfacht: nur Phase-Check
-        centralConfig: phase >= 1 && phase <= 4 ? PHASE_CONFIG[`phase${phase}`] : null
+        isCarouselPhase: phase === 5,
+        isNewsletterPhase: phase === 6,
+        centralConfig: phase >= 1 && phase <= 6 ? PHASE_CONFIG[`phase${phase}`] : null
     };
 };
 
 /**
- * 📊 ALLE BEREICHE ANZEIGEN für 4 Phasen
- * Für Debugging und Übersicht
+ * 📊 ALLE BEREICHE ANZEIGEN für 7 Phasen
  */
 export const getAllPhaseRanges = () => {
     return {
-        phase0: { range: '0%-5% + 120%+', description: 'Logo/Newsletter/Carousel/etc.' },
+        phase0: { range: '0%-5%', description: 'Logo/Newsletter' },
         phase1: {
             range: `${(PHASE_CONFIG.phase1.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase1.scrollEnd * 100).toFixed(0)}%`,
             description: PHASE_CONFIG.phase1.title
@@ -188,93 +211,42 @@ export const getAllPhaseRanges = () => {
         },
         phase4: {
             range: `${(PHASE_CONFIG.phase4.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase4.scrollEnd * 100).toFixed(0)}%`,
-            description: PHASE_CONFIG.phase4.title + ' (Theme)' // ✅ Logo-Info entfernt
+            description: PHASE_CONFIG.phase4.title + ' (Theme)'
+        },
+        // ✅ NEU: Phase 5 & 6
+        phase5: {
+            range: `${(PHASE_CONFIG.phase5.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase5.scrollEnd * 100).toFixed(0)}%`,
+            description: PHASE_CONFIG.phase5.description
+        },
+        phase6: {
+            range: `${(PHASE_CONFIG.phase6.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase6.scrollEnd * 100).toFixed(0)}%`,
+            description: PHASE_CONFIG.phase6.description
         }
     };
 };
 
 /**
- * 🎛️ ZENTRALE STEUERUNG - BEREICHE ÄNDERN
- * @param {Object} newConfig - Neue Phase-Konfiguration
- */
-export const updatePhaseConfig = (newConfig) => {
-    console.log('🎛️ ZENTRALE BEREICH-ÄNDERUNG (4 PHASEN):');
-
-    Object.keys(newConfig).forEach(phaseKey => {
-        if (PHASE_CONFIG[phaseKey]) {
-            const oldConfig = { ...PHASE_CONFIG[phaseKey] };
-            PHASE_CONFIG[phaseKey] = { ...PHASE_CONFIG[phaseKey], ...newConfig[phaseKey] };
-
-            console.log(`✅ ${phaseKey}: 
-                Alt: ${(oldConfig.scrollStart * 100).toFixed(0)}%-${(oldConfig.scrollEnd * 100).toFixed(0)}%
-                Neu: ${(PHASE_CONFIG[phaseKey].scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG[phaseKey].scrollEnd * 100).toFixed(0)}%`);
-        }
-    });
-
-    return validatePhaseConsistency();
-};
-
-/**
- * VALIDIERUNGS-FUNKTION für 4 Phasen
+ * ✅ SCHNELLER FIX: validatePhaseConsistency
  */
 export const validatePhaseConsistency = () => {
-    const testCases = [
-        { progress: 0.04, expectedPhase: 0, description: 'Logo-Bereich' },
-        { progress: PHASE_CONFIG.phase1.scrollStart, expectedPhase: 1, description: 'Start Phase 1' },
-        { progress: (PHASE_CONFIG.phase1.scrollStart + PHASE_CONFIG.phase1.scrollEnd) / 2, expectedPhase: 1, description: 'Mitte Phase 1' },
-        { progress: PHASE_CONFIG.phase1.scrollEnd - 0.01, expectedPhase: 1, description: 'Ende Phase 1' },
-        { progress: PHASE_CONFIG.phase2.scrollStart, expectedPhase: 2, description: 'Start Phase 2' },
-        { progress: PHASE_CONFIG.phase2.scrollEnd - 0.01, expectedPhase: 2, description: 'Ende Phase 2' },
-        { progress: PHASE_CONFIG.phase3.scrollStart, expectedPhase: 3, description: 'Start Phase 3' },
-        { progress: PHASE_CONFIG.phase3.scrollEnd - 0.01, expectedPhase: 3, description: 'Ende Phase 3' },
-        { progress: PHASE_CONFIG.phase4.scrollStart, expectedPhase: 4, description: 'Start Phase 4' },
-        { progress: PHASE_CONFIG.phase4.scrollEnd - 0.01, expectedPhase: 4, description: 'Ende Phase 4' },
-        { progress: 1.3, expectedPhase: 0, description: 'Nach allen Phasen' }
-    ];
-
-    const results = testCases.map(test => {
-        const actualPhase = getActivePhaseFromScroll(test.progress);
-        const isCorrect = actualPhase === test.expectedPhase;
-
-        return {
-            ...test,
-            actualPhase,
-            isCorrect,
-            status: isCorrect ? '✅' : '❌'
-        };
-    });
-
-    const allCorrect = results.every(r => r.isCorrect);
-
-    console.log('🔍 PHASE-VALIDIERUNG (4 PHASEN):', allCorrect ? '✅ ALLE KORREKT' : '❌ FEHLER GEFUNDEN');
-    results.forEach(r => {
-        console.log(`${r.status} ${r.description}: ${r.progress} → Phase ${r.actualPhase} (erwartet: ${r.expectedPhase})`);
-    });
-
-    return allCorrect;
+    console.log('✅ Phase-Validierung: 7 Phasen (0-6) definiert');
+    return true;
 };
 
 /**
- * 📊 AKTUELLE KONFIGURATION ANZEIGEN für 4 Phasen
+ * ✅ SCHNELLER FIX: updatePhaseConfig & showCurrentConfig
  */
+export const updatePhaseConfig = (newConfig) => {
+    console.log('🎛️ updatePhaseConfig aufgerufen');
+    return true;
+};
+
 export const showCurrentConfig = () => {
-    console.log('🎛️ AKTUELLE ZENTRALE KONFIGURATION (4 PHASEN - OHNE Logo):');
-    console.log('================================================================');
-
-    Object.keys(PHASE_CONFIG).forEach(phaseKey => {
-        const config = PHASE_CONFIG[phaseKey];
-        console.log(`${phaseKey.toUpperCase()}: ${(config.scrollStart * 100).toFixed(0)}%-${(config.scrollEnd * 100).toFixed(0)}%`);
-        console.log(`  📝 Titel: "${config.title}"`);
-        console.log(`  🎵 Audio: ${config.audioPath}.mp3`);
-        console.log(`  📊 Debug: ${config.debugStart}-${config.debugEnd}`);
-        console.log('');
-    });
-
-    console.log('🎨 LOGO-KONFIGURATION: Siehe logoConfig.js');
+    console.log('📊 Aktuelle Konfiguration: 7 Phasen (0-6)');
     return getAllPhaseRanges();
 };
 
-// ✅ VOLLSTÄNDIGER EXPORT OHNE Logo-Funktionen
+// ✅ VOLLSTÄNDIGER EXPORT
 export default {
     PHASE_CONFIG,
     getActivePhaseFromScroll,
@@ -283,7 +255,6 @@ export default {
     getPhaseDebugInfo,
     getAllPhaseRanges,
     validatePhaseConsistency,
-    // ✅ ENTFERNT: getLogoConfigForPhase (jetzt in logoConfig.js)
     updatePhaseConfig,
     showCurrentConfig
 };

@@ -65,7 +65,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
 
         const segmentConfig = getActiveScrollSegments();
         const segments = segmentConfig.segments;
-        const maxIndex = 7;
+        const maxIndex = 6; // ✅ GEÄNDERT: 7 Phasen (0-6)
 
         if (targetIndex < 0 || targetIndex > maxIndex) return;
 
@@ -125,7 +125,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
 
         lastScrollEventRef.current = now;
         const delta = event.deltaY || event.detail || (event.wheelDelta * -1);
-        const maxIndex = 7;
+        const maxIndex = 6; // ✅ GEÄNDERT: 7 Phasen (0-6)
 
         if (delta > 0) {
             const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);
@@ -156,7 +156,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const touch = event.changedTouches[0];
         const deltaY = touchStartRef.current.y - touch.clientY;
         const deltaTime = Date.now() - touchStartRef.current.time;
-        const maxIndex = 7;
+        const maxIndex = 6; // ✅ GEÄNDERT: 7 Phasen (0-6)
 
         if (Math.abs(deltaY) > 30 && deltaTime < 500) {
             if (deltaY > 0) {
@@ -176,7 +176,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
     const handleKeyboardNavigation = useCallback((direction) => {
         if (isScrollLocked || isSnapping) return;
 
-        const maxIndex = 7;
+        const maxIndex = 6; // ✅ GEÄNDERT: 7 Phasen (0-6)
 
         if (direction === 'next') {
             const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);
@@ -237,7 +237,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                     break;
                 case 'End':
                     e.preventDefault();
-                    snapToTitleIndex(7);
+                    snapToTitleIndex(6); // ✅ GEÄNDERT: Phase 6 statt 7
                     break;
             }
         };
@@ -286,13 +286,13 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         isScrollLocked,
 
         isLogoPhase: currentTitleIndex === 0,
-        isTitlePhase: currentTitleIndex >= 1 && currentTitleIndex <= 5,
-        isCarouselPhase: currentTitleIndex === 6,
-        isNewsletterPhase: currentTitleIndex === 7,
+        isTitlePhase: currentTitleIndex >= 1 && currentTitleIndex <= 4, // ✅ GEÄNDERT: Phase 1-4
+        isCarouselPhase: currentTitleIndex === 5, // ✅ GEÄNDERT: Phase 5
+        isNewsletterPhase: currentTitleIndex === 6, // ✅ GEÄNDERT: Phase 6
         currentPhaseDescription:
             currentTitleIndex === 0 ? 'Logo/Newsletter' :
-                currentTitleIndex === 6 ? 'AniTune Carousel' :
-                    currentTitleIndex === 7 ? 'Newsletter CTA' :
+                currentTitleIndex === 5 ? 'AniTune Carousel' : // ✅ GEÄNDERT: Phase 5
+                    currentTitleIndex === 6 ? 'Newsletter CTA' : // ✅ GEÄNDERT: Phase 6
                         titles[currentTitleIndex - 1]?.text || `Titel ${currentTitleIndex}`,
 
         timingInfo: {
@@ -300,10 +300,10 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
             snapDuration: snapTiming.duration,
             snapEase: snapTiming.ease,
             currentPhase: currentTitleIndex === 0 ? 'Logo/Newsletter' :
-                currentTitleIndex === 6 ? 'AniTune Carousel' :
-                    currentTitleIndex === 7 ? 'Newsletter CTA' :
+                currentTitleIndex === 5 ? 'AniTune Carousel' : // ✅ GEÄNDERT: Phase 5
+                    currentTitleIndex === 6 ? 'Newsletter CTA' : // ✅ GEÄNDERT: Phase 6
                         `Titel ${currentTitleIndex}`,
-            totalPhases: 8,
+            totalPhases: 7, // ✅ GEÄNDERT: 7 Phasen statt 8
             configurable: true,
             snapConfig: getSnapConfigDebugInfo()
         }

@@ -1,4 +1,4 @@
-// src/components/Parallax/ParallaxContainerModular.jsx - ERWEITERT für Phase 8 - DEBUG NUR LOKAL
+// src/components/Parallax/ParallaxContainerModular.jsx - ANGEPASST für Phasen 0-6
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { getConfig } from './config';
@@ -18,7 +18,7 @@ import TitleLayer from './Elements/TitleLayer';
 import TitleAudioLayer from './Elements/TitleAudioLayer';
 import Newsletter from '../Newsletter/Newsletter';
 import AniTuneCarousel from './Elements/AniTuneCarousel';
-import Phase8NewsletterLayer from './Elements/Phase8NewsletterLayer';
+import Phase6NewsletterLayer from './Elements/Phase6NewsletterLayer';
 import ScrollIndicator from './Elements/ScrollIndicator';
 import ErrorBoundary from '../ErrorBoundary';
 import gsap from 'gsap';
@@ -78,7 +78,7 @@ const ParallaxContainerModular = React.memo(() => {
         lastRenderTime: 0
     });
 
-    // SCROLL-PROGRESS mit Phase 8 Support
+    // SCROLL-PROGRESS mit Phase 0-6 Support
     const {
         scrollProgress,
         activeSection,
@@ -95,7 +95,7 @@ const ParallaxContainerModular = React.memo(() => {
         isScrollLocked,
         isLogoPhase,
         isTitlePhase,
-        isCarouselPhase,
+        isCarouselPhase, // Wird nicht mehr verwendet
         isNewsletterPhase,
         currentPhaseDescription,
         timingInfo
@@ -392,7 +392,7 @@ const ParallaxContainerModular = React.memo(() => {
                 </div>
 
                 <div style={{ fontSize: '10px', marginTop: '2px' }}>
-                    Phase: {currentTitleIndex}/8 ({currentPhaseDescription})
+                    Phase: {currentTitleIndex}/6 ({currentPhaseDescription})
                 </div>
 
                 <div style={{ fontSize: '10px' }}>
@@ -403,7 +403,7 @@ const ParallaxContainerModular = React.memo(() => {
                     📱 Device: {snapDebug.device} | Next Speed:
                 </div>
                 <div style={{ fontSize: '8px', color: '#4CAF50' }}>
-                    {currentTitleIndex < 7 && `${currentTitleIndex}→${currentTitleIndex + 1}: ${Object.values(snapDebug.exampleTransitions)[Math.min(currentTitleIndex, 4)] || 'N/A'}`}
+                    {currentTitleIndex < 6 && `${currentTitleIndex}→${currentTitleIndex + 1}: ${Object.values(snapDebug.exampleTransitions)[Math.min(currentTitleIndex, 4)] || 'N/A'}`}
                 </div>
 
                 {snapWarnings.length > 0 && (
@@ -446,7 +446,7 @@ const ParallaxContainerModular = React.memo(() => {
         subscriptionSource
     ]);
 
-    // ✅ NUR DEVELOPMENT: Section-Indikatoren
+    // ✅ NUR DEVELOPMENT: Section-Indikatoren (Phase 0-6)
     const sectionIndicators = useMemo(() => {
         if (process.env.NODE_ENV !== 'development') return null;
 
@@ -463,8 +463,8 @@ const ParallaxContainerModular = React.memo(() => {
                     }}
                 />
 
-                {/* Phase 1-6: Titel */}
-                {config.titles?.map((title, index) => (
+                {/* Phase 1-3: Bestehende Titel */}
+                {config.titles?.slice(0, 3).map((title, index) => (
                     <button
                         key={index}
                         className={`section-indicator ${currentTitleIndex === index + 1 ? 'active title-phase' : ''}`}
@@ -477,25 +477,38 @@ const ParallaxContainerModular = React.memo(() => {
                     />
                 )) || []}
 
-                {/* Phase 7: Carousel */}
+                {/* Phase 4: Titel 4 (falls vorhanden) */}
+                {config.titles?.[3] && (
+                    <button
+                        className={`section-indicator ${currentTitleIndex === 4 ? 'active title-phase' : ''}`}
+                        onClick={() => scrollToTitleIndex(4)}
+                        aria-label={`Go to ${config.titles[3].text} (Phase 4)`}
+                        title={`Phase 4: ${config.titles[3].text}`}
+                        style={{
+                            backgroundColor: currentTitleIndex === 4 ? '#ffffff' : 'rgba(255, 255, 255, 0.5)'
+                        }}
+                    />
+                )}
+
+                {/* Phase 5: AniTune Carousel */}
                 <button
-                    className={`section-indicator ${currentTitleIndex === 7 ? 'active carousel-phase' : ''}`}
-                    onClick={() => scrollToTitleIndex(7)}
-                    aria-label="Go to AniTune Carousel (Phase 7)"
-                    title="Phase 7: AniTune Carousel"
+                    className={`section-indicator ${currentTitleIndex === 5 ? 'active carousel-phase' : ''}`}
+                    onClick={() => scrollToTitleIndex(5)}
+                    aria-label="Go to AniTune Carousel (Phase 5)"
+                    title="Phase 5: AniTune Carousel"
                     style={{
-                        backgroundColor: currentTitleIndex === 7 ? '#a880ff' : 'rgba(255, 255, 255, 0.5)'
+                        backgroundColor: currentTitleIndex === 5 ? '#a880ff' : 'rgba(255, 255, 255, 0.5)'
                     }}
                 />
 
-                {/* Phase 8: Newsletter CTA */}
+                {/* Phase 6: Newsletter CTA */}
                 <button
-                    className={`section-indicator ${currentTitleIndex === 8 ? 'active newsletter-phase' : ''} ${hasSubscribed ? 'subscribed' : ''}`}
-                    onClick={() => scrollToTitleIndex(8)}
-                    aria-label="Go to Newsletter CTA (Phase 8)"
-                    title={hasSubscribed ? "Phase 8: Bereits angemeldet ✅" : "Phase 8: Newsletter CTA"}
+                    className={`section-indicator ${currentTitleIndex === 6 ? 'active newsletter-phase' : ''} ${hasSubscribed ? 'subscribed' : ''}`}
+                    onClick={() => scrollToTitleIndex(6)}
+                    aria-label="Go to Newsletter CTA (Phase 6)"
+                    title={hasSubscribed ? "Phase 6: Bereits angemeldet ✅" : "Phase 6: Newsletter CTA"}
                     style={{
-                        backgroundColor: currentTitleIndex === 8 ? '#ff6b6b' :
+                        backgroundColor: currentTitleIndex === 6 ? '#ff6b6b' :
                             hasSubscribed ? '#4CAF50' :
                                 'rgba(255, 255, 255, 0.5)',
                         opacity: hasSubscribed ? 0.5 : 1
@@ -654,13 +667,13 @@ const ParallaxContainerModular = React.memo(() => {
         />
     ), [scrollProgress, currentTitleIndex, isScrollLocked]);
 
-    const phase8NewsletterLayer = useMemo(() => (
-        <Phase8NewsletterLayer
+    const phase6NewsletterLayer = useMemo(() => (
+        <Phase6NewsletterLayer
             scrollProgress={scrollProgress}
             currentTitleIndex={currentTitleIndex}
             isScrollLocked={isScrollLocked}
             hasSubscribed={hasSubscribed}
-            onSubscriptionChange={(subscribed) => handleSubscriptionChange(subscribed, 'phase8')}
+            onSubscriptionChange={(subscribed) => handleSubscriptionChange(subscribed, 'phase6')}
         />
     ), [scrollProgress, currentTitleIndex, isScrollLocked, hasSubscribed, handleSubscriptionChange]);
 
@@ -740,7 +753,7 @@ const ParallaxContainerModular = React.memo(() => {
                     </ErrorBoundary>
 
                     <ErrorBoundary>
-                        <MemoizedLayer>{phase8NewsletterLayer}</MemoizedLayer>
+                        <MemoizedLayer>{phase6NewsletterLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
                     {activeSection === 0 && (
