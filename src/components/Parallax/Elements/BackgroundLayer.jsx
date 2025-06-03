@@ -25,7 +25,7 @@ const BackgroundLayer = ({ scrollProgress, config }) => {
         <ErrorBoundary>
             <div style={{
                 position: 'fixed',
-                top: '-7%', 
+                top: '-9%', 
                 left: 0,
                 width: '100%',
                 height: '100vh',

@@ -42,25 +42,25 @@ export const PHASE_CONFIG = {
         scrollEnd: 1.6,    // ✅ VIEL HÖHER - Phase 4 bleibt aktiv!
         debugStart: '110%',
         debugEnd: '200%',
-        title: 'AniTune',
+        title: '',
         audioPath: '/audio/anitune-theme',
 
         // ✅ Logo-Konfiguration für Phase 4
         showLogo: true,
         logoConfig: {
             position: {
-                top: '50%',
-                left: '50%',
+                top: '60.2%',
+                left: '49.85%',
                 transform: 'translate(-50%, -50%)'
             },
-            scale: 2.0,
+            scale: 0.65,
             width: '300px',
             height: '300px',
-            zIndex: 100,
+            zIndex: 1000, // ✅ Höher als alle anderen Layer
             animation: 'fadeScale',
             opacity: 1.0,
             filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.8))',
-            transition: 'all 0.8s ease-in-out'
+            transition: 'all 0.2s ease-in-out'
         }
     }
 };

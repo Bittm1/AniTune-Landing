@@ -96,7 +96,7 @@ export const titleTexts = [
     'Von Uns Heißt Für Uns',  // Phase 1 (bis 16% Debug)
     'Der Weg Ist Das Ziel',   // Phase 2 (bis 32% Debug)
     'Die Community Heißt',     // Phase 3 (bis 40% Debug)
-    'AniTune'                 // Phase 4 ✅ HINZUGEFÜGT
+    ''                 // Phase 4 ✅ HINZUGEFÜGT
 ];
 
 // ✅ ANGEPASST: 3 Animationen für 3 Titel

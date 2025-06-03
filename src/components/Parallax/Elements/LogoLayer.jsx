@@ -64,7 +64,7 @@ const LogoLayer = ({ scrollProgress, config }) => {
                         position: 'fixed',
                         top: phase4LogoConfig.position.top,
                         left: phase4LogoConfig.position.left,
-                        transform: phase4LogoConfig.position.transform,
+                        transform: `${phase4LogoConfig.position.transform} scale(${phase4LogoConfig.scale})`,
                         width: phase4LogoConfig.width,
                         height: phase4LogoConfig.height,
                         zIndex: phase4LogoConfig.zIndex,
