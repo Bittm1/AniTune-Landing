@@ -1,4 +1,4 @@
-// src/components/Parallax/hooks/useScrollProgress.js - ANGEPASST für 5 Titel-Phasen (0-7 total)
+// src/components/Parallax/hooks/useScrollProgress.js - ANGEPASST für neue Segment-Aufteilung
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import gsap from 'gsap';
@@ -31,11 +31,11 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
 
         const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
         const currentScroll = window.scrollY;
-        const progress = Math.max(0, Math.min(2.5, (currentScroll / totalHeight) * 2.5)); // 0-2.5 für 8 Phasen
+        const progress = Math.max(0, Math.min(2.5, (currentScroll / totalHeight) * 2.5)); // 0-2.5 für alle Phasen
 
         setScrollProgress(progress);
 
-        // Phase-Logik für 8 Phasen (0-7)
+        // Phase-Logik für alle Phasen (0-7: Logo, 3 Titel, Carousel, Newsletter, etc.)
         if (currentTitleIndex === 0) {
             setActiveTitle(null); // Phase 0 = Logo/Newsletter
         } else if (titles.length > 0 && titles[currentTitleIndex - 1]) {
@@ -55,7 +55,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [containerRef, sectionsRef, titles, currentTitleIndex]);
 
-    // ✅ SNAP-FUNKTION: Für 8 Phasen (0-7)
+    // ✅ SNAP-FUNKTION: Für neue Segment-Aufteilung
     const snapToTitleIndex = useCallback((targetIndex, direction = 'next') => {
         if (isScrollLocked || isSnapping) return;
 
@@ -63,14 +63,22 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const segmentConfig = getActiveScrollSegments();
         const segments = segmentConfig.segments;
 
-        const maxIndex = 7; // ✅ ANGEPASST: 0-7 = 8 Phasen (0=Logo, 1-5=Titel, 6=Carousel, 7=Newsletter)
+        // ✅ ANGEPASST: maxIndex basierend auf verfügbaren Segmenten
+        const maxIndex = segments.length - 1; // Dynamisch basierend auf Segmenten
         if (targetIndex < 0 || targetIndex > maxIndex) return;
 
-        console.log(`🔒 Lock-Snap zu Phase ${targetIndex}: ${targetIndex === 0 ? 'Logo/Newsletter' :
-            targetIndex === 6 ? 'AniTune Carousel' :
-                targetIndex === 7 ? 'Newsletter CTA' :
-                    titles[targetIndex - 1]?.text || 'Titel ' + targetIndex
-            }`);
+        // ✅ PHASE-BESCHREIBUNG für neue Aufteilung
+        let phaseDescription = 'Unbekannt';
+        if (targetIndex === 0) phaseDescription = 'Logo/Newsletter';
+        else if (targetIndex >= 1 && targetIndex <= 3) {
+            const titlePhaseNames = ['Von Uns Heißt Für Uns', 'Der Weg Ist Das Ziel', 'Die Community Heißt'];
+            phaseDescription = titlePhaseNames[targetIndex - 1] || `Titel ${targetIndex}`;
+        }
+        else if (targetIndex === 4) phaseDescription = 'Phase 4 (noch zu definieren)';
+        else if (targetIndex === 5) phaseDescription = 'AniTune Carousel';
+        else if (targetIndex === 6) phaseDescription = 'Newsletter CTA';
+
+        console.log(`🔒 Lock-Snap zu Phase ${targetIndex}: ${phaseDescription}`);
 
         setIsScrollLocked(true);
         setIsSnapping(true);
@@ -91,12 +99,14 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                 animationEase = 'power2.inOut';
                 console.log('🎬 Phase 0→1: Langsame Animation für Zoom-Effekt');
             }
-            // ✅ NEU: Phase 6 → Phase 7 (sanfter Übergang)
-            else if (currentTitleIndex === 6 && targetIndex === 7) {
+            // ✅ NEUE SEGMENT-SPEZIALFÄLLE
+            else if (currentTitleIndex >= 1 && currentTitleIndex <= 3 && targetIndex >= 1 && targetIndex <= 3) {
+                // Zwischen Titel-Phasen: Mittlere Geschwindigkeit
                 animationDuration = 1.8;
                 animationEase = 'power2.inOut';
-                console.log('📧 Phase 6→7: Sanfter Übergang zu Newsletter');
-            } else {
+                console.log(`🎭 Titel-Wechsel: Phase ${currentTitleIndex}→${targetIndex}`);
+            }
+            else {
                 animationDuration = targetSegment.snapDuration || snapTiming.duration;
                 animationEase = targetSegment.snapEase || snapTiming.ease;
             }
@@ -115,10 +125,10 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
 
                 if (targetIndex === 0) {
                     setActiveTitle(null);
-                } else if (targetIndex <= 5) {
+                } else if (targetIndex <= 3 && titles[targetIndex - 1]) { // ✅ ANGEPASST: nur Titel 1-3
                     setActiveTitle(titles[targetIndex - 1]);
                 } else {
-                    setActiveTitle(null); // Phase 6 (Carousel) und 7 (Newsletter) haben keine Titel
+                    setActiveTitle(null); // Andere Phasen haben keine Titel
                 }
 
                 setTimeout(() => {
@@ -129,7 +139,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         });
     }, [isScrollLocked, isSnapping, titles, updateScrollProgress, snapTiming, currentTitleIndex]);
 
-    // ✅ SCROLL-EVENT-BEHANDLUNG mit 8 Phasen (0-7)
+    // ✅ SCROLL-EVENT-BEHANDLUNG mit neuer Segment-Aufteilung
     const handleScrollEvent = useCallback((event) => {
         if (isScrollLocked || isSnapping) {
             event.preventDefault();
@@ -144,7 +154,9 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         lastScrollEventRef.current = now;
         const delta = event.deltaY || event.detail || (event.wheelDelta * -1);
 
-        const maxIndex = 7; // ✅ ANGEPASST: 0-7 = 8 Phasen
+        // ✅ ANGEPASST: maxIndex dynamisch aus Segmenten
+        const segmentConfig = getActiveScrollSegments();
+        const maxIndex = segmentConfig.segments.length - 1;
 
         if (delta > 0) {
             // Scroll nach unten
@@ -161,7 +173,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // ✅ TOUCH-EVENT-BEHANDLUNG mit 8 Phasen
+    // ✅ TOUCH-EVENT-BEHANDLUNG mit neuer Segment-Aufteilung
     const touchStartRef = useRef({ y: 0, time: 0 });
     const handleTouchStart = useCallback((event) => {
         if (event.touches.length === 1) {
@@ -178,7 +190,10 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const touch = event.changedTouches[0];
         const deltaY = touchStartRef.current.y - touch.clientY;
         const deltaTime = Date.now() - touchStartRef.current.time;
-        const maxIndex = 7; // ✅ ANGEPASST: 0-7 = 8 Phasen
+
+        // ✅ ANGEPASST: maxIndex dynamisch
+        const segmentConfig = getActiveScrollSegments();
+        const maxIndex = segmentConfig.segments.length - 1;
 
         if (Math.abs(deltaY) > 30 && deltaTime < 500) {
             if (deltaY > 0) {
@@ -195,11 +210,13 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // ✅ KEYBOARD-NAVIGATION mit 8 Phasen
+    // ✅ KEYBOARD-NAVIGATION mit neuer Segment-Aufteilung
     const handleKeyboardNavigation = useCallback((direction) => {
         if (isScrollLocked || isSnapping) return;
 
-        const maxIndex = 7; // ✅ ANGEPASST: 0-7 = 8 Phasen
+        // ✅ ANGEPASST: maxIndex dynamisch
+        const segmentConfig = getActiveScrollSegments();
+        const maxIndex = segmentConfig.segments.length - 1;
 
         if (direction === 'next') {
             const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);
@@ -237,12 +254,15 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         };
     }, [handleScrollEvent, handleTouchStart, handleTouchEnd, titles]);
 
-    // Keyboard-Events mit 8 Phasen Support
+    // Keyboard-Events mit neuer Segment-Unterstützung
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
                 return;
             }
+
+            const segmentConfig = getActiveScrollSegments();
+            const maxIndex = segmentConfig.segments.length - 1;
 
             switch (e.key) {
                 case 'ArrowDown':
@@ -262,7 +282,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                     break;
                 case 'End':
                     e.preventDefault();
-                    snapToTitleIndex(7); // ✅ ANGEPASST: Phase 7
+                    snapToTitleIndex(maxIndex); // ✅ ANGEPASST: Letzte Phase dynamisch
                     break;
             }
         };
@@ -297,7 +317,11 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         percentage: (scrollProgress * 40).toFixed(0) + '%'
     };
 
-    // Return-Werte - ANGEPASST für 8 Phasen
+    // ✅ ERWEITERTE Helper für neue Phase-Erkennung
+    const segmentConfig = getActiveScrollSegments();
+    const totalPhases = segmentConfig.segments.length;
+
+    // Return-Werte - ANGEPASST für neue Segment-Aufteilung
     return {
         scrollProgress,
         activeSection,
@@ -313,16 +337,20 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         currentTitleIndex,
         isScrollLocked,
 
-        // Helper für Phase-Erkennung - ANGEPASST für 8 Phasen
+        // Helper für Phase-Erkennung - ANGEPASST für neue Aufteilung
         isLogoPhase: currentTitleIndex === 0,
-        isTitlePhase: currentTitleIndex >= 1 && currentTitleIndex <= 5, // ✅ 1-5 statt 1-6
-        isCarouselPhase: currentTitleIndex === 6, // ✅ Phase 6 statt 7
-        isNewsletterPhase: currentTitleIndex === 7, // ✅ Phase 7 statt 8
+        isTitlePhase: currentTitleIndex >= 1 && currentTitleIndex <= 3, // ✅ ANGEPASST: 1-3 statt 1-5
+        isCarouselPhase: currentTitleIndex === 5, // ✅ ANGEPASST: Index 5
+        isNewsletterPhase: currentTitleIndex === 6, // ✅ ANGEPASST: Index 6
         currentPhaseDescription:
             currentTitleIndex === 0 ? 'Logo/Newsletter' :
-                currentTitleIndex === 6 ? 'AniTune Carousel' :
-                    currentTitleIndex === 7 ? 'Newsletter CTA' :
-                        titles[currentTitleIndex - 1]?.text || `Titel ${currentTitleIndex}`,
+                currentTitleIndex === 1 ? 'Von Uns Heißt Für Uns' :
+                    currentTitleIndex === 2 ? 'Der Weg Ist Das Ziel' :
+                        currentTitleIndex === 3 ? 'Die Community Heißt' :
+                            currentTitleIndex === 4 ? 'Phase 4 (noch zu definieren)' :
+                                currentTitleIndex === 5 ? 'AniTune Carousel' :
+                                    currentTitleIndex === 6 ? 'Newsletter CTA' :
+                                        `Phase ${currentTitleIndex}`,
 
         // ✅ ANGEPASSTE Timing-Debug-Info
         timingInfo: {
@@ -330,11 +358,21 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
             snapDuration: snapTiming.duration,
             snapEase: snapTiming.ease,
             currentPhase: currentTitleIndex === 0 ? 'Logo/Newsletter' :
-                currentTitleIndex === 6 ? 'AniTune Carousel' :
-                    currentTitleIndex === 7 ? 'Newsletter CTA' :
-                        `Titel ${currentTitleIndex}`,
-            totalPhases: 8, // ✅ ANGEPASST: 0-7 = 8 Phasen
-            configurable: true
+                currentTitleIndex === 1 ? 'Von Uns Heißt Für Uns' :
+                    currentTitleIndex === 2 ? 'Der Weg Ist Das Ziel' :
+                        currentTitleIndex === 3 ? 'Die Community Heißt' :
+                            currentTitleIndex === 4 ? 'Phase 4 (noch zu definieren)' :
+                                currentTitleIndex === 5 ? 'AniTune Carousel' :
+                                    currentTitleIndex === 6 ? 'Newsletter CTA' :
+                                        `Phase ${currentTitleIndex}`,
+            totalPhases: totalPhases, // ✅ DYNAMISCH: Basierend auf Segmenten
+            configurable: true,
+            // ✅ NEU: Debug-Info für neue Segment-Aufteilung
+            segmentInfo: {
+                phase1: "bis 16% Debug (0.4 scrollProgress)",
+                phase2: "bis 32% Debug (0.8 scrollProgress)",
+                phase3: "bis 40% Debug (1.0 scrollProgress)"
+            }
         }
     };
 }

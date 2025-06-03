@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/TitleLayer.jsx - SYNCHRONISIERT mit Audio-Bereichen
+// src/components/Parallax/Elements/TitleLayer.jsx - NEUE SEGMENT-AUFTEILUNG
 
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
@@ -14,12 +14,13 @@ const TitleLayer = React.memo(({
 }) => {
     if (!titles || titles.length === 0) return null;
 
-    // ✅ SYNCHRONISIERTE BEREICHE mit Audio-System
+    // ✅ NEUE SEGMENT-AUFTEILUNG: 16%, 32%, 40%, 48% Debug-Werte
     const getActivePhaseFromScroll = useCallback((progress) => {
-        // ✅ EXAKT GLEICHE BEREICHE wie TitleAudioLayer - 3 Titel
-        if (progress >= 0.05 && progress < 0.38) return 1;      // Phase 1: Von Uns Heißt Für Uns
-        else if (progress >= 0.38 && progress < 0.71) return 2; // Phase 2: Der Weg Ist Das Ziel  
-        else if (progress >= 0.71 && progress < 1.0) return 3;  // Phase 3: Die Community Heißt
+        // Umrechnung: Debug-Wert = scrollProgress * 40
+        // 16% Debug = 0.4 scrollProgress, 32% = 0.8, 40% = 1.0, 48% = 1.2
+        if (progress >= 0.05 && progress < 0.4) return 1;       // Phase 1: Von Uns Heißt Für Uns (bis 16% Debug)
+        else if (progress >= 0.4 && progress < 0.8) return 2;   // Phase 2: Der Weg Ist Das Ziel (bis 32% Debug)
+        else if (progress >= 0.8 && progress < 1.0) return 3;   // Phase 3: Die Community Heißt (bis 40% Debug)
         return 0; // Logo-Phase oder andere
     }, []);
 
@@ -87,7 +88,7 @@ const TitleLayer = React.memo(({
                     scrollProgress={scrollProgress}
                 />
 
-                {/* Debug-Info */}
+                {/* Debug-Info mit neuen Segment-Bereichen */}
                 {process.env.NODE_ENV === 'development' && (
                     <ScrollTitleDebugPanel
                         scrollProgress={scrollProgress}
@@ -103,7 +104,7 @@ const TitleLayer = React.memo(({
     );
 });
 
-// ✅ SCROLL-BASIERTE TITEL-KOMPONENTE
+// ✅ SCROLL-BASIERTE TITEL-KOMPONENTE (unverändert)
 const ScrollBasedTitle = React.memo(({
     title,
     isActive,
@@ -344,20 +345,20 @@ const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollL
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🏠 Phase 0 - Logo/Newsletter (SCROLL-BASIERT)
+                🏠 Phase 0 - Logo/Newsletter (NEUE SEGMENTE)
             </div>
             <div>ScrollProgress: {scrollProgress.toFixed(3)}</div>
             <div>Active Phase: {activePhase}</div>
             <div>Debug: {(scrollProgress * 40).toFixed(1)}%</div>
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
             <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
-                ✅ Titel folgen scrollProgress, nicht Snaps
+                ✅ Neue Aufteilung: 16%, 32%, 40%, 48%
             </div>
         </div>
     );
 });
 
-// ✅ DEBUG-PANEL FÜR SCROLL-TITEL
+// ✅ DEBUG-PANEL FÜR SCROLL-TITEL mit neuen Bereichen
 const ScrollTitleDebugPanel = React.memo(({
     scrollProgress,
     activePhase,
@@ -386,7 +387,7 @@ const ScrollTitleDebugPanel = React.memo(({
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🎭 SCROLL-BASIERTE TITEL (SYNCHRONISIERT)
+                🎭 NEUE SEGMENT-AUFTEILUNG (SYNCHRONISIERT)
             </div>
             <div>ScrollProgress: {scrollProgress.toFixed(3)}</div>
             <div>Debug: {(scrollProgress * 40).toFixed(1)}%</div>
@@ -397,16 +398,22 @@ const ScrollTitleDebugPanel = React.memo(({
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
 
             <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
-                ✅ SYNCHRON mit Audio-System
+                ✅ NEUE BEREICHE mit Audio-System
             </div>
             <div style={{ marginTop: '4px', fontSize: '9px', color: '#4CAF50' }}>
-                🎵 Bereiche: 5%-38%, 38%-71%, 71%-100%
+                🎵 Phase 1: 5%-40% (bis 16% Debug)
+            </div>
+            <div style={{ marginTop: '2px', fontSize: '9px', color: '#4CAF50' }}>
+                🎵 Phase 2: 40%-80% (bis 32% Debug)
+            </div>
+            <div style={{ marginTop: '2px', fontSize: '9px', color: '#4CAF50' }}>
+                🎵 Phase 3: 80%-100% (bis 40% Debug)
             </div>
             <div style={{ marginTop: '2px', fontSize: '9px', color: '#a880ff' }}>
-                📍 Phase {activePhase}: {
-                    activePhase === 1 ? '5%-38% (Von Uns Heißt Für Uns)' :
-                        activePhase === 2 ? '38%-71% (Der Weg Ist Das Ziel)' :
-                            activePhase === 3 ? '71%-100% (Die Community Heißt)' :
+                📍 Aktuelle Phase {activePhase}: {
+                    activePhase === 1 ? '5%-40% (Von Uns Heißt Für Uns)' :
+                        activePhase === 2 ? '40%-80% (Der Weg Ist Das Ziel)' :
+                            activePhase === 3 ? '80%-100% (Die Community Heißt)' :
                                 'Unbekannt'
                 }
             </div>

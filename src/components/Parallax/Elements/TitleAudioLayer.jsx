@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/TitleAudioLayer.jsx - KORRIGIERT: Kein Mehrfach-Play
+// src/components/Parallax/Elements/TitleAudioLayer.jsx - NEUE SEGMENT-AUFTEILUNG
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -127,17 +127,19 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         });
     }, [stopAllAudio]);
 
-    // ✅ KORRIGIERT: Nur bei PHASEN-WECHSEL triggern, nicht bei jedem Scroll
+    // ✅ NEUE SEGMENT-AUFTEILUNG: Synchronisiert mit TitleLayer
     useEffect(() => {
         if (!isAudioEnabled) return;
 
         let currentPhase = 0;
 
-        if (scrollProgress >= 0.05 && scrollProgress < 0.45) currentPhase = 1;      // Phase 1: Von Uns Heißt Für Uns
-        else if (scrollProgress >= 0.45 && scrollProgress < 0.75) currentPhase = 2; // Phase 2: Der Weg Ist Das Ziel
-        else if (scrollProgress >= 0.75 && scrollProgress < 1.0) currentPhase = 3;  // Phase 3: Die Community Heißt
+        // ✅ NEUE BEREICHE: 16%, 32%, 40% Debug-Werte
+        // Umrechnung: Debug-Wert = scrollProgress * 40
+        if (scrollProgress >= 0.05 && scrollProgress < 0.4) currentPhase = 1;      // Phase 1: Von Uns Heißt Für Uns (bis 16% Debug)
+        else if (scrollProgress >= 0.4 && scrollProgress < 0.8) currentPhase = 2;  // Phase 2: Der Weg Ist Das Ziel (bis 32% Debug)  
+        else if (scrollProgress >= 0.8 && scrollProgress < 1.0) currentPhase = 3;  // Phase 3: Die Community Heißt (bis 40% Debug)
 
-        console.log(`🎵 SYNC-CHECK: ScrollProgress=${scrollProgress.toFixed(3)}, Phase=${currentPhase}, LastTriggered=${lastTriggeredPhaseRef.current}`);
+        console.log(`🎵 AUDIO-SYNC-CHECK: ScrollProgress=${scrollProgress.toFixed(3)}, Debug=${(scrollProgress * 40).toFixed(1)}%, Phase=${currentPhase}, LastTriggered=${lastTriggeredPhaseRef.current}`);
 
         // ✅ NUR BEI PHASEN-WECHSEL Audio starten
         if (currentPhase >= 1 && currentPhase <= 3 && currentPhase !== lastTriggeredPhaseRef.current && isScrollLocked) {
@@ -163,13 +165,14 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
 
     }, [scrollProgress, isAudioEnabled, isScrollLocked, playAudio, stopAllAudio]);
 
-    // ✅ MANUAL PLAY BUTTON
+    // ✅ MANUAL PLAY BUTTON mit neuen Bereichen
     const manualPlayCurrentPhase = useCallback(() => {
         let currentPhase = 0;
 
-        if (scrollProgress >= 0.05 && scrollProgress < 0.45) currentPhase = 1;
-        else if (scrollProgress >= 0.45 && scrollProgress < 0.75) currentPhase = 2;
-        else if (scrollProgress >= 0.75 && scrollProgress < 1.0) currentPhase = 3;
+        // ✅ NEUE BEREICHE verwenden
+        if (scrollProgress >= 0.05 && scrollProgress < 0.4) currentPhase = 1;
+        else if (scrollProgress >= 0.4 && scrollProgress < 0.8) currentPhase = 2;
+        else if (scrollProgress >= 0.8 && scrollProgress < 1.0) currentPhase = 3;
 
         if (currentPhase >= 1 && currentPhase <= 3) {
             const audioIndex = currentPhase - 1;
@@ -275,7 +278,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     }}
                 >
                     <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
-                        🎵 AUDIO (NUR PHASEN-WECHSEL)
+                        🎵 AUDIO (NEUE SEGMENTE)
                     </div>
                     <div>📍 ScrollProgress: {scrollProgress.toFixed(3)}</div>
                     <div>📊 Debug: {(scrollProgress * 40).toFixed(1)}%</div>
@@ -284,20 +287,20 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     <div>🔒 Scroll Lock: {isScrollLocked ? 'Ja' : 'Nein'}</div>
                     <div>🎯 Last Triggered: {lastTriggeredPhaseRef.current}</div>
 
-                    {/* Phase-Erkennung */}
-                    {scrollProgress >= 0.05 && scrollProgress < 0.45 && (
+                    {/* ✅ NEUE Phase-Erkennung */}
+                    {scrollProgress >= 0.05 && scrollProgress < 0.4 && (
                         <div style={{ color: '#a880ff', fontSize: '10px' }}>
-                            🎵 Phase 1: Von Uns Heißt Für Uns (5%-45%)
+                            🎵 Phase 1: Von Uns Heißt Für Uns (5%-40% = bis 16% Debug)
                         </div>
                     )}
-                    {scrollProgress >= 0.45 && scrollProgress < 0.75 && (
+                    {scrollProgress >= 0.4 && scrollProgress < 0.8 && (
                         <div style={{ color: '#a880ff', fontSize: '10px' }}>
-                            🎵 Phase 2: Der Weg Ist Das Ziel (45%-75%)
+                            🎵 Phase 2: Der Weg Ist Das Ziel (40%-80% = bis 32% Debug)
                         </div>
                     )}
-                    {scrollProgress >= 0.75 && scrollProgress < 1.0 && (
+                    {scrollProgress >= 0.8 && scrollProgress < 1.0 && (
                         <div style={{ color: '#a880ff', fontSize: '10px' }}>
-                            🎵 Phase 3: Die Community Heißt (75%-100%)
+                            🎵 Phase 3: Die Community Heißt (80%-100% = bis 40% Debug)
                         </div>
                     )}
 
@@ -339,7 +342,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     </div>
 
                     <div style={{ marginTop: '6px', fontSize: '9px', opacity: 0.7 }}>
-                        ✅ KORRIGIERT: Nur bei Phasen-Wechsel
+                        ✅ NEUE SEGMENTE: 16%, 32%, 40%
                         <br />🚫 Kein Mehrfach-Play innerhalb Phase
                         <br />🎯 LastTriggered verhindert Wiederholung
                     </div>

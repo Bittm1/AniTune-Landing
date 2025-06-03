@@ -260,12 +260,10 @@ export const desktopConfig = {
                 { top: '50%', left: '50%' }  // AniTune
             ],
             animations: [
-                'fadeScale',    // Von Uns Ist Für Uns
-                'slideUp',      // Der Weg
-                'popIn',        // Ist Das Ziel
-                'fadeScale',    // Die Community Heißt
-                'slideDown',    // Heißt
-                'popIn'         // AniTune
+                'fadeScale',    // Von Uns Heißt Für Uns
+                'slideUp',      // Der Weg Ist Das Ziel
+                'popIn',        // Die Community Heißt
+                'fadeScale'     // AniTune
             ],
             timing: createDeviceSpecificTiming('desktop')
         }
