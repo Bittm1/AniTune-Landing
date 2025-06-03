@@ -79,7 +79,7 @@ export const elementSizes = {
  */
 export const assetPaths = {
     background: {
-        default: '/Parallax/Himmel.png',
+        default: '/Parallax/Himmel.webp',
         large: '/Parallax/Himmel_large.webp',
         fallback: '/Parallax/fallback-background.png'
     },

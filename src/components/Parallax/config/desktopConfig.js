@@ -255,17 +255,15 @@ export const desktopConfig = {
         {
             positions: [
                 { top: '50%', left: '50%' }, // Von Uns Ist Für Uns
-                { top: '50%', left: '50%' }, // Der Weg
-                { top: '50%', left: '50%' }, // Ist Das Ziel
-                { top: '50%', left: '50%' }, // Die Community
-                { top: '50%', left: '50%' }, // Heißt
+                { top: '50%', left: '50%' }, // Der Weg Ist Das Ziel
+                { top: '50%', left: '50%' }, // Die Community Heißt
                 { top: '50%', left: '50%' }  // AniTune
             ],
             animations: [
                 'fadeScale',    // Von Uns Ist Für Uns
                 'slideUp',      // Der Weg
                 'popIn',        // Ist Das Ziel
-                'fadeScale',    // Die Community
+                'fadeScale',    // Die Community Heißt
                 'slideDown',    // Heißt
                 'popIn'         // AniTune
             ],

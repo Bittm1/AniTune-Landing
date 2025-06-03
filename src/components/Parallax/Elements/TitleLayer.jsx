@@ -1,21 +1,32 @@
+// src/components/Parallax/Elements/TitleLayer.jsx - SYNCHRONISIERT mit Audio-Bereichen
+
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
 import ErrorBoundary from '../../ErrorBoundary';
-// ✅ IMPORT: Timing-Config
 import { getAnimationTiming, getDeviceOptimizedTiming } from '../config/timingConfig';
 import './TitleLayer.css';
 
-// ✅ TitleLayer mit korrigiertem Letter-Reveal (funktioniert bei allen Phasen)
 const TitleLayer = React.memo(({
     scrollProgress,
     titles = [],
-    currentTitleIndex = 0,  // ✅ Interne Logik: 0=Logo-Phase, 1-6=Titel, 7=Carousel
+    currentTitleIndex = 0,  // ✅ Nur noch für Snap-Navigation
     isScrollLocked = false
 }) => {
     if (!titles || titles.length === 0) return null;
 
+    // ✅ SYNCHRONISIERTE BEREICHE mit Audio-System
+    const getActivePhaseFromScroll = useCallback((progress) => {
+        // ✅ EXAKT GLEICHE BEREICHE wie TitleAudioLayer - 3 Titel
+        if (progress >= 0.05 && progress < 0.38) return 1;      // Phase 1: Von Uns Heißt Für Uns
+        else if (progress >= 0.38 && progress < 0.71) return 2; // Phase 2: Der Weg Ist Das Ziel  
+        else if (progress >= 0.71 && progress < 1.0) return 3;  // Phase 3: Die Community Heißt
+        return 0; // Logo-Phase oder andere
+    }, []);
+
+    const activePhase = getActivePhaseFromScroll(scrollProgress);
+
     // ✅ PHASE 0: Logo/Newsletter - zeige keine Titel an
-    if (currentTitleIndex === 0) {
+    if (activePhase === 0) {
         return (
             <ErrorBoundary>
                 <div
@@ -33,7 +44,8 @@ const TitleLayer = React.memo(({
                     {/* Debug-Info für Logo-Phase */}
                     {process.env.NODE_ENV === 'development' && (
                         <LogoPhaseDebugPanel
-                            currentTitleIndex={currentTitleIndex}
+                            scrollProgress={scrollProgress}
+                            activePhase={activePhase}
                             isScrollLocked={isScrollLocked}
                         />
                     )}
@@ -42,40 +54,12 @@ const TitleLayer = React.memo(({
         );
     }
 
-    // ✅ NEU: PHASE 7: Carousel - zeige keine Titel an
-    if (currentTitleIndex === 7) {
-        return (
-            <ErrorBoundary>
-                <div
-                    className="title-layer-container carousel-phase"
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        zIndex: 20,
-                        pointerEvents: 'none'
-                    }}
-                >
-                    {/* Debug-Info für Carousel-Phase */}
-                    {process.env.NODE_ENV === 'development' && (
-                        <CarouselPhaseDebugPanel
-                            currentTitleIndex={currentTitleIndex}
-                            isScrollLocked={isScrollLocked}
-                        />
-                    )}
-                </div>
-            </ErrorBoundary>
-        );
-    }
-
-    // ✅ TITEL-PHASEN 1-6: Exakt wie vorher
-    const titleArrayIndex = currentTitleIndex - 1; // Index 1 → titles[0]
+    // ✅ TITEL-PHASEN 1-3: Basierend auf scrollProgress
+    const titleArrayIndex = activePhase - 1; // Phase 1 → titles[0]
     const currentTitle = titles[titleArrayIndex];
 
     if (!currentTitle) {
-        console.warn(`TitleLayer: Kein Titel für Index ${currentTitleIndex} gefunden (Array-Index: ${titleArrayIndex})`);
+        console.warn(`TitleLayer: Kein Titel für Phase ${activePhase} gefunden (Array-Index: ${titleArrayIndex})`);
         return null;
     }
 
@@ -93,22 +77,25 @@ const TitleLayer = React.memo(({
                     pointerEvents: 'none'
                 }}
             >
-                {/* ✅ LETTER-REVEAL TITEL (korrigiert für alle Phasen) */}
-                <LetterRevealSingleTitle
+                {/* ✅ SCROLL-BASIERTER TITEL */}
+                <ScrollBasedTitle
                     title={currentTitle}
                     isActive={true}
                     isScrollLocked={isScrollLocked}
-                    titleIndex={currentTitleIndex}
-                    arrayIndex={titleArrayIndex}
+                    activePhase={activePhase}
+                    titleArrayIndex={titleArrayIndex}
+                    scrollProgress={scrollProgress}
                 />
 
-                {/* Debug-Info mit Letter-Reveal-Details */}
+                {/* Debug-Info */}
                 {process.env.NODE_ENV === 'development' && (
-                    <TitlePhaseDebugPanel
-                        currentTitleIndex={currentTitleIndex}
-                        arrayIndex={titleArrayIndex}
+                    <ScrollTitleDebugPanel
+                        scrollProgress={scrollProgress}
+                        activePhase={activePhase}
+                        titleArrayIndex={titleArrayIndex}
                         currentTitle={currentTitle}
                         isScrollLocked={isScrollLocked}
+                        currentTitleIndex={currentTitleIndex}
                     />
                 )}
             </div>
@@ -116,53 +103,59 @@ const TitleLayer = React.memo(({
     );
 });
 
-// ✅ KORRIGIERTE KOMPONENTE: Letter-Reveal SingleTitle (funktioniert bei allen Phasen)
-const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, titleIndex, arrayIndex }) => {
+// ✅ SCROLL-BASIERTE TITEL-KOMPONENTE
+const ScrollBasedTitle = React.memo(({
+    title,
+    isActive,
+    isScrollLocked,
+    activePhase,
+    titleArrayIndex,
+    scrollProgress
+}) => {
     const titleRef = useRef(null);
     const lettersRef = useRef([]);
     const timelineRef = useRef(null);
     const currentStateRef = useRef('hidden');
+    const lastActivePhaseRef = useRef(0);
 
-    // ✅ LETTER-REVEAL KONFIGURATION (wie im Original-Code)
+    // ✅ LETTER-REVEAL KONFIGURATION (wie im Original)
     const config = useMemo(() => ({
-        duration: 0.5,        // Dauer pro Buchstabe
-        delay: 0.1,           // Kurze Anfangsverzögerung
-        stagger: 0.2,         // 0.2s zwischen Buchstaben (wie im Original)
-        ease: 'power2.out',   // Entspricht CSS ease-out
-        startScale: 0.8,      // Wie im Original
-        startBlur: 5,         // 5px Blur wie im Original
+        duration: 0.5,
+        delay: 0.1,
+        stagger: 0.2,
+        ease: 'power2.out',
+        startScale: 0.8,
+        startBlur: 5,
     }), []);
 
-    // Buchstaben in Array aufteilen
+    // Buchstaben aufteilen
     const letters = useMemo(() => {
         return title.text.split('').map((char, index) => ({
-            char: char === ' ' ? '\u00A0' : char, // Non-breaking space für Leerzeichen
+            char: char === ' ' ? '\u00A0' : char,
             index
         }));
     }, [title.text]);
 
-    // ✅ KORRIGIERT: Animation für Einblenden (funktioniert bei allen Phasen)
+    // ✅ SCROLL-BASIERTE ANIMATION
     const animateIn = useCallback(() => {
-        if (!titleRef.current) return; // ✅ NUR DOM-Check, kein State-Check
+        if (!titleRef.current) return;
 
-        console.log(`🎭 Letter Reveal: "${title.text}" (Phase ${titleIndex}) wird eingeblendet`);
+        console.log(`🎭 SCROLL-REVEAL: "${title.text}" (Phase ${activePhase}) wird eingeblendet`);
 
-        // Stoppe vorherige Animation
         if (timelineRef.current) {
             timelineRef.current.kill();
         }
 
         currentStateRef.current = 'animating';
 
-        // GSAP Timeline erstellen
         const tl = gsap.timeline({
             onComplete: () => {
                 currentStateRef.current = 'visible';
-                console.log(`✅ Letter Reveal fertig: "${title.text}" (Phase ${titleIndex})`);
+                console.log(`✅ SCROLL-REVEAL fertig: "${title.text}" (Phase ${activePhase})`);
             }
         });
 
-        // ✅ ALLE BUCHSTABEN auf Startwerte setzen (wie im Original)
+        // ✅ Startwerte setzen
         tl.set(lettersRef.current, {
             opacity: 0,
             scale: config.startScale,
@@ -170,39 +163,36 @@ const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, t
             force3D: true
         });
 
-        // ✅ BUCHSTABEN NACHEINANDER einblenden (wie im Original)
+        // ✅ Einblenden
         tl.to(lettersRef.current, {
             opacity: 1,
             scale: 1,
             filter: 'blur(0px)',
             duration: config.duration,
             ease: config.ease,
-            stagger: config.stagger, // 0.2s Verzögerung zwischen Buchstaben
+            stagger: config.stagger,
             force3D: true
         }, config.delay);
 
         timelineRef.current = tl;
 
-    }, [title.text, titleIndex, config]);
+    }, [title.text, activePhase, config]);
 
-    // ✅ KORRIGIERT: Animation für Ausblenden (funktioniert bei allen Phasen)
     const animateOut = useCallback(() => {
-        if (!titleRef.current) return; // ✅ NUR DOM-Check, kein State-Check
+        if (!titleRef.current) return;
 
-        console.log(`🎭 Letter Reveal: "${title.text}" (Phase ${titleIndex}) wird ausgeblendet`);
+        console.log(`🎭 SCROLL-HIDE: "${title.text}" (Phase ${activePhase}) wird ausgeblendet`);
 
-        // Stoppe vorherige Animation
         if (timelineRef.current) {
             timelineRef.current.kill();
         }
 
         currentStateRef.current = 'animating';
 
-        // Schnelleres Ausblenden
         const tl = gsap.timeline({
             onComplete: () => {
                 currentStateRef.current = 'hidden';
-                console.log(`❌ Letter Reveal ausgeblendet: "${title.text}" (Phase ${titleIndex})`);
+                console.log(`❌ SCROLL-HIDE ausgeblendet: "${title.text}"`);
             }
         });
 
@@ -218,23 +208,27 @@ const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, t
 
         timelineRef.current = tl;
 
-    }, [title.text, titleIndex, config]);
+    }, [title.text, activePhase, config]);
 
-    // ✅ KORRIGIERT: Reagiere auf isActive UND titleIndex Änderungen
+    // ✅ REAGIERE AUF PHASE-ÄNDERUNGEN (scroll-basiert)
     useEffect(() => {
-        if (isActive) {
-            // ✅ WICHTIG: Immer animieren wenn aktiv, egal was der State ist
-            console.log(`🎯 Phase ${titleIndex}: "${title.text}" wird aktiviert - starte Animation`);
-            setTimeout(animateIn, 100);
-        } else {
-            animateOut();
-        }
-    }, [isActive, titleIndex, animateIn, animateOut]); // ✅ titleIndex als Dependency
+        if (activePhase !== lastActivePhaseRef.current) {
+            console.log(`🔄 TITEL Phase-Wechsel: ${lastActivePhaseRef.current} → ${activePhase}`);
 
-    // ✅ KORRIGIERT: Initialisierung bei jedem Titel-Wechsel
+            if (isActive && activePhase > 0) {
+                setTimeout(animateIn, 100);
+            } else {
+                animateOut();
+            }
+
+            lastActivePhaseRef.current = activePhase;
+        }
+    }, [activePhase, isActive, animateIn, animateOut]);
+
+    // ✅ INITIALISIERUNG bei Phase-Wechsel
     useEffect(() => {
         if (titleRef.current && lettersRef.current.length > 0) {
-            console.log(`🔧 Initialisiere Letter-Reveal für: "${title.text}" (Phase ${titleIndex})`);
+            console.log(`🔧 Initialisiere SCROLL-Titel: "${title.text}" (Phase ${activePhase})`);
             gsap.set(lettersRef.current, {
                 opacity: 0,
                 scale: config.startScale,
@@ -242,18 +236,18 @@ const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, t
             });
             currentStateRef.current = 'hidden';
         }
-    }, [title.text, titleIndex, config]); // ✅ Bei jedem Titel-Wechsel neu initialisieren
+    }, [title.text, activePhase, config]);
 
-    // ✅ KORRIGIERT: Cleanup bei Titel-Wechsel
+    // ✅ CLEANUP
     useEffect(() => {
         return () => {
             if (timelineRef.current) {
                 timelineRef.current.kill();
             }
         };
-    }, [title.text, titleIndex]); // ✅ Cleanup bei jedem Titel-Wechsel
+    }, [title.text, activePhase]);
 
-    // Memoized styles
+    // Styles
     const titleStyles = useMemo(() => ({
         position: 'absolute',
         top: title.position.top,
@@ -271,22 +265,20 @@ const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, t
         })
     }), [title.position, title.style, isScrollLocked]);
 
-    // Letter-Styles
     const letterStyles = useMemo(() => ({
         display: 'inline-block',
         opacity: 0,
         willChange: 'transform, opacity, filter',
         backfaceVisibility: 'hidden',
-        marginRight: '1px' // Minimal spacing zwischen Buchstaben
+        marginRight: '1px'
     }), []);
 
-    // CSS-Klassen
     const cssClasses = useMemo(() => {
         const classes = [
+            'scroll-reveal-title',
             'letter-reveal-title',
-            'lock-snap-title',
             `title-${title.index + 1}`,
-            `phase-${titleIndex}`
+            `scroll-phase-${activePhase}`
         ];
 
         if (isActive) {
@@ -298,7 +290,7 @@ const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, t
         }
 
         return classes.join(' ');
-    }, [title.index, isActive, isScrollLocked, titleIndex]);
+    }, [title.index, isActive, isScrollLocked, activePhase]);
 
     return (
         <div
@@ -307,14 +299,14 @@ const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, t
             style={titleStyles}
             data-title-id={title.id}
             data-title-index={title.index}
-            data-phase-index={titleIndex}
-            data-array-index={arrayIndex}
+            data-active-phase={activePhase}
+            data-array-index={titleArrayIndex}
+            data-scroll-progress={scrollProgress.toFixed(3)}
             data-is-active={isActive}
-            data-scroll-locked={isScrollLocked}
         >
             {letters.map((letter, index) => (
                 <span
-                    key={`${titleIndex}-${title.text}-${index}`} // ✅ Eindeutige Keys pro Phase
+                    key={`${activePhase}-${title.text}-${index}`}
                     ref={el => {
                         if (el) {
                             lettersRef.current[index] = el;
@@ -324,7 +316,7 @@ const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, t
                     style={letterStyles}
                     data-letter={letter.char}
                     data-index={index}
-                    data-phase={titleIndex}
+                    data-phase={activePhase}
                 >
                     {letter.char}
                 </span>
@@ -333,8 +325,8 @@ const LetterRevealSingleTitle = React.memo(({ title, isActive, isScrollLocked, t
     );
 });
 
-// ✅ DEBUG-PANEL FÜR LOGO-PHASE (unverändert)
-const LogoPhaseDebugPanel = React.memo(({ currentTitleIndex, isScrollLocked }) => {
+// ✅ DEBUG-PANEL FÜR LOGO-PHASE
+const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollLocked }) => {
     return (
         <div
             style={{
@@ -352,59 +344,27 @@ const LogoPhaseDebugPanel = React.memo(({ currentTitleIndex, isScrollLocked }) =
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🏠 Phase 0 - Logo/Newsletter
+                🏠 Phase 0 - Logo/Newsletter (SCROLL-BASIERT)
             </div>
-            <div>Phase: {currentTitleIndex}/7</div>
-            <div>Status: Logo + Newsletter sichtbar</div>
+            <div>ScrollProgress: {scrollProgress.toFixed(3)}</div>
+            <div>Active Phase: {activePhase}</div>
+            <div>Debug: {(scrollProgress * 40).toFixed(1)}%</div>
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
             <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
-                Scroll nach unten → Titel 1
+                ✅ Titel folgen scrollProgress, nicht Snaps
             </div>
         </div>
     );
 });
 
-// ✅ NEU: DEBUG-PANEL FÜR CAROUSEL-PHASE
-const CarouselPhaseDebugPanel = React.memo(({ currentTitleIndex, isScrollLocked }) => {
-    return (
-        <div
-            style={{
-                position: 'absolute',
-                top: '60px',
-                left: '10px',
-                background: 'rgba(168,128,255,0.8)',
-                color: 'white',
-                padding: '12px',
-                fontSize: '11px',
-                borderRadius: '6px',
-                pointerEvents: 'all',
-                fontFamily: 'monospace',
-                lineHeight: '1.4'
-            }}
-        >
-            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🎠 Phase 7 - AniTune Carousel
-            </div>
-            <div>Phase: {currentTitleIndex}/7</div>
-            <div>Status: Carousel aktiv</div>
-            <div>Kein Titel erforderlich</div>
-            <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
-            <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
-                ↑ Phase 6 | Carousel Navigation über Karten
-            </div>
-            <div style={{ marginTop: '4px', fontSize: '9px', color: '#FFD700' }}>
-                🎨 Carousel läuft unabhängig von Titel-System
-            </div>
-        </div>
-    );
-});
-
-// ✅ DEBUG-PANEL FÜR TITEL-PHASE
-const TitlePhaseDebugPanel = React.memo(({
-    currentTitleIndex,
-    arrayIndex,
+// ✅ DEBUG-PANEL FÜR SCROLL-TITEL
+const ScrollTitleDebugPanel = React.memo(({
+    scrollProgress,
+    activePhase,
+    titleArrayIndex,
     currentTitle,
-    isScrollLocked
+    isScrollLocked,
+    currentTitleIndex
 }) => {
     const timingConfig = getDeviceOptimizedTiming();
     const letterCount = currentTitle.text.length;
@@ -426,28 +386,38 @@ const TitlePhaseDebugPanel = React.memo(({
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🎭 Phase {currentTitleIndex} - Letter Reveal ({timingConfig.name})
+                🎭 SCROLL-BASIERTE TITEL (SYNCHRONISIERT)
             </div>
-            <div>Titel: {currentTitleIndex}/7 (Array: {arrayIndex}/5)</div>
+            <div>ScrollProgress: {scrollProgress.toFixed(3)}</div>
+            <div>Debug: {(scrollProgress * 40).toFixed(1)}%</div>
+            <div>Active Phase: {activePhase}/3 (Array: {titleArrayIndex}/2)</div>
+            <div>Snap Index: {currentTitleIndex}/8 (nur Navigation)</div>
             <div>Text: "{currentTitle.text}" ({letterCount} Buchstaben)</div>
-            <div>Effekt: Standard Reveal (wie Original)</div>
             <div>Stagger: 0.2s pro Buchstabe</div>
-            <div>Total Zeit: ~{(letterCount * 0.2 + 0.6).toFixed(1)}s</div>
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+
             <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
-                ↑ Phase {currentTitleIndex - 1} | ↓ Phase {currentTitleIndex + 1}
+                ✅ SYNCHRON mit Audio-System
             </div>
             <div style={{ marginTop: '4px', fontSize: '9px', color: '#4CAF50' }}>
-                🎨 Scale: 0.8→1 | Blur: 5px→0 | Opacity: 0→1 | Stagger: 0.2s
+                🎵 Bereiche: 5%-38%, 38%-71%, 71%-100%
+            </div>
+            <div style={{ marginTop: '2px', fontSize: '9px', color: '#a880ff' }}>
+                📍 Phase {activePhase}: {
+                    activePhase === 1 ? '5%-38% (Von Uns Heißt Für Uns)' :
+                        activePhase === 2 ? '38%-71% (Der Weg Ist Das Ziel)' :
+                            activePhase === 3 ? '71%-100% (Die Community Heißt)' :
+                                'Unbekannt'
+                }
             </div>
         </div>
     );
 });
 
-TitleLayer.displayName = 'LetterRevealTitleLayer';
-LetterRevealSingleTitle.displayName = 'LetterRevealSingleTitle';
+// Display Names
+TitleLayer.displayName = 'ScrollBasedTitleLayer';
+ScrollBasedTitle.displayName = 'ScrollBasedTitle';
 LogoPhaseDebugPanel.displayName = 'LogoPhaseDebugPanel';
-CarouselPhaseDebugPanel.displayName = 'CarouselPhaseDebugPanel';
-TitlePhaseDebugPanel.displayName = 'TitlePhaseDebugPanel';
+ScrollTitleDebugPanel.displayName = 'ScrollTitleDebugPanel';
 
 export default TitleLayer;

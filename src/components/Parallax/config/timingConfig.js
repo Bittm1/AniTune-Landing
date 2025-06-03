@@ -88,27 +88,39 @@ export const SCROLL_SEGMENT_PRESETS = {
     },
 
     // ⚖️ AUSGEWOGENE BEREICHE (Standard) - ERWEITERT für Phase 8
+    // In timingConfig.js - NUR den balanced_segments Block ersetzen:
+
     balanced_segments: {
-        name: 'Balanced Segments - Professional Scale mit Phase 8',
-        description: '16 Phasen gleichmäßig über 0-3 Bereich verteilt',
+        name: 'Balanced Segments - 5 Titel-Phasen',
+        description: '8 Phasen gleichmäßig verteilt (5 Titel + 3 Extra)',
 
         segments: [
-            // Phase 0: Logo/Newsletter
+            // Phase 0: Logo/Newsletter (0% Debug)
             { scrollStart: 0, scrollEnd: 0.04, snapTarget: 0, snapDuration: 1.2, snapEase: "power2.inOut" },
-            // Phase 1-6: Titel-Phasen  
-            { scrollStart: 0.04, scrollEnd: 0.24, snapTarget: 0.2, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 0.24, scrollEnd: 0.44, snapTarget: 0.4, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 0.44, scrollEnd: 0.64, snapTarget: 0.6, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 0.64, scrollEnd: 0.84, snapTarget: 0.8, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 0.84, scrollEnd: 1.04, snapTarget: 1.0, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 1.04, scrollEnd: 1.24, snapTarget: 1.2, snapDuration: 1.2, snapEase: "power2.inOut" },
-            // Phase 7: AniTune Carousel 
-            { scrollStart: 1.24, scrollEnd: 1.60, snapTarget: 1.4, snapDuration: 1.2, snapEase: "power2.inOut" },
-            // ✅ NEU: Phase 8: Newsletter CTA
-            { scrollStart: 1.60, scrollEnd: 2.00, snapTarget: 1.8, snapDuration: 1.2, snapEase: "power2.inOut" },
-            // Phase 9-15: Zukünftige Features
-            { scrollStart: 2.00, scrollEnd: 2.20, snapTarget: 2.1, snapDuration: 1.2, snapEase: "power2.inOut" },
-            { scrollStart: 2.20, scrollEnd: 2.40, snapTarget: 2.3, snapDuration: 1.2, snapEase: "power2.inOut" },
+
+            // ✅ 5 Titel-Phasen mit neuer Verteilung:
+            // Phase 1: Von Uns Heißt Für Uns (16% Debug)
+            { scrollStart: 0.04, scrollEnd: 0.40, snapTarget: 0.4, snapDuration: 1.2, snapEase: "power2.inOut" },
+
+            // Phase 2: Der Weg (32% Debug)  
+            { scrollStart: 0.40, scrollEnd: 0.80, snapTarget: 0.8, snapDuration: 1.2, snapEase: "power2.inOut" },
+
+            // Phase 3: Ist Das Ziel (48% Debug)
+            { scrollStart: 0.80, scrollEnd: 1.20, snapTarget: 1.2, snapDuration: 1.2, snapEase: "power2.inOut" },
+
+            // Phase 4: Die Community Heißt (64% Debug)
+            { scrollStart: 1.20, scrollEnd: 1.60, snapTarget: 1.6, snapDuration: 1.2, snapEase: "power2.inOut" },
+
+            // Phase 5: AniTune (80% Debug)
+            { scrollStart: 1.60, scrollEnd: 2.00, snapTarget: 2.0, snapDuration: 1.2, snapEase: "power2.inOut" },
+
+            // Phase 6: AniTune Carousel (88% Debug)
+            { scrollStart: 2.00, scrollEnd: 2.20, snapTarget: 2.2, snapDuration: 1.2, snapEase: "power2.inOut" },
+
+            // Phase 7: Newsletter CTA (96% Debug)
+            { scrollStart: 2.20, scrollEnd: 2.40, snapTarget: 2.4, snapDuration: 1.2, snapEase: "power2.inOut" },
+
+            // Rest bleibt für Erweiterungen...
             { scrollStart: 2.40, scrollEnd: 2.60, snapTarget: 2.5, snapDuration: 1.2, snapEase: "power2.inOut" },
             { scrollStart: 2.60, scrollEnd: 2.80, snapTarget: 2.7, snapDuration: 1.2, snapEase: "power2.inOut" },
             { scrollStart: 2.80, scrollEnd: 3.00, snapTarget: 2.9, snapDuration: 1.2, snapEase: "power2.inOut" }

@@ -1,60 +1,39 @@
-// src/components/Parallax/Elements/TitleAudioLayer.jsx - KOMPLETT mit Phase 8
+// src/components/Parallax/Elements/TitleAudioLayer.jsx - KORRIGIERT: Kein Mehrfach-Play
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import ErrorBoundary from '../../ErrorBoundary';
 
-const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
-    // ✅ MINIMALE REFS (ohne Auto-Play)
+const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0 }) => {
     const audioRefs = useRef([]);
     const currentAudioRef = useRef(null);
-    const playedPhasesRef = useRef(new Set()); // Verhindert doppeltes Abspielen nur für manuell
+    const lastTriggeredPhaseRef = useRef(0); // ✅ NEU: Verfolge letzte getriggerte Phase
 
-    // ✅ MINIMALE STATES (ohne Auto-Play)
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
     const [buttonPortal, setButtonPortal] = useState(null);
 
-    // Audio-Konfiguration
     const titleAudios = [
         {
             id: 'von-uns-heißt-fuer-uns',
             basePath: '/audio/von-uns-heißt-fuer-uns',
-            title: 'Von Uns Ist Für Uns',
+            title: 'Von Uns Heißt Für Uns',
             phase: 1
         },
         {
-            id: 'der-weg',
-            basePath: '/audio/der-weg',
-            title: 'Der Weg',
+            id: 'der-weg-ist-das-ziel',
+            basePath: '/audio/der-weg-ist-das-ziel',
+            title: 'Der Weg Ist Das Ziel',
             phase: 2
         },
         {
-            id: 'ist-das-ziel',
-            basePath: '/audio/ist-das-ziel',
-            title: 'Ist Das Ziel',
+            id: 'die-community-heißt',
+            basePath: '/audio/die-community-heißt',
+            title: 'Die Community Heißt',
             phase: 3
-        },
-        {
-            id: 'die-community',
-            basePath: '/audio/die-community',
-            title: 'Die Community',
-            phase: 4
-        },
-        {
-            id: 'heißt',
-            basePath: '/audio/heißt',
-            title: 'Heißt',
-            phase: 5
-        },
-        {
-            id: 'anitune-theme',
-            basePath: '/audio/anitune-theme',
-            title: 'AniTune',
-            phase: 6
         }
     ];
 
-    // ✅ Portal Setup
+    // Portal Setup
     useEffect(() => {
         const buttonContainer = document.createElement('div');
         buttonContainer.id = 'audio-controls-portal';
@@ -77,7 +56,6 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
         };
     }, []);
 
-    // ✅ EINFACHE AUDIO-FUNKTIONEN (ohne Auto-Play)
     const stopAllAudio = useCallback(() => {
         console.log(`🛑 Stoppe alle Audio`);
         audioRefs.current.forEach((audio, index) => {
@@ -91,31 +69,35 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
     }, []);
 
     const playAudio = useCallback((audioIndex, reason = 'unknown') => {
-        if (!isAudioEnabled) return;
+        if (!isAudioEnabled) {
+            console.log(`🔇 Audio deaktiviert - kein Play für ${audioIndex + 1}`);
+            return;
+        }
 
         const audio = audioRefs.current[audioIndex];
-        if (!audio) return;
+        if (!audio) {
+            console.warn(`❌ Audio ${audioIndex + 1} nicht gefunden`);
+            return;
+        }
 
         if (audio.readyState < 2) {
+            console.log(`⏳ Audio ${audioIndex + 1} noch nicht geladen - retry in 200ms`);
             setTimeout(() => playAudio(audioIndex, reason), 200);
             return;
         }
 
         console.log(`🎵 SPIELE Audio ${audioIndex + 1}: ${titleAudios[audioIndex].title} (${reason})`);
 
-        // Stoppe vorheriges Audio
         if (currentAudioRef.current) {
             currentAudioRef.current.pause();
             currentAudioRef.current.currentTime = 0;
             currentAudioRef.current.onended = null;
         }
 
-        // Spiele neues Audio
         audio.currentTime = 0;
         audio.onended = () => {
             console.log(`🔚 Audio ${audioIndex + 1} beendet`);
             currentAudioRef.current = null;
-            // Kein Auto-Play mehr - Audio endet einfach
         };
 
         const playPromise = audio.play();
@@ -123,10 +105,13 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
             playPromise
                 .then(() => {
                     currentAudioRef.current = audio;
+                    console.log(`✅ Audio ${audioIndex + 1} spielt erfolgreich`);
                 })
                 .catch(error => {
-                    console.warn(`❌ Audio ${audioIndex + 1} Fehler:`, error);
-                    // Keine Auto-Play Fehlerbehandlung mehr
+                    console.warn(`❌ Audio ${audioIndex + 1} Play-Fehler:`, error);
+                    if (error.name === 'NotAllowedError') {
+                        console.log(`🚫 Browser blockiert Autoplay - Benutzer-Interaktion erforderlich`);
+                    }
                 });
         }
     }, [isAudioEnabled, titleAudios]);
@@ -142,73 +127,73 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
         });
     }, [stopAllAudio]);
 
-    // ✅ KORRIGIERT: USEEFFECT - NUR MANUELLER MODUS + PHASE 8 UNTERSTÜTZUNG
+    // ✅ KORRIGIERT: Nur bei PHASEN-WECHSEL triggern, nicht bei jedem Scroll
     useEffect(() => {
-        console.log(`📍 Phase: ${currentTitleIndex}, ScrollLocked: ${isScrollLocked}`);
+        if (!isAudioEnabled) return;
 
-        // Phase 0: Kein Audio
-        if (currentTitleIndex === 0) {
+        let currentPhase = 0;
+
+        if (scrollProgress >= 0.05 && scrollProgress < 0.45) currentPhase = 1;      // Phase 1: Von Uns Heißt Für Uns
+        else if (scrollProgress >= 0.45 && scrollProgress < 0.75) currentPhase = 2; // Phase 2: Der Weg Ist Das Ziel
+        else if (scrollProgress >= 0.75 && scrollProgress < 1.0) currentPhase = 3;  // Phase 3: Die Community Heißt
+
+        console.log(`🎵 SYNC-CHECK: ScrollProgress=${scrollProgress.toFixed(3)}, Phase=${currentPhase}, LastTriggered=${lastTriggeredPhaseRef.current}`);
+
+        // ✅ NUR BEI PHASEN-WECHSEL Audio starten
+        if (currentPhase >= 1 && currentPhase <= 3 && currentPhase !== lastTriggeredPhaseRef.current && isScrollLocked) {
+            const audioIndex = currentPhase - 1;
+
+            console.log(`🎵 PHASEN-WECHSEL: ${lastTriggeredPhaseRef.current} → ${currentPhase} - Starte Audio ${audioIndex + 1}`);
+
+            // Stoppe aktuelles Audio und starte neues
             stopAllAudio();
-            return;
+            setTimeout(() => {
+                playAudio(audioIndex, `phase-change-${lastTriggeredPhaseRef.current}-to-${currentPhase}`);
+            }, 100);
+
+            lastTriggeredPhaseRef.current = currentPhase;
         }
 
-        // ✅ Phase 7: Carousel - Kein Audio, keine Blockierung
-        if (currentTitleIndex === 7) {
-            console.log(`🎠 Phase 7 (Carousel): Kein Audio erforderlich`);
-            stopAllAudio(); // Stoppe eventuell laufendes Audio
-            return;
+        // Stoppe Audio wenn außerhalb Titel-Phasen
+        if (currentPhase === 0 && lastTriggeredPhaseRef.current !== 0) {
+            console.log(`🛑 PHASE-EXIT: Verlasse Titel-Bereiche - stoppe Audio`);
+            stopAllAudio();
+            lastTriggeredPhaseRef.current = 0;
         }
 
-        // ✅ NEU: Phase 8: Newsletter - Kein Audio, keine Blockierung
-        if (currentTitleIndex === 8) {
-            console.log(`📧 Phase 8 (Newsletter): Kein Audio erforderlich`);
-            stopAllAudio(); // Stoppe eventuell laufendes Audio
-            return;
+    }, [scrollProgress, isAudioEnabled, isScrollLocked, playAudio, stopAllAudio]);
+
+    // ✅ MANUAL PLAY BUTTON
+    const manualPlayCurrentPhase = useCallback(() => {
+        let currentPhase = 0;
+
+        if (scrollProgress >= 0.05 && scrollProgress < 0.45) currentPhase = 1;
+        else if (scrollProgress >= 0.45 && scrollProgress < 0.75) currentPhase = 2;
+        else if (scrollProgress >= 0.75 && scrollProgress < 1.0) currentPhase = 3;
+
+        if (currentPhase >= 1 && currentPhase <= 3) {
+            const audioIndex = currentPhase - 1;
+            console.log(`👆 MANUELLER PLAY: Phase ${currentPhase}`);
+            stopAllAudio();
+            setTimeout(() => {
+                playAudio(audioIndex, `manual-play-phase-${currentPhase}`);
+                lastTriggeredPhaseRef.current = currentPhase; // Update getriggerte Phase
+            }, 100);
+        } else {
+            console.log(`⚠️ Keine Audio-Phase aktiv (Phase ${currentPhase})`);
         }
+    }, [scrollProgress, playAudio, stopAllAudio]);
 
-        // Phase 1-6: Nur manueller Audio-Modus
-        if (currentTitleIndex >= 1 && currentTitleIndex <= 6 && isScrollLocked && isAudioEnabled) {
-            const audioIndex = currentTitleIndex - 1;
-            const manualPhaseKey = `manual-${currentTitleIndex}`;
-
-            // Set verhindert Dopplung für manuellen Modus
-            if (playedPhasesRef.current.has(manualPhaseKey)) {
-                console.log(`⏭️ Manuelle Phase ${currentTitleIndex} kürzlich gespielt - kurze Pause`);
-                // Nach 2 Sekunden aus Set entfernen
-                setTimeout(() => {
-                    playedPhasesRef.current.delete(manualPhaseKey);
-                }, 2000);
-                return;
-            }
-
-            playedPhasesRef.current.add(manualPhaseKey);
-
-            console.log(`👆 Manuell: Spiele Phase ${currentTitleIndex}`);
-            if (currentTitleIndex === 1) {
-                setTimeout(() => {
-                    playAudio(audioIndex, 'manual-phase1');
-                }, 200);
-            } else {
-                setTimeout(() => {
-                    playAudio(audioIndex, 'manual-delayed');
-                }, 300);
-            }
-        }
-
-    }, [currentTitleIndex, isScrollLocked, isAudioEnabled, playAudio, stopAllAudio]);
-
-    // ✅ CLEANUP
     useEffect(() => {
         return () => {
-            console.log(`🧹 Cleanup`);
+            console.log(`🧹 Audio Cleanup`);
             stopAllAudio();
         };
     }, [stopAllAudio]);
 
-    // ✅ NUR AUDIO TOGGLE BUTTON (kein Auto-Play Button)
     const buttonsContent = buttonPortal ? createPortal(
         <div style={{ pointerEvents: 'none', width: '100%', height: '100%' }}>
-            {/* AUDIO TOGGLE */}
+            {/* Audio Toggle */}
             <button
                 onClick={(e) => {
                     e.preventDefault();
@@ -240,7 +225,36 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                 {isAudioEnabled ? '🔊' : '🔇'}
             </button>
 
-            {/* ERWEITERTE DEBUG PANEL - PHASE 8 UNTERSTÜTZUNG */}
+            {/* Manual Play Button */}
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    manualPlayCurrentPhase();
+                }}
+                style={{
+                    position: 'absolute',
+                    bottom: '90px',
+                    right: '20px',
+                    width: '50px',
+                    height: '50px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+                    border: 'none',
+                    color: 'white',
+                    fontSize: '20px',
+                    cursor: 'pointer',
+                    pointerEvents: 'all',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                    zIndex: 1,
+                    userSelect: 'none'
+                }}
+                title="Aktuelles Audio manuell abspielen"
+            >
+                ▶️
+            </button>
+
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
@@ -257,35 +271,38 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                         lineHeight: '1.4',
                         border: '1px solid #333',
                         zIndex: 1,
-                        minWidth: '160px'
+                        minWidth: '250px'
                     }}
                 >
                     <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
-                        🎵 NUR MANUELL
+                        🎵 AUDIO (NUR PHASEN-WECHSEL)
                     </div>
-                    <div>📍 Phase: {currentTitleIndex}/8</div>
+                    <div>📍 ScrollProgress: {scrollProgress.toFixed(3)}</div>
+                    <div>📊 Debug: {(scrollProgress * 40).toFixed(1)}%</div>
+                    <div>🎭 Snap Index: {currentTitleIndex}/8</div>
                     <div>🔊 Audio: {isAudioEnabled ? 'An' : 'Aus'}</div>
                     <div>🔒 Scroll Lock: {isScrollLocked ? 'Ja' : 'Nein'}</div>
+                    <div>🎯 Last Triggered: {lastTriggeredPhaseRef.current}</div>
 
-                    {/* Phase 7 Indikator */}
-                    {currentTitleIndex === 7 && (
+                    {/* Phase-Erkennung */}
+                    {scrollProgress >= 0.05 && scrollProgress < 0.45 && (
                         <div style={{ color: '#a880ff', fontSize: '10px' }}>
-                            🎠 Carousel-Phase (Kein Audio)
+                            🎵 Phase 1: Von Uns Heißt Für Uns (5%-45%)
                         </div>
                     )}
-
-                    {/* ✅ NEU: Phase 8 Indikator */}
-                    {currentTitleIndex === 8 && (
-                        <div style={{ color: '#ff6b6b', fontSize: '10px' }}>
-                            📧 Newsletter-Phase (Kein Audio)
+                    {scrollProgress >= 0.45 && scrollProgress < 0.75 && (
+                        <div style={{ color: '#a880ff', fontSize: '10px' }}>
+                            🎵 Phase 2: Der Weg Ist Das Ziel (45%-75%)
+                        </div>
+                    )}
+                    {scrollProgress >= 0.75 && scrollProgress < 1.0 && (
+                        <div style={{ color: '#a880ff', fontSize: '10px' }}>
+                            🎵 Phase 3: Die Community Heißt (75%-100%)
                         </div>
                     )}
 
                     <div style={{ fontSize: '9px', color: '#888', marginTop: '4px' }}>
                         🎶 Playing: {currentAudioRef.current ? 'Ja' : 'Nein'}
-                    </div>
-                    <div style={{ fontSize: '9px', color: '#888' }}>
-                        📝 Gespielt: {playedPhasesRef.current.size} Phasen
                     </div>
 
                     <div style={{ marginTop: '8px', borderTop: '1px solid #333', paddingTop: '8px' }}>
@@ -306,43 +323,25 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                         </button>
 
                         <button
-                            onClick={() => {
-                                console.log('🐛 Manueller Modus Debug:');
-                                console.log('currentTitleIndex:', currentTitleIndex);
-                                console.log('isScrollLocked:', isScrollLocked);
-                                console.log('isAudioEnabled:', isAudioEnabled);
-                                console.log('playedPhasesRef.current:', Array.from(playedPhasesRef.current));
-                                console.log('currentAudioRef.current:', currentAudioRef.current);
-                            }}
+                            onClick={manualPlayCurrentPhase}
                             style={{
                                 padding: '4px 8px',
                                 fontSize: '10px',
-                                background: '#2196F3',
+                                background: '#4CAF50',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '4px',
                                 cursor: 'pointer'
                             }}
                         >
-                            📊 Log
+                            ▶️ Play
                         </button>
                     </div>
 
                     <div style={{ marginTop: '6px', fontSize: '9px', opacity: 0.7 }}>
-                        👆 Nur manueller Modus
-                        <br />✅ Set verhindert Doppel-Play
-                        <br />✅ Clean & Einfach
-                        <br />🚫 Kein Auto-Play
-                        {currentTitleIndex === 7 && (
-                            <>
-                                <br />🎠 Phase 7: Carousel OK
-                            </>
-                        )}
-                        {currentTitleIndex === 8 && (
-                            <>
-                                <br />📧 Phase 8: Newsletter OK
-                            </>
-                        )}
+                        ✅ KORRIGIERT: Nur bei Phasen-Wechsel
+                        <br />🚫 Kein Mehrfach-Play innerhalb Phase
+                        <br />🎯 LastTriggered verhindert Wiederholung
                     </div>
                 </div>
             )}
@@ -352,14 +351,13 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
 
     return (
         <ErrorBoundary>
-            {/* Audio-Elemente */}
             <div style={{ display: 'none' }}>
                 {titleAudios.map((audioConfig, index) => (
                     <audio
                         key={audioConfig.id}
                         ref={el => audioRefs.current[index] = el}
                         preload="auto"
-                        onLoadedData={() => console.log(`🎵 Audio ${index + 1} geladen`)}
+                        onLoadedData={() => console.log(`🎵 Audio ${index + 1} geladen: ${audioConfig.title}`)}
                         onError={(e) => console.warn(`❌ Audio ${index + 1} Fehler:`, e)}
                     >
                         <source
@@ -370,7 +368,6 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked }) => {
                 ))}
             </div>
 
-            {/* Buttons */}
             {buttonsContent}
         </ErrorBoundary>
     );

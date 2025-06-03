@@ -107,10 +107,8 @@ export const mobileConfig = {
             // Mobile-spezifische Positionen (höher positioniert für kleinere Bildschirme)
             positions: [
                 { top: '50%', left: '50%' }, // Von Uns Ist Für Uns
-                { top: '50%', left: '50%' }, // Der Weg
-                { top: '50%', left: '50%' }, // Ist Das Ziel
-                { top: '50%', left: '50%' }, // Die Community
-                { top: '50%', left: '50%' }, // Heißt
+                { top: '50%', left: '50%' }, // Der Weg Ist Das Ziel
+                { top: '50%', left: '50%' }, // Die Community Heißt
                 { top: '50%', left: '50%' }  // AniTune
             ],
 
@@ -119,7 +117,7 @@ export const mobileConfig = {
                 'fadeScale',    // Von Uns Ist Für Uns - Einfach und zuverlässig
                 'fade',         // Der Weg - Nur Fade für bessere Performance
                 'fadeScale',    // Ist Das Ziel - Klassisch
-                'fade',         // Die Community - Nur Fade
+                'fade',         // Die Community Heißt- Nur Fade
                 'fadeScale',    // Heißt - Klassisch
                 'popIn'         // AniTune - Dynamisches Finale
             ],

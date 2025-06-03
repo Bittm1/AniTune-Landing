@@ -90,25 +90,24 @@ export const baseTitleStyle = {
     opacity: 0.95
 };
 
+// ✅ NEU: 5 Titel-Phasen statt 6
 export const titleTexts = [
-    'Von Uns Heißt Für Uns',
-    'Der Weg',
-    'Ist Das Ziel',
-    'Die Community',
-    'Heißt',
-    'AniTune'
+    'Von Uns Heißt Für Uns',  // Phase 1
+    'Der Weg Ist Das Ziel',   // Phase 2  
+    'Die Community Heißt',    // Phase 3 (kombiniert aus "Die Community" + "Heißt")
+    'AniTune'                 // Phase 5 (war vorher 6)
 ];
 
+// ✅ NEU: 5 Animationen für 5 Titel
 export const defaultTitleAnimations = [
-    'fadeScale',
-    'slideUp',
-    'popIn',
-    'fadeScale',
-    'slideDown',
-    'popIn'
+    'fadeScale',    // Von Uns Heißt Für Uns
+    'slideUp',      // Der Weg
+    'popIn',        // Ist Das Ziel
+    'fadeScale',    // Die Community Heißt
+    'popIn'         // AniTune
 ];
 
-// ✅ KORRIGIERTE createTitles-Funktion mit dynamischen Segmenten
+// ✅ KORRIGIERTE createTitles-Funktion mit 5 Titeln
 export function createTitles(styleOverrides = {}, options = {}) {
     const positions = options.positions;
     const animations = options.animations || defaultTitleAnimations;
@@ -122,10 +121,10 @@ export function createTitles(styleOverrides = {}, options = {}) {
         throw new Error('createTitles: positions array is required and must match titleTexts length');
     }
 
-    // ✅ KORRIGIERT: Erwarte 7 Segmente (Phase 0 + 6 Titel)
-    const expectedSegments = titleTexts.length + 1; // +1 für Phase 0 (Logo/Newsletter)
-    if (titleSegments.length !== expectedSegments) {
-        console.warn(`Expected ${expectedSegments} segments (Phase 0 + ${titleTexts.length} titles), got ${titleSegments.length}. Using available segments.`);
+    // ✅ KORRIGIERT: Erwarte 8 Segmente (Phase 0 + 5 Titel + 2 Extra)
+    const expectedSegments = titleTexts.length + 3; // +3 für Phase 0 (Logo) + Phase 6 (Carousel) + Phase 7 (Newsletter)
+    if (titleSegments.length < expectedSegments) {
+        console.warn(`Expected at least ${expectedSegments} segments (Phase 0 + ${titleTexts.length} titles + 2 extra), got ${titleSegments.length}. Using available segments.`);
     }
 
     return titleTexts.map((text, index) => {
@@ -142,9 +141,9 @@ export function createTitles(styleOverrides = {}, options = {}) {
             console.error(`No segment found for title ${index + 1}: "${text}"`);
             // Fallback-Segment erstellen
             const fallbackSegment = {
-                scrollStart: index * 0.1,
-                scrollEnd: (index + 1) * 0.1,
-                snapTarget: (index + 1) * 0.1667,
+                scrollStart: index * 0.2,
+                scrollEnd: (index + 1) * 0.2,
+                snapTarget: (index + 1) * 0.4,
                 snapDuration: 1.2,
                 snapEase: "power2.inOut"
             };

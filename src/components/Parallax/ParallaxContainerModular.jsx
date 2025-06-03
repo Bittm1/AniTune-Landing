@@ -579,9 +579,10 @@ const ParallaxContainerModular = React.memo(() => {
         <TitleAudioLayer
             currentTitleIndex={currentTitleIndex}
             isScrollLocked={isScrollLocked}
+            scrollProgress={scrollProgress}  // ✅ HINZUGEFÜGT: scrollProgress prop
             scrollToTitleIndex={scrollToTitleIndex}
         />
-    ), [currentTitleIndex, isScrollLocked, scrollToTitleIndex]);
+    ), [currentTitleIndex, isScrollLocked, scrollProgress, scrollToTitleIndex]); // ✅ HINZUGEFÜGT: scrollProgress in Dependencies
 
     // AniTune Carousel Layer: Unverändert
     const carouselLayer = useMemo(() => (
