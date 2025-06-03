@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/AniTuneCarousel.jsx - DEBUG NUR LOKAL
+// src/components/Parallax/Elements/AniTuneCarousel.jsx - ERWEITERT auf 9 Karten mit Bild-Icons
 import React, { useState, useMemo } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import { getPositionFromSegments } from '../utils/animationUtils';
@@ -6,7 +6,7 @@ import './AniTuneCarousel.css';
 
 const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) => {
     // NUR die notwendigen States - keine Animation States!
-    const [activeCard, setActiveCard] = useState(2);
+    const [activeCard, setActiveCard] = useState(4); // ✅ ANGEPASST: Mittlere Karte bei 9 Karten (Index 4)
     const [transitionDirection, setTransitionDirection] = useState(null);
 
     // PROFESSIONELL: Segment-Definition wie andere Layer
@@ -14,47 +14,75 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         scrollStart: 1.20,    // Phase 7 startet jetzt bei 124%
         scrollEnd: 1.80,      // Phase 7 endet bei 144%  
         posStart: 60,        // Startet 100vh unten
-        posEnd: -100,        // Endet bei -100
+        posEnd: -150,        // ✅ DEINE ANPASSUNG: -150 statt -100
         opacityStart: 1.0, // Startet voll sichtbar
         opacityEnd: 1.0
     }], []);
 
-    // 5 Test-Karten Daten
+    // 9 AniTune-Karten Daten - MIT BILD-ICONS
     const cards = useMemo(() => [
         {
             id: 'discord',
             title: 'Discord',
-            icon: '💬',
+            icon: '/icons/discord.webp',
             color: '#5865F2',
             description: 'Community Chat'
         },
         {
             id: 'podcast',
             title: 'Podcast',
-            icon: '🎙️',
+            icon: '/icons/podcast.webp',
             color: '#FF6B6B',
             description: 'Anime Talks'
         },
         {
             id: 'lizenzen',
             title: 'Lizenzen',
-            icon: '📄',
+            icon: '/icons/lizenz.webp',
             color: '#4ECDC4',
             description: 'Rights & Licenses'
         },
         {
             id: 'events',
             title: 'Events',
-            icon: '🎉',
+            icon: '/icons/meilensteine.png',
             color: '#45B7D1',
             description: 'Community Events'
         },
         {
             id: 'shop',
             title: 'Shop',
-            icon: '🛍️',
+            icon: '/icons/merch.webp',
             color: '#96CEB4',
             description: 'Merchandise'
+        },
+        {
+            id: 'dubbing',
+            title: 'Dubbing',
+            icon: '/icons/dubbing.webp',
+            color: '#9B59B6',
+            description: 'Voice Acting'
+        },
+        {
+            id: 'vote',
+            title: 'Vote',
+            icon: '/icons/vote.webp',
+            color: '#F39C12',
+            description: 'Voting'
+        },
+        {
+            id: 'donations',
+            title: 'Donations',
+            icon: '/icons/donations.webp',
+            color: '#E74C3C',
+            description: 'Spenden'
+        },
+        {
+            id: 'katalog',
+            title: 'Katalog',
+            icon: '/icons/katalog.webp',
+            color: '#2ECC71',
+            description: 'StimmKatalog'
         }
     ], []);
 
@@ -70,7 +98,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
     // Aktuelle Karte für Titel
     const currentCard = cards[activeCard];
 
-    // Intelligente Position-Berechnung (unverändert - funktioniert gut)
+    // Intelligente Position-Berechnung (erweitert für 9 Karten)
     const getSmartCardPosition = (cardIndex, activeIndex, direction) => {
         const totalCards = cards.length;
         let position = cardIndex - activeIndex;
@@ -161,9 +189,9 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                 className="anitune-carousel-container"
                 style={containerStyle}
             >
-                {/* Fixer AniTune Titel */}
+                {/* ✅ GEÄNDERT: Coming Soon statt AniTune */}
                 <div className="carousel-title-section">
-                    <h1 className="fixed-title">AniTune</h1>
+                    <h1 className="fixed-title">Coming Soon</h1>
 
                     {/* Wechselnder Untertitel */}
                     <div className="sliding-title-container">
@@ -201,17 +229,17 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                     {cards.map((card, cardIndex) => {
                         const smartPosition = getSmartCardPosition(cardIndex, activeCard, transitionDirection);
 
-                        if (Math.abs(smartPosition) > 2) {
-                            return null;
+                        if (Math.abs(smartPosition) > 3) {
+                            return null; // ✅ ERWEITERT: 3 Karten links/rechts bei 9 Karten total
                         }
 
                         const isActive = smartPosition === 0;
                         const distance = Math.abs(smartPosition);
 
-                        // PROFESSIONELL: Scroll-basierte Karten-Sichtbarkeit
-                        // Erste 60% der Animation: Nur aktive Karte
-                        // Letzte 40%: Alle Karten
-                        const showCard = phase7Progress > 0.6 || isActive;
+                        // PROFESSIONELL: Scroll-basierte Karten-Sichtbarkeit für 9 Karten
+                        // Erste 60% der Animation: Nur aktive Karte + direkte Nachbarn
+                        // Letzte 40%: Alle sichtbaren Karten (maximal 7 gleichzeitig)
+                        const showCard = phase7Progress > 0.6 || Math.abs(smartPosition) <= 1;
 
                         const cardStyle = {
                             '--card-color': card.color,
@@ -230,8 +258,30 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                                 onClick={() => handleCardClick(cardIndex)}
                             >
                                 <div className="card-content">
-                                    <div className="card-icon">{card.icon}</div>
-                                    <h3 className="card-title">{card.title}</h3>
+                                    <div className="card-icon">
+                                        <img
+                                            src={card.icon}
+                                            alt={`${card.title} Icon`}
+                                            className="card-icon-image"
+                                            onError={(e) => {
+                                                // Fallback zu Emoji falls Bild nicht lädt
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'block';
+                                            }}
+                                        />
+                                        <div className="card-icon-fallback" style={{ display: 'none' }}>
+                                            {card.id === 'discord' && '💬'}
+                                            {card.id === 'podcast' && '🎙️'}
+                                            {card.id === 'lizenzen' && '📄'}
+                                            {card.id === 'events' && '🎉'}
+                                            {card.id === 'shop' && '🛍️'}
+                                            {card.id === 'dubbing' && '🎭'}
+                                            {card.id === 'vote' && '⭐'}
+                                            {card.id === 'donations' && '💝'}
+                                            {card.id === 'katalog' && '🎤'}
+                                        </div>
+                                    </div>
+                                    {/* ✅ ENTFERNT: card-title */}
                                     <p className="card-description">{card.description}</p>
                                 </div>
                             </div>
@@ -247,12 +297,13 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                         <div>VerticalPos: {verticalPosition.toFixed(0)}vh</div>
                         <div>Opacity: {opacity.toFixed(2)}</div>
                         <div>Active Card: {activeCard} ({currentCard.title})</div>
+                        <div>Total Cards: {cards.length}</div>
                         <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
                         <div style={{ color: '#00ff00', fontSize: '10px' }}>
-                            ✅ Scroll-basierte Animation (Profi-Level)
+                            ✅ 9 Karten mit Bild-Icons
                         </div>
                         <div style={{ color: '#a880ff', fontSize: '10px' }}>
-                            🎠 Gleiche Logic wie andere Layer
+                            🎠 Ring-Animation optimiert
                         </div>
                     </div>
                 )}

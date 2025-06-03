@@ -74,7 +74,7 @@ export const LOGO_PHASES = {
         style: {
             width: '300px',
             height: '300px',
-            zIndex: 1000, // Höher als Phase 0
+            zIndex: 1, // Höher als Phase 0
             backgroundSize: 'contain',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',

@@ -1,4 +1,4 @@
-/* src/components/Parallax/Elements/AniTuneCarousel.css */
+/* src/components/Parallax/Elements/AniTuneCarousel.css - ERWEITERT für 9 Karten mit Bild-Icons */
 
 /* ===== CONTAINER ===== */
 .anitune-carousel-container {
@@ -12,6 +12,7 @@
     justify-content: center;
     align-items: center;
     z-index: 6;
+    /* ✅ DEINE ANPASSUNG: 6 statt 20 */
     pointer-events: none;
 
     /* Von unten hereinfahren */
@@ -40,6 +41,7 @@
 
 .sliding-title-container {
     height: 60px;
+    /* Feste Höhe für smooth Wechsel */
     overflow: hidden;
     position: relative;
 }
@@ -78,6 +80,7 @@
     display: flex;
     justify-content: space-between;
     padding: 0 40px;
+    /* ✅ ZURÜCKGESETZT: Original 40px */
     z-index: 3;
     pointer-events: none;
 }
@@ -94,6 +97,7 @@
     font-weight: bold;
     cursor: pointer;
     pointer-events: all;
+    /* ✅ ZURÜCKGESETZT: Ohne !important */
 
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -102,41 +106,38 @@
     justify-content: center;
 }
 
-.nav-button:hover:not(.disabled) {
+.nav-button:hover {
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
     transform: scale(1.1);
 }
 
-.nav-button:active:not(.disabled) {
+.nav-button:active {
     transform: scale(0.95);
-}
-
-/* ✅ NEU: Disabled State für Navigation */
-.nav-button.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: rgba(100, 100, 100, 0.1);
-    transform: none !important;
 }
 
 /* ===== KARTEN CONTAINER ===== */
 .cards-container {
     position: relative;
     width: 100%;
-    max-width: 1400px;
+    max-width: 1600px;
+    /* ✅ ERWEITERT: Mehr Platz für 9 Karten */
     height: 300px;
     display: flex;
     justify-content: center;
     align-items: center;
-    perspective: 1200px;
+    perspective: 1500px;
+    /* ✅ ERWEITERT: Mehr 3D-Tiefe für 9 Karten */
     overflow: hidden;
+    /* ✅ Verhindere Scroll bei großen Transforms */
 }
 
-/* ===== EINZELNE KARTEN - SMART TRANSITION MIX ===== */
+/* ===== EINZELNE KARTEN ===== */
 .carousel-card {
     position: absolute;
+    /* ✅ GEÄNDERT: Absolute Positioning für bessere Kontrolle */
     left: 50%;
+    /* ✅ GEÄNDERT: Zentriert als Ausgangspunkt */
     width: 200px;
     height: 280px;
     border-radius: 20px;
@@ -148,24 +149,15 @@
     cursor: pointer;
     pointer-events: all;
 
-    /* ✅ SMART: CSS Transitions für normale Übergänge */
+    /* ✅ ERWEITERTE SMOOTH TRANSITION - Längere Dauer für bessere UX */
     transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
+    /* Transform-Origin für bessere 3D-Effekte */
     transform-origin: center center;
     transform-style: preserve-3d;
-
-    /* ✅ PERFORMANCE: GPU-Acceleration */
-    will-change: transform, opacity;
-    backface-visibility: hidden;
 }
 
-/* ✅ GSAP Control - Nur für Wrap-Around Situationen */
-.carousel-card.gsap-animating {
-    transition: none !important;
-    /* GSAP übernimmt nur bei problematischen Übergängen */
-}
-
-/* ✅ ENHANCED Aktive Karte */
+/* ✅ ERWEITERTE Aktive Karte - Bessere Hervorhebung */
 .carousel-card.active {
     background: linear-gradient(145deg,
             rgba(255, 255, 255, 0.2),
@@ -176,13 +168,8 @@
         0 0 40px var(--card-color, rgba(168, 128, 255, 0.4)),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
 
-    /* ✅ Pulsing-Effekt nur wenn nicht animiert */
+    /* ✅ Pulsing-Effekt für aktive Karte */
     animation: activePulse 3s ease-in-out infinite;
-}
-
-.carousel-card.active.gsap-animating {
-    animation: none;
-    /* Stoppe CSS Animation während GSAP */
 }
 
 @keyframes activePulse {
@@ -203,27 +190,48 @@
     }
 }
 
-/* ✅ ENHANCED Inaktive Karten */
+/* ✅ ERWEITERTE Inaktive Karten */
 .carousel-card.inactive {
     opacity: 0.7;
 }
 
-.carousel-card.inactive:hover:not(.gsap-animating) {
+.carousel-card.inactive:hover {
     opacity: 0.9;
+    transform: var(--hover-transform, scale(1.05));
     background: linear-gradient(145deg,
             rgba(255, 255, 255, 0.15),
             rgba(255, 255, 255, 0.08));
 }
 
-/* ✅ GSAP Animation States */
-.carousel-card.gsap-animating {
-    /* Während GSAP Animation alle CSS Effekte deaktivieren */
-    pointer-events: none;
+/* ✅ NEU: Spezielle Styles für Ring-Positionen */
+.carousel-card.position--2,
+.carousel-card.position-2 {
+    /* Äußere Karten - am stärksten reduziert */
+    filter: blur(1px);
 }
 
-.carousel-card.gsap-animating:hover {
-    transform: var(--current-transform) !important;
-    /* Verhindere CSS Hover während GSAP Animation */
+.carousel-card.position--1,
+.carousel-card.position-1 {
+    /* Innere Seitenkarten - leicht reduziert */
+    filter: blur(0.5px);
+}
+
+.carousel-card.position-0 {
+    /* Zentrale Karte - voll sichtbar */
+    filter: none;
+}
+
+/* ✅ NEU: Hover-Effekte für Ring-Positionen */
+.carousel-card.position--1:hover,
+.carousel-card.position-1:hover {
+    filter: blur(0px);
+    transform: var(--current-transform) scale(1.05) !important;
+}
+
+.carousel-card.position--2:hover,
+.carousel-card.position-2:hover {
+    filter: blur(0px);
+    transform: var(--current-transform) scale(1.03) !important;
 }
 
 /* ===== KARTEN CONTENT ===== */
@@ -239,31 +247,43 @@
     z-index: 1;
 }
 
+/* ✅ ERWEITERT: Icon für Bilder und Fallback */
 .card-icon {
-    font-size: 4rem;
+    width: 80px;
+    height: 80px;
     margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.card-icon-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
     transition: transform 0.3s ease;
 }
 
-.carousel-card:hover:not(.gsap-animating) .card-icon {
-    transform: scale(1.1) rotateY(10deg);
+.card-icon-fallback {
+    font-size: 4rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-.card-title {
-    font-family: 'Lobster', cursive, sans-serif;
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: white;
-    margin: 0 0 10px 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-    letter-spacing: 1px;
-    transition: color 0.3s ease;
+.carousel-card:hover .card-icon {
+    transform: scale(1.1);
 }
 
-.carousel-card.active .card-title {
-    color: var(--card-color, white);
+.carousel-card:hover .card-icon-image {
+    transform: scale(1.05) rotateY(10deg);
 }
+
+/* ✅ ENTFERNT: card-title Styles - Titel sind nicht mehr auf den Karten */
 
 .card-description {
     font-size: 1rem;
@@ -278,52 +298,37 @@
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* ===== DEBUG INFO - ENHANCED ===== */
+/* ===== DEBUG INFO ===== */
 .carousel-debug {
     position: absolute;
     bottom: 20px;
     left: 20px;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.8);
     color: white;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 11px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 12px;
     font-family: monospace;
     line-height: 1.4;
     pointer-events: all;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    min-width: 200px;
-}
-
-.carousel-debug button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.carousel-debug button:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-.carousel-debug button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 1024px) {
     .cards-container {
-        max-width: 900px;
+        max-width: 1200px;
     }
 
     .carousel-card {
         width: 160px;
         height: 240px;
+    }
+
+    .card-icon {
+        width: 70px;
+        height: 70px;
     }
 
     .fixed-title {
@@ -332,6 +337,11 @@
 
     .sliding-title {
         font-size: 2rem;
+    }
+
+    .carousel-navigation {
+        padding: 0 20px;
+        /* ✅ ZURÜCKGESETZT: Original responsive Werte */
     }
 }
 
@@ -354,6 +364,7 @@
 
     .cards-container {
         height: 250px;
+        max-width: 100%;
     }
 
     .carousel-card {
@@ -366,12 +377,13 @@
     }
 
     .card-icon {
-        font-size: 3rem;
+        width: 60px;
+        height: 60px;
         margin-bottom: 15px;
     }
 
-    .card-title {
-        font-size: 1.4rem;
+    .card-icon-fallback {
+        font-size: 3rem;
     }
 
     .card-description {
@@ -386,15 +398,7 @@
 
     .carousel-navigation {
         padding: 0 20px;
-    }
-
-    /* ✅ NEU: Mobile Debug Panel */
-    .carousel-debug {
-        bottom: 10px;
-        left: 10px;
-        font-size: 10px;
-        padding: 8px;
-        min-width: 160px;
+        /* ✅ ZURÜCKGESETZT: Original */
     }
 }
 
@@ -404,6 +408,15 @@
         height: 180px;
     }
 
+    .card-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .card-icon-fallback {
+        font-size: 2.5rem;
+    }
+
     .fixed-title {
         font-size: 2rem;
     }
@@ -411,71 +424,4 @@
     .sliding-title {
         font-size: 1.5rem;
     }
-
-    .carousel-debug {
-        font-size: 9px;
-        padding: 6px;
-        min-width: 140px;
-    }
-}
-
-/* ✅ NEU: Animation Performance Optimierungen */
-@media (prefers-reduced-motion: reduce) {
-    .carousel-card {
-        transition: opacity 0.3s ease !important;
-    }
-
-    .carousel-card.gsap-animating {
-        transition: none !important;
-    }
-
-    @keyframes activePulse {
-
-        0%,
-        100% {
-            opacity: 1;
-        }
-
-        50% {
-            opacity: 0.9;
-        }
-    }
-
-    @keyframes slideUpTitle {
-        0% {
-            opacity: 0;
-        }
-
-        100% {
-            opacity: 1;
-        }
-    }
-}
-
-/* ✅ NEU: Touch-Vorbereitung */
-@media (hover: none) and (pointer: coarse) {
-
-    /* Touch Devices */
-    .carousel-card:hover {
-        /* Deaktiviere Hover-Effekte auf Touch-Geräten */
-        opacity: var(--original-opacity);
-        background: var(--original-background);
-        transform: var(--original-transform);
-    }
-
-    .nav-button {
-        /* Größere Touch-Targets */
-        min-width: 60px;
-        min-height: 60px;
-    }
-}
-/* ✅ NEU: Verstecke alle Karten während Animation */
-.anitune-carousel-container.animating .carousel-card:not(.active) {
-    display: none !important;
-}
-
-.anitune-carousel-container.animating .carousel-card.active {
-    transform: translateX(-50%) scale(1.1) !important;
-    left: 50% !important;
-    position: absolute !important;
 }
