@@ -119,7 +119,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         });
     }, [backgroundMusicEnabled]);
 
-    const fadeBackgroundMusicOut = useCallback((duration = 3.0) => {
+    const fadeBackgroundMusicOut = useCallback((duration = 2.0) => {
         if (!backgroundMusicRef.current) return;
 
         console.log(`🎵 BACKGROUND: Fade Out (${duration}s)`);
@@ -305,7 +305,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                 stablePhaseRef.current = newPhase;
 
                 // ✅ AUDIO-TRIGGER: NUR bei stabiler Phase-Änderung
-                if (newPhase >= 1 && newPhase <= 3 && newPhase !== lastTriggeredPhaseRef.current) {
+                if (newPhase >= 1 && newPhase <= 4 && newPhase !== lastTriggeredPhaseRef.current) {
                     const audioIndex = newPhase - 1;
 
                     console.log(`🎵 CENTRALIZED STABLE PHASE-WECHSEL: → Phase ${newPhase} - Starte Audio ${audioIndex + 1}`);
@@ -349,7 +349,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         // ✅ KEINE currentTitleIndex ABHÄNGIGKEIT!
         // ✅ KEIN DEBOUNCING - startet sofort wie Titel!
 
-        if (currentPhase >= 1 && currentPhase <= 3 && currentPhase !== lastTriggeredPhaseRef.current) {
+        if (currentPhase >= 1 && currentPhase <= 4 && currentPhase !== lastTriggeredPhaseRef.current) {
             const audioIndex = currentPhase - 1;
 
             console.log(`🎵 SYNC PHASE-WECHSEL: → Phase ${currentPhase} - Starte Audio ${audioIndex + 1} SOFORT`);

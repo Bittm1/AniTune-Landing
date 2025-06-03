@@ -1,11 +1,10 @@
-// src/components/Parallax/hooks/useScrollProgress.js - ANGEPASST für snapConfig
+// src/components/Parallax/hooks/useScrollProgress.js - NUR Phase 4 scrollProgress Erweiterung
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import gsap from 'gsap';
 import { findNearestSnapTarget, findAdjacentTitle, getCurrentActiveTitle } from '../config/baseConfig';
 import { getSnapTiming, getBackToLogoTiming, getDeviceOptimizedTiming, getActiveScrollSegments } from '../config/timingConfig';
 
-// ✅ NEU: Import der Snap-Konfiguration
 import {
     getSnapDurationForTransition,
     getSnapEasingForTransition,
@@ -14,7 +13,7 @@ import {
 } from '../config/snapConfig';
 
 export function useScrollProgress(containerRef, sectionsRef, titles = []) {
-    // States (unverändert)
+    // States
     const [scrollProgress, setScrollProgress] = useState(0);
     const [activeSection, setActiveSection] = useState(0);
     const [activeTitle, setActiveTitle] = useState(null);
@@ -22,24 +21,23 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
     const [currentTitleIndex, setCurrentTitleIndex] = useState(0);
     const [isScrollLocked, setIsScrollLocked] = useState(false);
 
-    // Refs (unverändert)
+    // Refs
     const scrollTimeoutRef = useRef(null);
     const snapTimeoutRef = useRef(null);
     const lastScrollTime = useRef(0);
     const scrollDirection = useRef(0);
     const lastScrollEventRef = useRef(0);
 
-    // ✅ TIMING-CONFIG LADEN (unverändert)
     const timingConfig = getDeviceOptimizedTiming();
     const snapTiming = getSnapTiming();
 
-    // Manuelles Update des Scroll-Fortschritts (unverändert)
+    // ✅ NUR DIESE ÄNDERUNG: 2.5 auf 3.0 für Phase 4
     const updateScrollProgress = useCallback(() => {
         if (!containerRef.current || typeof window === 'undefined') return;
 
         const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
         const currentScroll = window.scrollY;
-        const progress = Math.max(0, Math.min(2.5, (currentScroll / totalHeight) * 2.5));
+        const progress = Math.max(0, Math.min(3.0, (currentScroll / totalHeight) * 3.0));
 
         setScrollProgress(progress);
 
@@ -62,7 +60,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [containerRef, sectionsRef, titles, currentTitleIndex]);
 
-    // ✅ KOMPLETT ÜBERARBEITETE SNAP-FUNKTION: Nutzt snapConfig
     const snapToTitleIndex = useCallback((targetIndex, direction = 'next') => {
         if (isScrollLocked || isSnapping) return;
 
@@ -72,7 +69,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
 
         if (targetIndex < 0 || targetIndex > maxIndex) return;
 
-        // ✅ NEU: Snap-Konfiguration aus snapConfig.js
         const snapDuration = getSnapDurationForTransition(currentTitleIndex, targetIndex);
         const snapEase = getSnapEasingForTransition(currentTitleIndex, targetIndex);
         const lockDelay = getSnapLockDelayForTransition(currentTitleIndex, targetIndex);
@@ -83,19 +79,17 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         setIsScrollLocked(true);
         setIsSnapping(true);
 
-        // Scroll-Ziel berechnen
         let targetScroll = 0;
         if (segments[targetIndex]) {
             const targetSegment = segments[targetIndex];
             const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-            targetScroll = targetSegment.snapTarget * totalHeight / 2.5;
+            targetScroll = targetSegment.snapTarget * totalHeight / 3.0;
         }
 
-        // ✅ GSAP-Animation mit snapConfig Werten
         gsap.to(window, {
-            duration: snapDuration,      // Aus snapConfig
+            duration: snapDuration,
             scrollTo: { y: targetScroll },
-            ease: snapEase,              // Aus snapConfig
+            ease: snapEase,
             onUpdate: () => {
                 updateScrollProgress();
             },
@@ -110,7 +104,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                     setActiveTitle(null);
                 }
 
-                // ✅ Lock-Delay aus snapConfig
                 setTimeout(() => {
                     setIsScrollLocked(false);
                     setIsSnapping(false);
@@ -119,7 +112,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         });
     }, [isScrollLocked, isSnapping, titles, updateScrollProgress, currentTitleIndex]);
 
-    // ✅ SCROLL-EVENT-BEHANDLUNG (unverändert - nutzt die neue snapToTitleIndex)
     const handleScrollEvent = useCallback((event) => {
         if (isScrollLocked || isSnapping) {
             event.preventDefault();
@@ -148,7 +140,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // ✅ TOUCH-EVENTS (unverändert - nutzen die neue snapToTitleIndex)
     const touchStartRef = useRef({ y: 0, time: 0 });
     const handleTouchStart = useCallback((event) => {
         if (event.touches.length === 1) {
@@ -182,7 +173,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // ✅ KEYBOARD-NAVIGATION (unverändert - nutzt die neue snapToTitleIndex)
     const handleKeyboardNavigation = useCallback((direction) => {
         if (isScrollLocked || isSnapping) return;
 
@@ -201,7 +191,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // Event-Listener Setup (unverändert)
     useEffect(() => {
         if (!containerRef.current || titles.length === 0) return;
 
@@ -224,7 +213,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         };
     }, [handleScrollEvent, handleTouchStart, handleTouchEnd, titles]);
 
-    // Keyboard-Events (unverändert)
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
@@ -258,14 +246,12 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleKeyboardNavigation, snapToTitleIndex]);
 
-    // Initialisierung (unverändert)
     useEffect(() => {
         if (titles.length > 0) {
             updateScrollProgress();
         }
     }, [titles, updateScrollProgress]);
 
-    // Legacy-Funktionen für Kompatibilität (unverändert)
     const scrollToSection = useCallback((index) => {
         snapToTitleIndex(index);
     }, [snapToTitleIndex]);
@@ -274,9 +260,9 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         snapToTitleIndex(index);
     }, [snapToTitleIndex]);
 
-    // Formatierter Progress (unverändert)
+    // ✅ NUR DIESE ÄNDERUNG: 3.0 statt 2.5
     const formattedScrollProgress = {
-        normalized: (Math.min(2.5, Math.max(0, scrollProgress)) * 40).toFixed(0),
+        normalized: (Math.min(3.0, Math.max(0, scrollProgress)) * 40).toFixed(0),
         absolute: (scrollProgress * 40).toFixed(0),
         phase1: Math.min(1, scrollProgress),
         phase2: Math.max(0, Math.min(1, scrollProgress - 1)),
@@ -284,7 +270,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         percentage: (scrollProgress * 40).toFixed(0) + '%'
     };
 
-    // ✅ ERWEITERTE Return-Werte mit snapConfig Debug-Info
     return {
         scrollProgress,
         activeSection,
@@ -300,7 +285,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         currentTitleIndex,
         isScrollLocked,
 
-        // Helper für Phase-Erkennung (unverändert)
         isLogoPhase: currentTitleIndex === 0,
         isTitlePhase: currentTitleIndex >= 1 && currentTitleIndex <= 5,
         isCarouselPhase: currentTitleIndex === 6,
@@ -311,7 +295,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                     currentTitleIndex === 7 ? 'Newsletter CTA' :
                         titles[currentTitleIndex - 1]?.text || `Titel ${currentTitleIndex}`,
 
-        // ✅ ERWEITERTE Debug-Info mit snapConfig
         timingInfo: {
             preset: timingConfig.name,
             snapDuration: snapTiming.duration,
@@ -322,7 +305,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                         `Titel ${currentTitleIndex}`,
             totalPhases: 8,
             configurable: true,
-            // ✅ NEU: snapConfig Debug-Info
             snapConfig: getSnapConfigDebugInfo()
         }
     };

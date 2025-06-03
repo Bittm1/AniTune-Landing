@@ -23,7 +23,7 @@ const LogoLayer = ({ scrollProgress, config }) => {
 
     // ✅ Phase 4 Progress für smooth fade-in (0-1 innerhalb Phase 4)
     const phase4Progress = currentPhase === 4 ?
-        Math.min(1, Math.max(0, (scrollProgress - 1.2) / (1.6 - 1.2))) : 0;
+        Math.min(1, Math.max(0, (scrollProgress - 1.0) / (1.2 - 1.0))) : 0;
 
     // ✅ Phase 4 Logo Opacity (kombiniert config + progress)
     const phase4Opacity = phase4LogoConfig ?
