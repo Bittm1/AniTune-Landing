@@ -1,20 +1,20 @@
-// src/components/Parallax/Elements/AniTuneCarousel.jsx
+// src/components/Parallax/Elements/AniTuneCarousel.jsx - DEBUG NUR LOKAL
 import React, { useState, useMemo } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import { getPositionFromSegments } from '../utils/animationUtils';
 import './AniTuneCarousel.css';
 
 const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) => {
-    // ✅ NUR die notwendigen States - keine Animation States!
+    // NUR die notwendigen States - keine Animation States!
     const [activeCard, setActiveCard] = useState(2);
     const [transitionDirection, setTransitionDirection] = useState(null);
 
-    // ✅ PROFESSIONELL: Segment-Definition wie andere Layer
+    // PROFESSIONELL: Segment-Definition wie andere Layer
     const carouselSegment = useMemo(() => [{
         scrollStart: 1.20,    // Phase 7 startet jetzt bei 124%
         scrollEnd: 1.80,      // Phase 7 endet bei 144%  
         posStart: 60,        // Startet 100vh unten
-        posEnd: -100,        // Endet bei -100,         // Endet bei -80,         // Endet bei -120,     // Endet bei -80,         // Endet bei -120,          // Endet bei -80,            // Endet bei normaler Position
+        posEnd: -100,        // Endet bei -100
         opacityStart: 1.0, // Startet voll sichtbar
         opacityEnd: 1.0
     }], []);
@@ -58,11 +58,11 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         }
     ], []);
 
-    // ✅ PROFESSIONELL: Scroll-basierte Position wie andere Layer
+    // PROFESSIONELL: Scroll-basierte Position wie andere Layer
     const verticalPosition = getPositionFromSegments(carouselSegment, scrollProgress, 'posStart', 'posEnd');
     const opacity = getPositionFromSegments(carouselSegment, scrollProgress, 'opacityStart', 'opacityEnd');
 
-    // ✅ Animation Progress für Karten-Sichtbarkeit (0-1 innerhalb Phase 7)
+    // Animation Progress für Karten-Sichtbarkeit (0-1 innerhalb Phase 7)
     const phase7Progress = scrollProgress >= 1.24 && scrollProgress <= 1.44
         ? (scrollProgress - 1.24) / 0.2  // 0-1 innerhalb der Phase 7
         : scrollProgress > 1.44 ? 1 : 0; // 1 wenn darüber, 0 wenn darunter
@@ -70,7 +70,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
     // Aktuelle Karte für Titel
     const currentCard = cards[activeCard];
 
-    // ✅ Intelligente Position-Berechnung (unverändert - funktioniert gut)
+    // Intelligente Position-Berechnung (unverändert - funktioniert gut)
     const getSmartCardPosition = (cardIndex, activeIndex, direction) => {
         const totalCards = cards.length;
         let position = cardIndex - activeIndex;
@@ -92,7 +92,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         return position;
     };
 
-    // ✅ Navigation Handlers (unverändert - funktionieren gut)
+    // Navigation Handlers (unverändert - funktionieren gut)
     const handleCardClick = (index) => {
         if (index !== activeCard) {
             const totalCards = cards.length;
@@ -111,7 +111,9 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                 setTransitionDirection(distance > 0 ? 'right' : 'left');
             }
 
-            console.log(`🎠 Karte ${index} (${cards[index].title}) wird zur Mitte bewegt`);
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎠 Karte ${index} (${cards[index].title}) wird zur Mitte bewegt`);
+            }
             setActiveCard(index);
 
             setTimeout(() => setTransitionDirection(null), 600);
@@ -122,7 +124,9 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         setTransitionDirection('left');
         setActiveCard(prev => {
             const newIndex = prev > 0 ? prev - 1 : cards.length - 1;
-            console.log(`🎠 Previous: ${prev} → ${newIndex}`);
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎠 Previous: ${prev} → ${newIndex}`);
+            }
             return newIndex;
         });
         setTimeout(() => setTransitionDirection(null), 600);
@@ -132,13 +136,15 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         setTransitionDirection('right');
         setActiveCard(prev => {
             const newIndex = prev < cards.length - 1 ? prev + 1 : 0;
-            console.log(`🎠 Next: ${prev} → ${newIndex}`);
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎠 Next: ${prev} → ${newIndex}`);
+            }
             return newIndex;
         });
         setTimeout(() => setTransitionDirection(null), 600);
     };
 
-    // ✅ PROFESSIONELL: Container Style wie andere Layer
+    // PROFESSIONELL: Container Style wie andere Layer
     const containerStyle = {
         transform: `translateY(${verticalPosition}vh)`,
         opacity: Math.max(0, Math.min(1, opacity)),
@@ -190,7 +196,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                     </button>
                 </div>
 
-                {/* ✅ PROFESSIONELL: Karten mit scroll-basierter Sichtbarkeit */}
+                {/* PROFESSIONELL: Karten mit scroll-basierter Sichtbarkeit */}
                 <div className="cards-container">
                     {cards.map((card, cardIndex) => {
                         const smartPosition = getSmartCardPosition(cardIndex, activeCard, transitionDirection);
@@ -202,7 +208,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                         const isActive = smartPosition === 0;
                         const distance = Math.abs(smartPosition);
 
-                        // ✅ PROFESSIONELL: Scroll-basierte Karten-Sichtbarkeit
+                        // PROFESSIONELL: Scroll-basierte Karten-Sichtbarkeit
                         // Erste 60% der Animation: Nur aktive Karte
                         // Letzte 40%: Alle Karten
                         const showCard = phase7Progress > 0.6 || isActive;
@@ -233,7 +239,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                     })}
                 </div>
 
-                {/* Debug Info */}
+                {/* ✅ NUR DEVELOPMENT: Debug Info */}
                 {process.env.NODE_ENV === 'development' && (
                     <div className="carousel-debug">
                         <div>ScrollProgress: {scrollProgress.toFixed(2)}</div>

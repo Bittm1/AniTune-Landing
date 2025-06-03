@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/Phase8NewsletterLayer.jsx
+// src/components/Parallax/Elements/Phase8NewsletterLayer.jsx - DEBUG NUR LOKAL
 import React, { useMemo } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import Newsletter from '../../Newsletter/Newsletter';
@@ -11,26 +11,26 @@ const Phase8NewsletterLayer = ({
     hasSubscribed,
     onSubscriptionChange
 }) => {
-    // ✅ PROFESSIONELL: Segment-Definition wie Carousel, aber zur Mitte
+    // PROFESSIONELL: Segment-Definition wie Carousel, aber zur Mitte
     const newsletterSegment = useMemo(() => [{
         scrollStart: 1.60,    // Phase 8 startet nach Carousel
         scrollEnd: 2.00,      // Phase 8 endet bei 200%  
         posStart: 100,        // Startet 100vh unten
-        posEnd: -50,          // ✅ GEÄNDERT: Endet in der Mitte (-50vh = Index 6)
+        posEnd: -50,          // Endet in der Mitte (-50vh = Index 6)
         opacityStart: 0.2,    // Startet wenig sichtbar
         opacityEnd: 1.0       // Endet voll sichtbar
     }], []);
 
-    // ✅ PROFESSIONELL: Scroll-basierte Position wie andere Layer
+    // PROFESSIONELL: Scroll-basierte Position wie andere Layer
     const verticalPosition = getPositionFromSegments(newsletterSegment, scrollProgress, 'posStart', 'posEnd');
     const opacity = getPositionFromSegments(newsletterSegment, scrollProgress, 'opacityStart', 'opacityEnd');
 
-    // ✅ Animation Progress für Newsletter-Sichtbarkeit (0-1 innerhalb Phase 8)
+    // Animation Progress für Newsletter-Sichtbarkeit (0-1 innerhalb Phase 8)
     const phase8Progress = scrollProgress >= 1.60 && scrollProgress <= 2.00
         ? (scrollProgress - 1.60) / 0.4  // 0-1 innerhalb der Phase 8
         : scrollProgress > 2.00 ? 1 : 0; // 1 wenn darüber, 0 wenn darunter
 
-    // ✅ VEREINFACHT: Container Style wie Carousel
+    // VEREINFACHT: Container Style wie Carousel
     const containerStyle = {
         transform: `translateY(${verticalPosition}vh)`,
         opacity: Math.max(0, Math.min(1, opacity)),
@@ -48,9 +48,9 @@ const Phase8NewsletterLayer = ({
                 className="phase8-newsletter-container"
                 style={{
                     position: 'fixed',
-                    top: '20%', // ✅ GEÄNDERT: Zentriert wie in Phase 0
+                    top: '20%',
                     left: '50%',
-                    transform: `translate(-50%, -50%) translateY(${verticalPosition}vh)`, // ✅ GEÄNDERT: Kombiniert zentriert + scroll
+                    transform: `translate(-50%, -50%) translateY(${verticalPosition}vh)`,
                     width: '80%',
                     maxWidth: '500px',
                     zIndex: 6,
@@ -59,7 +59,7 @@ const Phase8NewsletterLayer = ({
                     transition: isScrollLocked ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out'
                 }}
             >
-                {/* ✅ VEREINFACHT: Nur Überschrift + Original Newsletter */}
+                {/* VEREINFACHT: Nur Überschrift + Original Newsletter */}
                 <div style={{
                     textAlign: 'center',
                     marginBottom: '20px'
@@ -86,12 +86,12 @@ const Phase8NewsletterLayer = ({
                     </p>
                 </div>
 
-                {/* ✅ ORIGINAL NEWSLETTER KOMPONENTE (exakt wie Phase 0) */}
+                {/* ORIGINAL NEWSLETTER KOMPONENTE (exakt wie Phase 0) */}
                 <Newsletter
                     onSubscriptionChange={onSubscriptionChange}
                 />
 
-                {/* Debug Info */}
+                {/* ✅ NUR DEVELOPMENT: Debug Info */}
                 {process.env.NODE_ENV === 'development' && (
                     <div style={{
                         position: 'absolute',

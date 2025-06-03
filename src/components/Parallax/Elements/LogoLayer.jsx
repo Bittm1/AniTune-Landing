@@ -1,12 +1,8 @@
-// src/components/Parallax/Elements/LogoLayer.jsx
-// ✅ KORRIGIERTE IMPORTS: Nutzt zentrale logoConfig.js statt phaseUtils.js
+// src/components/Parallax/Elements/LogoLayer.jsx - DEBUG NUR LOKAL
 
 import React from 'react';
 import { getScaleFromSegments } from '../utils/animationUtils';
-// ✅ ENTFERNT: Import aus phaseUtils.js
-// import { getActivePhaseFromScroll, getLogoConfigForPhase } from '../utils/phaseUtils';
 
-// ✅ NEU: Import der zentralen Logo-Konfiguration
 import {
     getActiveLogoPhase,
     generateLogoStyle,
@@ -20,14 +16,16 @@ import { zIndices } from '../config/constants/index';
 const LogoLayer = ({ scrollProgress, config }) => {
     // Fehlerbehandlung für fehlende Konfiguration
     if (!config) {
-        console.warn('LogoLayer: Missing configuration - using central config only');
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('LogoLayer: Missing configuration - using central config only');
+        }
     }
 
-    // ✅ ZENTRALE LOGO-LOGIK: Bestimme aktive Logo-Phase
+    // ZENTRALE LOGO-LOGIK: Bestimme aktive Logo-Phase
     const activeLogoPhase = getActiveLogoPhase(scrollProgress);
     const debugInfo = getLogoDebugInfo(scrollProgress);
 
-    // ✅ FALLBACK für alte Konfiguration (Phase 0)
+    // FALLBACK für alte Konfiguration (Phase 0)
     // Falls die alte config noch verwendet wird, nutze sie für Phase 0
     let phase0LogoScale = 1;
     let phase0Opacity = 0;
@@ -41,16 +39,16 @@ const LogoLayer = ({ scrollProgress, config }) => {
         phase0Opacity = parseFloat(debugInfo.phases.phase0?.opacity || 0);
     }
 
-    // ✅ VEREINFACHT: Verwende zentrale Style-Generierung
+    // VEREINFACHT: Verwende zentrale Style-Generierung
     const imageSrc = config?.imageSrc || LOGO_ASSETS.default;
 
     return (
         <>
-            {/* ✅ PHASE 0 LOGO - Kompatibilität mit alter und neuer Konfiguration */}
+            {/* PHASE 0 LOGO - Kompatibilität mit alter und neuer Konfiguration */}
             {(phase0Opacity > 0.01 || debugInfo.phases.phase0?.visible) && (
                 <div
                     style={config && config.segments ? {
-                        // ✅ FALLBACK: Alte Konfiguration
+                        // FALLBACK: Alte Konfiguration
                         position: 'fixed',
                         top: config.position?.top || '33%',
                         left: config.position?.left || '50%',
@@ -75,7 +73,7 @@ const LogoLayer = ({ scrollProgress, config }) => {
                 />
             )}
 
-            {/* ✅ PHASE 4 LOGO - Nur zentrale Konfiguration */}
+            {/* PHASE 4 LOGO - Nur zentrale Konfiguration */}
             {debugInfo.phases.phase4?.visible && (
                 <div
                     style={generateLogoStyle('phase4', scrollProgress, imageSrc)}
@@ -87,7 +85,7 @@ const LogoLayer = ({ scrollProgress, config }) => {
                 />
             )}
 
-            {/* ✅ DEBUG-INFO für Development */}
+            {/* ✅ NUR DEVELOPMENT: DEBUG-INFO */}
             {process.env.NODE_ENV === 'development' && (
                 <>
                     {/* Phase 0 Logo Debug */}

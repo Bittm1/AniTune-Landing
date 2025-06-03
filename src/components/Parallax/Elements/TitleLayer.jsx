@@ -1,11 +1,10 @@
-// src/components/Parallax/Elements/TitleLayer.jsx - MIT ZENTRALER PHASE-DEFINITION
+// src/components/Parallax/Elements/TitleLayer.jsx - MIT ZENTRALER PHASE-DEFINITION - DEBUG NUR LOKAL
 
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
 import ErrorBoundary from '../../ErrorBoundary';
 import { getDeviceOptimizedTiming } from '../config/timingConfig';
 
-// ✅ SCHRITT 3: Import der zentralen Phase-Definition
 import {
     getActivePhaseFromScroll,
     getTitleTextForPhase,
@@ -22,10 +21,9 @@ const TitleLayer = React.memo(({
 }) => {
     if (!titles || titles.length === 0) return null;
 
-    // ✅ SCHRITT 3A: Nutze zentrale Phase-Funktion statt lokaler Definition
     const activePhase = getActivePhaseFromScroll(scrollProgress);
 
-    // ✅ SCHRITT 3B: Phase 0 = Logo/Newsletter - zeige keine Titel
+    // Phase 0 = Logo/Newsletter - zeige keine Titel
     if (activePhase === 0) {
         return (
             <ErrorBoundary>
@@ -41,7 +39,7 @@ const TitleLayer = React.memo(({
                         pointerEvents: 'none'
                     }}
                 >
-                    {/* Debug-Info für Logo-Phase */}
+                    {/* ✅ NUR DEVELOPMENT: Debug-Info für Logo-Phase */}
                     {process.env.NODE_ENV === 'development' && (
                         <LogoPhaseDebugPanel
                             scrollProgress={scrollProgress}
@@ -54,23 +52,22 @@ const TitleLayer = React.memo(({
         );
     }
 
-    // ✅ SCHRITT 3C: Titel-Phasen 1-3 - Zentrale Logik
+    // Titel-Phasen 1-3 - Zentrale Logik
     const titleArrayIndex = activePhase - 1; // Phase 1 → titles[0]
     const currentTitle = titles[titleArrayIndex];
 
     if (!currentTitle) {
-        console.warn(`❌ TITEL-FEHLER: Kein Titel für Phase ${activePhase} gefunden (Array-Index: ${titleArrayIndex})`);
-
-        // ✅ SCHRITT 3D: Zeige zentrale Debug-Info bei Fehlern
-        const debugInfo = getPhaseDebugInfo(scrollProgress);
-        console.warn('📊 Phase Debug Info:', debugInfo);
-
+        if (process.env.NODE_ENV === 'development') {
+            console.warn(`❌ TITEL-FEHLER: Kein Titel für Phase ${activePhase} gefunden (Array-Index: ${titleArrayIndex})`);
+            const debugInfo = getPhaseDebugInfo(scrollProgress);
+            console.warn('📊 Phase Debug Info:', debugInfo);
+        }
         return null;
     }
 
-    // ✅ SCHRITT 3E: Validiere dass Titel und zentrale Definition übereinstimmen
+    // Validiere dass Titel und zentrale Definition übereinstimmen
     const expectedTitleText = getTitleTextForPhase(activePhase);
-    if (currentTitle.text !== expectedTitleText) {
+    if (process.env.NODE_ENV === 'development' && currentTitle.text !== expectedTitleText) {
         console.warn(`⚠️ TITEL-MISMATCH: 
             Phase ${activePhase}: 
             Erwartet: "${expectedTitleText}" 
@@ -91,7 +88,7 @@ const TitleLayer = React.memo(({
                     pointerEvents: 'none'
                 }}
             >
-                {/* ✅ SCHRITT 3F: Titel mit zentraler Phase-Logik */}
+                {/* Titel mit zentraler Phase-Logik */}
                 <CentralizedTitle
                     title={currentTitle}
                     isActive={true}
@@ -101,7 +98,7 @@ const TitleLayer = React.memo(({
                     scrollProgress={scrollProgress}
                 />
 
-                {/* ✅ SCHRITT 3G: Erweiterte Debug-Info mit zentraler Validierung */}
+                {/* ✅ NUR DEVELOPMENT: Erweiterte Debug-Info mit zentraler Validierung */}
                 {process.env.NODE_ENV === 'development' && (
                     <CentralizedDebugPanel
                         scrollProgress={scrollProgress}
@@ -118,7 +115,7 @@ const TitleLayer = React.memo(({
     );
 });
 
-// ✅ SCHRITT 3H: Titel-Komponente mit zentraler Phase-Logik
+// Titel-Komponente mit zentraler Phase-Logik
 const CentralizedTitle = React.memo(({
     title,
     isActive,
@@ -133,7 +130,7 @@ const CentralizedTitle = React.memo(({
     const currentStateRef = useRef('hidden');
     const lastActivePhaseRef = useRef(0);
 
-    // Letter-Reveal Konfiguration (unverändert)
+    // Letter-Reveal Konfiguration
     const config = useMemo(() => ({
         duration: 0.5,
         delay: 0.1,
@@ -151,11 +148,13 @@ const CentralizedTitle = React.memo(({
         }));
     }, [title.text]);
 
-    // Animation Funktionen (unverändert)
+    // Animation Funktionen
     const animateIn = useCallback(() => {
         if (!titleRef.current) return;
 
-        console.log(`🎭 CENTRALIZED-REVEAL: "${title.text}" (Phase ${activePhase}) wird eingeblendet`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`🎭 CENTRALIZED-REVEAL: "${title.text}" (Phase ${activePhase}) wird eingeblendet`);
+        }
 
         if (timelineRef.current) {
             timelineRef.current.kill();
@@ -166,7 +165,9 @@ const CentralizedTitle = React.memo(({
         const tl = gsap.timeline({
             onComplete: () => {
                 currentStateRef.current = 'visible';
-                console.log(`✅ CENTRALIZED-REVEAL fertig: "${title.text}" (Phase ${activePhase})`);
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`✅ CENTRALIZED-REVEAL fertig: "${title.text}" (Phase ${activePhase})`);
+                }
             }
         });
 
@@ -194,7 +195,9 @@ const CentralizedTitle = React.memo(({
     const animateOut = useCallback(() => {
         if (!titleRef.current) return;
 
-        console.log(`🎭 CENTRALIZED-HIDE: "${title.text}" (Phase ${activePhase}) wird ausgeblendet`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`🎭 CENTRALIZED-HIDE: "${title.text}" (Phase ${activePhase}) wird ausgeblendet`);
+        }
 
         if (timelineRef.current) {
             timelineRef.current.kill();
@@ -205,7 +208,9 @@ const CentralizedTitle = React.memo(({
         const tl = gsap.timeline({
             onComplete: () => {
                 currentStateRef.current = 'hidden';
-                console.log(`❌ CENTRALIZED-HIDE ausgeblendet: "${title.text}"`);
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`❌ CENTRALIZED-HIDE ausgeblendet: "${title.text}"`);
+                }
             }
         });
 
@@ -223,11 +228,13 @@ const CentralizedTitle = React.memo(({
 
     }, [title.text, activePhase, config]);
 
-    // ✅ SCHRITT 3I: Reagiere auf zentrale Phase-Änderungen
+    // Reagiere auf zentrale Phase-Änderungen
     useEffect(() => {
         if (activePhase !== lastActivePhaseRef.current) {
-            console.log(`🔄 CENTRALIZED TITEL Phase-Wechsel: ${lastActivePhaseRef.current} → ${activePhase}`);
-            console.log(`📊 Phase Debug:`, getPhaseDebugInfo(scrollProgress));
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🔄 CENTRALIZED TITEL Phase-Wechsel: ${lastActivePhaseRef.current} → ${activePhase}`);
+                console.log(`📊 Phase Debug:`, getPhaseDebugInfo(scrollProgress));
+            }
 
             if (isActive && activePhase > 0) {
                 setTimeout(animateIn, 100);
@@ -242,7 +249,9 @@ const CentralizedTitle = React.memo(({
     // Initialisierung bei Phase-Wechsel
     useEffect(() => {
         if (titleRef.current && lettersRef.current.length > 0) {
-            console.log(`🔧 Initialisiere CENTRALIZED-Titel: "${title.text}" (Phase ${activePhase})`);
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🔧 Initialisiere CENTRALIZED-Titel: "${title.text}" (Phase ${activePhase})`);
+            }
             gsap.set(lettersRef.current, {
                 opacity: 0,
                 scale: config.startScale,
@@ -261,7 +270,7 @@ const CentralizedTitle = React.memo(({
         };
     }, [title.text, activePhase]);
 
-    // Styles (unverändert)
+    // Styles
     const titleStyles = useMemo(() => ({
         position: 'absolute',
         top: title.position.top,
@@ -339,8 +348,10 @@ const CentralizedTitle = React.memo(({
     );
 });
 
-// ✅ SCHRITT 3J: Debug-Panel für Logo-Phase
+// ✅ NUR DEVELOPMENT: Debug-Panel für Logo-Phase
 const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollLocked }) => {
+    if (process.env.NODE_ENV !== 'development') return null;
+
     const debugInfo = getPhaseDebugInfo(scrollProgress);
 
     return (
@@ -374,7 +385,7 @@ const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollL
     );
 });
 
-// ✅ SCHRITT 3K: Erweiterte Debug-Info mit Validierung
+// ✅ NUR DEVELOPMENT: Erweiterte Debug-Info mit Validierung
 const CentralizedDebugPanel = React.memo(({
     scrollProgress,
     activePhase,
@@ -384,6 +395,8 @@ const CentralizedDebugPanel = React.memo(({
     currentTitleIndex,
     expectedTitleText
 }) => {
+    if (process.env.NODE_ENV !== 'development') return null;
+
     const debugInfo = getPhaseDebugInfo(scrollProgress);
     const isValidMapping = currentTitle.text === expectedTitleText;
 
