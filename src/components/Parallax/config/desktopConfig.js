@@ -1,6 +1,8 @@
 // src/components/Parallax/config/desktopConfig.js
 import { springs, createTitles, createDeviceSpecificTiming } from './baseConfig';
 import { zIndices, elementSizes } from './constants';
+// ✅ NEU: Import der zentralen Logo-Konfiguration
+import { getDesktopLogoConfig } from './logoConfig';
 
 export const desktopConfig = {
     // ===== Basis-Konfiguration =====
@@ -11,27 +13,9 @@ export const desktopConfig = {
         zIndex: zIndices.background
     },
 
-    // ===== Logo-Konfiguration =====
-    logo: {
-        segments: [
-            {
-                scrollStart: 0,
-                scrollEnd: 1,        // Endet bei 100%
-                scaleStart: 1.2,
-                scaleEnd: 0.8,
-                opacityStart: 1,
-                opacityEnd: 0.9
-            }
-            // KEIN zweites Segment = Logo bleibt ab 100% konstant
-        ],
-        position: {
-            top: '33%',
-            left: '50%'
-        },
-        size: elementSizes.logo.lg,
-        spring: springs.smooth,
-        zIndex: zIndices.logo
-    },
+    // ===== Logo-Konfiguration VEREINFACHT =====
+    // ✅ Verwendet jetzt zentrale logoConfig.js
+    logo: getDesktopLogoConfig(),
 
     // ===== Wolken-Konfigurationen mit Skalierung =====
     leftCloud: {

@@ -1,90 +1,89 @@
 // src/components/Parallax/Elements/LogoLayer.jsx
+// ✅ KORRIGIERTE IMPORTS: Nutzt zentrale logoConfig.js statt phaseUtils.js
+
 import React from 'react';
 import { getScaleFromSegments } from '../utils/animationUtils';
-import { getActivePhaseFromScroll, getLogoConfigForPhase } from '../utils/phaseUtils';
+// ✅ ENTFERNT: Import aus phaseUtils.js
+// import { getActivePhaseFromScroll, getLogoConfigForPhase } from '../utils/phaseUtils';
+
+// ✅ NEU: Import der zentralen Logo-Konfiguration
+import {
+    getActiveLogoPhase,
+    generateLogoStyle,
+    getLogoDebugInfo,
+    validateLogoConfig,
+    LOGO_ASSETS
+} from '../config/logoConfig';
+
 import { zIndices } from '../config/constants/index';
 
 const LogoLayer = ({ scrollProgress, config }) => {
     // Fehlerbehandlung für fehlende Konfiguration
     if (!config) {
-        console.warn('LogoLayer: Missing configuration');
-        return null;
+        console.warn('LogoLayer: Missing configuration - using central config only');
     }
 
-    // ✅ PHASE 0 LOGO (Original-Logik, unverändert)
-    const phase0LogoScale = getScaleFromSegments(config.segments, scrollProgress);
-    const phase0Opacity = Math.max(0, 1 - ((scrollProgress || 0) / 0.1));
-    const phase0ImageSrc = config.imageSrc || "/Parallax/Logo.png";
-    const phase0ZIndex = config.zIndex || zIndices.logo;
+    // ✅ ZENTRALE LOGO-LOGIK: Bestimme aktive Logo-Phase
+    const activeLogoPhase = getActiveLogoPhase(scrollProgress);
+    const debugInfo = getLogoDebugInfo(scrollProgress);
 
-    // ✅ PHASE 4 LOGO (Neue Logik)
-    const currentPhase = getActivePhaseFromScroll(scrollProgress);
-    const phase4LogoConfig = getLogoConfigForPhase(currentPhase);
+    // ✅ FALLBACK für alte Konfiguration (Phase 0)
+    // Falls die alte config noch verwendet wird, nutze sie für Phase 0
+    let phase0LogoScale = 1;
+    let phase0Opacity = 0;
 
-    // ✅ Phase 4 Progress für smooth fade-in (0-1 innerhalb Phase 4)
-    const phase4Progress = currentPhase === 4 ?
-        Math.min(1, Math.max(0, (scrollProgress - 1.0) / (1.2 - 1.0))) : 0;
+    if (config && config.segments) {
+        phase0LogoScale = getScaleFromSegments(config.segments, scrollProgress);
+        phase0Opacity = Math.max(0, 1 - ((scrollProgress || 0) / 0.1));
+    } else {
+        // Nutze zentrale Berechnung
+        phase0LogoScale = parseFloat(debugInfo.phases.phase0?.scale || 1);
+        phase0Opacity = parseFloat(debugInfo.phases.phase0?.opacity || 0);
+    }
 
-    // ✅ Phase 4 Logo Opacity (kombiniert config + progress)
-    const phase4Opacity = phase4LogoConfig ?
-        phase4LogoConfig.style.opacity * phase4Progress : 0;
+    // ✅ VEREINFACHT: Verwende zentrale Style-Generierung
+    const imageSrc = config?.imageSrc || LOGO_ASSETS.default;
 
     return (
         <>
-            {/* ✅ PHASE 0 LOGO - ORIGINAL (bei Scroll 0-10%) */}
-            {phase0Opacity > 0.01 && (
+            {/* ✅ PHASE 0 LOGO - Kompatibilität mit alter und neuer Konfiguration */}
+            {(phase0Opacity > 0.01 || debugInfo.phases.phase0?.visible) && (
                 <div
-                    style={{
+                    style={config && config.segments ? {
+                        // ✅ FALLBACK: Alte Konfiguration
                         position: 'fixed',
-                        top: config.position.top,
-                        left: config.position.left,
+                        top: config.position?.top || '33%',
+                        left: config.position?.left || '50%',
                         transform: `translate(-50%, -50%) scale(${phase0LogoScale})`,
-                        zIndex: phase0ZIndex,
+                        zIndex: config.zIndex || zIndices.logo,
                         pointerEvents: 'none',
                         opacity: phase0Opacity,
                         transition: 'opacity 800ms ease-out',
-                        width: config.size,
-                        height: config.size,
-                        backgroundImage: `url(${phase0ImageSrc})`,
+                        width: config.size || '200px',
+                        height: config.size || '200px',
+                        backgroundImage: `url(${imageSrc})`,
                         backgroundSize: 'contain',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat',
                         willChange: 'opacity',
-                    }}
+                    } : generateLogoStyle('phase0', scrollProgress, imageSrc)}
                     data-logo-phase="0"
                     data-scroll-progress={scrollProgress.toFixed(3)}
-                    data-opacity={phase0Opacity.toFixed(3)}
+                    data-opacity={config && config.segments ? phase0Opacity.toFixed(3) : debugInfo.phases.phase0?.opacity}
+                    data-scale={config && config.segments ? phase0LogoScale.toFixed(3) : debugInfo.phases.phase0?.scale}
+                    data-config-source={config && config.segments ? 'legacy' : 'central'}
                 />
             )}
 
-            {/* ✅ PHASE 4 LOGO - NEU (bei Scroll 120%-160%) */}
-            {phase4LogoConfig && phase4LogoConfig.show && currentPhase === 4 && phase4Opacity > 0.01 && (
+            {/* ✅ PHASE 4 LOGO - Nur zentrale Konfiguration */}
+            {debugInfo.phases.phase4?.visible && (
                 <div
-                    style={{
-                        position: 'fixed',
-                        top: phase4LogoConfig.position.top,
-                        left: phase4LogoConfig.position.left,
-                        transform: `${phase4LogoConfig.position.transform} scale(${phase4LogoConfig.scale})`,
-                        width: phase4LogoConfig.width,
-                        height: phase4LogoConfig.height,
-                        zIndex: phase4LogoConfig.zIndex,
-                        opacity: phase4Opacity,
-                        filter: phase4LogoConfig.filter,
-                        transition: phase4LogoConfig.transition,
-                        backgroundImage: `url(${phase0ImageSrc})`, // ✅ Gleiches Logo wie Phase 0
-                        backgroundSize: 'contain',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'no-repeat',
-                        pointerEvents: 'none',
-
-                        // ✅ Performance-Optimierung
-                        willChange: 'opacity, transform',
-                        backfaceVisibility: 'hidden'
-                    }}
+                    style={generateLogoStyle('phase4', scrollProgress, imageSrc)}
                     data-logo-phase="4"
                     data-scroll-progress={scrollProgress.toFixed(3)}
-                    data-phase4-progress={phase4Progress.toFixed(3)}
-                    data-opacity={phase4Opacity.toFixed(3)}
+                    data-opacity={debugInfo.phases.phase4.opacity}
+                    data-scale={debugInfo.phases.phase4.scale}
+                    data-config-source="central"
                 />
             )}
 
@@ -92,7 +91,7 @@ const LogoLayer = ({ scrollProgress, config }) => {
             {process.env.NODE_ENV === 'development' && (
                 <>
                     {/* Phase 0 Logo Debug */}
-                    {phase0Opacity > 0.01 && (
+                    {(phase0Opacity > 0.01 || debugInfo.phases.phase0?.visible) && (
                         <div
                             style={{
                                 position: 'fixed',
@@ -110,18 +109,22 @@ const LogoLayer = ({ scrollProgress, config }) => {
                             }}
                         >
                             <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
-                                🏠 PHASE 0 LOGO
+                                🏠 PHASE 0 LOGO {config && config.segments ? '(LEGACY)' : '(ZENTRAL)'}
                             </div>
-                            <div>Scale: {phase0LogoScale.toFixed(2)}</div>
-                            <div>Opacity: {phase0Opacity.toFixed(2)}</div>
+                            <div>Scale: {config && config.segments ? phase0LogoScale.toFixed(2) : debugInfo.phases.phase0?.scale}</div>
+                            <div>Opacity: {config && config.segments ? phase0Opacity.toFixed(2) : debugInfo.phases.phase0?.opacity}</div>
                             <div>Progress: {(scrollProgress * 100).toFixed(1)}%</div>
-                            <div>Pos: {config.position.top}/{config.position.left}</div>
-                            <div>Z-Index: {phase0ZIndex}</div>
+                            <div>Config: {config && config.segments ? 'Legacy' : 'Central'}</div>
+                            {config && config.segments && (
+                                <div style={{ fontSize: '9px', color: '#ffff00' }}>
+                                    ⚠️ Nutzt alte Konfiguration
+                                </div>
+                            )}
                         </div>
                     )}
 
                     {/* Phase 4 Logo Debug */}
-                    {phase4LogoConfig && phase4LogoConfig.show && currentPhase === 4 && (
+                    {debugInfo.phases.phase4?.visible && (
                         <div
                             style={{
                                 position: 'fixed',
@@ -139,15 +142,12 @@ const LogoLayer = ({ scrollProgress, config }) => {
                             }}
                         >
                             <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
-                                🎨 PHASE 4 LOGO
+                                🎨 PHASE 4 LOGO (ZENTRAL)
                             </div>
-                            <div>Phase Progress: {(phase4Progress * 100).toFixed(0)}%</div>
-                            <div>Opacity: {phase4Opacity.toFixed(2)}</div>
-                            <div>Scroll: {(scrollProgress * 100).toFixed(1)}%</div>
-                            <div>Pos: {phase4LogoConfig.position.top}/{phase4LogoConfig.position.left}</div>
-                            <div>Z-Index: {phase4LogoConfig.zIndex}</div>
-                            <div>Scale: {phase4LogoConfig.scale}</div>
-                            <div>Size: {phase4LogoConfig.width}×{phase4LogoConfig.height}</div>
+                            <div>Scale: {debugInfo.phases.phase4.scale}</div>
+                            <div>Opacity: {debugInfo.phases.phase4.opacity}</div>
+                            <div>Range: {debugInfo.phases.phase4.range}</div>
+                            <div>Progress: {debugInfo.debugPercentage}</div>
                         </div>
                     )}
 
@@ -167,11 +167,57 @@ const LogoLayer = ({ scrollProgress, config }) => {
                             pointerEvents: 'none'
                         }}
                     >
-                        Current Phase: {currentPhase} |
-                        Scroll: {(scrollProgress * 100).toFixed(1)}% |
-                        Phase 0 Logo: {phase0Opacity > 0.01 ? '✅' : '❌'} |
-                        Phase 4 Logo: {(phase4LogoConfig && phase4LogoConfig.show && currentPhase === 4) ? '✅' : '❌'}
+                        ✅ LOGO-IMPORTS KORRIGIERT |
+                        Active: {activeLogoPhase || 'none'} |
+                        Progress: {debugInfo.debugPercentage} |
+                        Phase0: {(phase0Opacity > 0.01 || debugInfo.phases.phase0?.visible) ? '✅' : '❌'} |
+                        Phase4: {debugInfo.phases.phase4?.visible ? '✅' : '❌'}
                     </div>
+
+                    {/* Import-Status */}
+                    <div
+                        style={{
+                            position: 'fixed',
+                            bottom: '35px',
+                            left: '10px',
+                            background: 'rgba(76, 175, 80, 0.9)',
+                            color: 'white',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '9px',
+                            fontFamily: 'monospace',
+                            zIndex: 9998,
+                            pointerEvents: 'none'
+                        }}
+                    >
+                        📦 IMPORTS: logoConfig.js ✅ | phaseUtils.js ❌ entfernt
+                    </div>
+
+                    {/* Konfiguration-Validierung */}
+                    {(() => {
+                        const warnings = validateLogoConfig();
+                        return warnings.length > 0 && (
+                            <div
+                                style={{
+                                    position: 'fixed',
+                                    bottom: '60px',
+                                    left: '10px',
+                                    background: 'rgba(255, 69, 0, 0.9)',
+                                    color: 'white',
+                                    padding: '4px 8px',
+                                    borderRadius: '4px',
+                                    fontSize: '9px',
+                                    fontFamily: 'monospace',
+                                    zIndex: 9998,
+                                    pointerEvents: 'none'
+                                }}
+                            >
+                                ⚠️ LOGO-CONFIG WARNUNGEN: {warnings.length}
+                                <br />
+                                {warnings.slice(0, 2).join(' | ')}
+                            </div>
+                        );
+                    })()}
                 </>
             )}
         </>

@@ -4,12 +4,17 @@ import { mobileConfig } from './mobileConfig';
 import { getResponsiveConfig, getDebouncedResponsiveConfig } from './responsiveHelper';
 import { zIndices, breakpoints, elementSizes, assetPaths, animationTiming } from './constants';
 import { baseAnimationConfig, springs, createTitles } from './baseConfig';
+// ✅ NEU: Export der zentralen Logo-Konfiguration
+import logoConfig from './logoConfig';
 
 // Exportiere die Basis-Konfigurationen
 export {
     // Konfigurationen
     desktopConfig,
     mobileConfig,
+
+    // ✅ NEU: Logo-Konfiguration
+    logoConfig,
 
     // Konstanten
     zIndices,
@@ -76,3 +81,13 @@ export const getElementSize = (element, viewportSize) => {
 
     return elementSizes[element][viewportSize] || elementSizes[element].lg;
 };
+
+// ✅ NEU: Logo-spezifische Hilfsfunktionen re-exportieren
+export {
+    getActiveLogoPhase,
+    generateLogoStyle,
+    getLogoDebugInfo,
+    validateLogoConfig,
+    LOGO_PHASES,
+    LOGO_ASSETS
+} from './logoConfig';
