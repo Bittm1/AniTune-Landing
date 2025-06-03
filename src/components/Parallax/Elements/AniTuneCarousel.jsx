@@ -9,15 +9,27 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
     const [activeCard, setActiveCard] = useState(4); // ✅ ANGEPASST: Mittlere Karte bei 9 Karten (Index 4)
     const [transitionDirection, setTransitionDirection] = useState(null);
 
-    // PROFESSIONELL: Segment-Definition wie andere Layer
-    const carouselSegment = useMemo(() => [{
-        scrollStart: 1.20,    // Phase 7 startet jetzt bei 124%
-        scrollEnd: 1.80,      // Phase 7 endet bei 144%  
-        posStart: 60,        // Startet 100vh unten
-        posEnd: -150,        // ✅ DEINE ANPASSUNG: -150 statt -100
-        opacityStart: 1.0, // Startet voll sichtbar
-        opacityEnd: 1.0
-    }], []);
+    // PROFESSIONELL: Zwei-Segment-System für saubere Blende
+    const carouselSegments = useMemo(() => [
+        // Segment 1: Einfahren zur Position
+        {
+            scrollStart: 1.20,
+            scrollEnd: 1.34,
+            posStart: 60,        // Startet unten
+            posEnd: 7,           // Fährt zur Position
+            opacityStart: 1.0,   // Voll sichtbar
+            opacityEnd: 1.0      // Bleibt sichtbar
+        },
+        // Segment 2: An Position bleiben, aber ausblenden
+        {
+            scrollStart: 1.34,
+            scrollEnd: 1.60,     // 6% scroll für Blende
+            posStart: 7,         // Bleibt an Position
+            posEnd: 7,           // Keine weitere Bewegung
+            opacityStart: 1.0,   // Startet sichtbar
+            opacityEnd: 0        // Blendet aus
+        }
+    ], []);
 
     // 9 AniTune-Karten Daten - MIT BILD-ICONS
     const cards = useMemo(() => [
@@ -94,9 +106,12 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         });
     }, [cards]);
 
-    // PROFESSIONELL: Scroll-basierte Position wie andere Layer
-    const verticalPosition = getPositionFromSegments(carouselSegment, scrollProgress, 'posStart', 'posEnd');
-    const opacity = getPositionFromSegments(carouselSegment, scrollProgress, 'opacityStart', 'opacityEnd');
+    // PROFESSIONELL: Scroll-basierte Position und Opacity mit Zwei-Segment-System
+    const verticalPosition = getPositionFromSegments(carouselSegments, scrollProgress, 'posStart', 'posEnd');
+    const opacity = getPositionFromSegments(carouselSegments, scrollProgress, 'opacityStart', 'opacityEnd');
+
+    // ✅ Keine manuelle Fade-Logik mehr nötig - alles über Segmente geregelt
+    const finalOpacity = opacity;
 
     // Animation Progress für Karten-Sichtbarkeit (0-1 innerhalb Phase 7)
     const phase7Progress = scrollProgress >= 1.24 && scrollProgress <= 1.44
@@ -183,11 +198,11 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
     // PROFESSIONELL: Container Style wie andere Layer
     const containerStyle = {
         transform: `translateY(${verticalPosition}vh)`,
-        opacity: Math.max(0, Math.min(1, opacity)),
+        opacity: Math.max(0, Math.min(1, finalOpacity)),
         transition: isScrollLocked ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out'
     };
 
-    if (scrollProgress < 1.20 || scrollProgress > 1.50) {
+    if (scrollProgress < 1.20 || scrollProgress > 1.45) {
         return null;
     }
 
@@ -300,18 +315,21 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                 {/* ✅ NUR DEVELOPMENT: Debug Info */}
                 {process.env.NODE_ENV === 'development' && (
                     <div className="carousel-debug">
+                        <div>📧 Phase 7: AniTune Carousel</div>
                         <div>ScrollProgress: {scrollProgress.toFixed(2)}</div>
                         <div>Phase7Progress: {(phase7Progress * 100).toFixed(0)}%</div>
                         <div>VerticalPos: {verticalPosition.toFixed(0)}vh</div>
-                        <div>Opacity: {opacity.toFixed(2)}</div>
+                        <div>Segment Opacity: {opacity.toFixed(2)}</div>
+                        <div>Final Opacity: {finalOpacity.toFixed(2)}</div>
                         <div>Active Card: {activeCard} ({currentCard.title})</div>
                         <div>Total Cards: {cards.length}</div>
                         <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+                        <div>Segment: {scrollProgress < 1.34 ? '1 (Einfahren)' : '2 (Ausblenden)'}</div>
                         <div style={{ color: '#00ff00', fontSize: '10px' }}>
-                            ✅ 9 Karten mit Bild-Icons
+                            ✅ 9 Karten mit Zwei-Segment-System
                         </div>
                         <div style={{ color: '#a880ff', fontSize: '10px' }}>
-                            🎠 Ring-Animation optimiert
+                            🎠 Segment 1: 1.20-1.34 (Einfahren) | Segment 2: 1.34-1.40 (Ausblenden)
                         </div>
                     </div>
                 )}

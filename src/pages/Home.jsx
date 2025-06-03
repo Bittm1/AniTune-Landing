@@ -5,7 +5,7 @@ import LoadingScreen from '../components/Loading/LoadingScreen';
 
 const Home = () => {
     // 🛡️ FIX: Loading sollte initial TRUE sein
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleLoadingComplete = () => {
         console.log('📸 Loading abgeschlossen, zeige Parallax');

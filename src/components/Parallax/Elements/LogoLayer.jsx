@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/LogoLayer.jsx - DEBUG NUR LOKAL
+// src/components/Parallax/Elements/LogoLayer.jsx - KORRIGIERT für automatische Asset-Auswahl
 
 import React from 'react';
 import { getScaleFromSegments } from '../utils/animationUtils';
@@ -39,8 +39,8 @@ const LogoLayer = ({ scrollProgress, config }) => {
         phase0Opacity = parseFloat(debugInfo.phases.phase0?.opacity || 0);
     }
 
-    // VEREINFACHT: Verwende zentrale Style-Generierung
-    const imageSrc = config?.imageSrc || LOGO_ASSETS.default;
+    // ✅ KORREKTUR: Lass generateLogoStyle automatisch das richtige Asset wählen
+    // Übergebe KEIN imageSrc, damit die automatische Auswahl funktioniert
 
     return (
         <>
@@ -59,12 +59,12 @@ const LogoLayer = ({ scrollProgress, config }) => {
                         transition: 'opacity 800ms ease-out',
                         width: config.size || '200px',
                         height: config.size || '200px',
-                        backgroundImage: `url(${imageSrc})`,
+                        backgroundImage: `url(${config.imageSrc || LOGO_ASSETS.default})`,
                         backgroundSize: 'contain',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat',
                         willChange: 'opacity',
-                    } : generateLogoStyle('phase0', scrollProgress, imageSrc)}
+                    } : generateLogoStyle('phase0', scrollProgress)} // ✅ KEIN imageSrc übergeben
                     data-logo-phase="0"
                     data-scroll-progress={scrollProgress.toFixed(3)}
                     data-opacity={config && config.segments ? phase0Opacity.toFixed(3) : debugInfo.phases.phase0?.opacity}
@@ -76,12 +76,13 @@ const LogoLayer = ({ scrollProgress, config }) => {
             {/* PHASE 4 LOGO - Nur zentrale Konfiguration */}
             {debugInfo.phases.phase4?.visible && (
                 <div
-                    style={generateLogoStyle('phase4', scrollProgress, imageSrc)}
+                    style={generateLogoStyle('phase4', scrollProgress)} // ✅ KEIN imageSrc übergeben - automatische Auswahl!
                     data-logo-phase="4"
                     data-scroll-progress={scrollProgress.toFixed(3)}
                     data-opacity={debugInfo.phases.phase4.opacity}
                     data-scale={debugInfo.phases.phase4.scale}
                     data-config-source="central"
+                    data-asset={debugInfo.phases.phase4.asset} // ✅ NEU: Zeigt welches Asset verwendet wird
                 />
             )}
 
@@ -112,6 +113,7 @@ const LogoLayer = ({ scrollProgress, config }) => {
                             <div>Scale: {config && config.segments ? phase0LogoScale.toFixed(2) : debugInfo.phases.phase0?.scale}</div>
                             <div>Opacity: {config && config.segments ? phase0Opacity.toFixed(2) : debugInfo.phases.phase0?.opacity}</div>
                             <div>Progress: {(scrollProgress * 100).toFixed(1)}%</div>
+                            <div>Asset: {debugInfo.phases.phase0?.asset || 'default'}</div>
                             <div>Config: {config && config.segments ? 'Legacy' : 'Central'}</div>
                             {config && config.segments && (
                                 <div style={{ fontSize: '9px', color: '#ffff00' }}>
@@ -145,7 +147,11 @@ const LogoLayer = ({ scrollProgress, config }) => {
                             <div>Scale: {debugInfo.phases.phase4.scale}</div>
                             <div>Opacity: {debugInfo.phases.phase4.opacity}</div>
                             <div>Range: {debugInfo.phases.phase4.range}</div>
+                            <div>Asset: {debugInfo.phases.phase4.asset}</div> {/* ✅ NEU: Asset-Info */}
                             <div>Progress: {debugInfo.debugPercentage}</div>
+                            <div style={{ marginTop: '4px', fontSize: '10px', color: '#ffff00' }}>
+                                🔧 AUTOMATISCHE ASSET-AUSWAHL
+                            </div>
                         </div>
                     )}
 
@@ -169,10 +175,11 @@ const LogoLayer = ({ scrollProgress, config }) => {
                         Active: {activeLogoPhase || 'none'} |
                         Progress: {debugInfo.debugPercentage} |
                         Phase0: {(phase0Opacity > 0.01 || debugInfo.phases.phase0?.visible) ? '✅' : '❌'} |
-                        Phase4: {debugInfo.phases.phase4?.visible ? '✅' : '❌'}
+                        Phase4: {debugInfo.phases.phase4?.visible ? '✅' : '❌'} |
+                        Asset Fix: ✅
                     </div>
 
-                    {/* Import-Status */}
+                    {/* Asset-Status */}
                     <div
                         style={{
                             position: 'fixed',
@@ -188,7 +195,7 @@ const LogoLayer = ({ scrollProgress, config }) => {
                             pointerEvents: 'none'
                         }}
                     >
-                        📦 IMPORTS: logoConfig.js ✅ | phaseUtils.js ❌ entfernt
+                        📦 ASSETS: Phase0={debugInfo.phases.phase0?.asset || 'default'} | Phase4={debugInfo.phases.phase4?.asset || 'none'}
                     </div>
 
                     {/* Konfiguration-Validierung */}

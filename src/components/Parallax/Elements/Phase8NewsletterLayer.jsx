@@ -13,11 +13,11 @@ const Phase8NewsletterLayer = ({
 }) => {
     // PROFESSIONELL: Segment-Definition wie Carousel, aber zur Mitte
     const newsletterSegment = useMemo(() => [{
-        scrollStart: 1.60,    // Phase 8 startet nach Carousel
-        scrollEnd: 2.00,      // Phase 8 endet bei 200%  
-        posStart: 100,        // Startet 100vh unten
-        posEnd: -50,          // Endet in der Mitte (-50vh = Index 6)
-        opacityStart: 0.2,    // Startet wenig sichtbar
+        scrollStart: 1.34,    // Phase 8 startet nach Carousel
+        scrollEnd: 1.60,      // Phase 8 endet bei 200%  
+        posStart: 0,        // Startet 100vh unten
+        posEnd: 0,          // Endet in der Mitte (-50vh = Index 6)
+        opacityStart: 1.0,    // Startet wenig sichtbar
         opacityEnd: 1.0       // Endet voll sichtbar
     }], []);
 
@@ -26,8 +26,8 @@ const Phase8NewsletterLayer = ({
     const opacity = getPositionFromSegments(newsletterSegment, scrollProgress, 'opacityStart', 'opacityEnd');
 
     // Animation Progress für Newsletter-Sichtbarkeit (0-1 innerhalb Phase 8)
-    const phase8Progress = scrollProgress >= 1.60 && scrollProgress <= 2.00
-        ? (scrollProgress - 1.60) / 0.4  // 0-1 innerhalb der Phase 8
+    const phase8Progress = scrollProgress >= 1.20 && scrollProgress <= 2.00
+        ? (scrollProgress - 1.20) / 0.4  // 0-1 innerhalb der Phase 8
         : scrollProgress > 2.00 ? 1 : 0; // 1 wenn darüber, 0 wenn darunter
 
     // VEREINFACHT: Container Style wie Carousel

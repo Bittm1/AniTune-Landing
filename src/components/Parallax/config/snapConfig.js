@@ -35,9 +35,9 @@ export const SNAP_SPEED_CONFIG = {
 
         // Kompakte Phasen (weniger Scroll-Raum) 
         phase3: 2.8,     // Die Community Heißt - langsamer für bessere UX
-        phase4: 2.8,     // AniTune - langsamer für bessere UX
-        phase5: 2.5,     // Weitere Titel (falls hinzugefügt)
-        phase6: 2.2,     // Carousel-Phase
+        phase4: 4.2,     // AniTune - langsamer für bessere UX
+        phase5: 2.8,     // Weitere Titel (falls hinzugefügt)
+        phase6: 2.8,     // Carousel-Phase
 
         // Spezielle Übergänge
         phase0to1: 3.5,  // Logo → Erster Titel (Zoom-Effekt, extra langsam)

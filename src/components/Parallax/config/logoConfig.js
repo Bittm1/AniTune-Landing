@@ -55,21 +55,21 @@ export const LOGO_PHASES = {
     phase4: {
         enabled: true,
         scrollRange: {
-            start: 1.0,   // 100% scroll (40% Debug)
+            start: 1.4,   // 100% scroll (40% Debug)
             end: 1.6,     // 160% scroll (64% Debug)
             fadeInThreshold: 1.0
         },
         position: {
-            top: '60.2%',
-            left: '49.85%',
+            top: '47%',
+            left: '49.3%',
             transform: 'translate(-50%, -50%)'
         },
         animation: {
-            scaleStart: 0.65,
-            scaleEnd: 0.65,   // Konstante Größe
+            scaleStart: 5,
+            scaleEnd: 5,   // Konstante Größe
             opacityStart: 0,
             opacityEnd: 1.0,
-            transition: 'all 0.2s ease-in-out'
+            transition: 'all 0.1s ease-in-out'
         },
         style: {
             width: '300px',
@@ -102,6 +102,7 @@ export const LOGO_PHASES = {
 export const LOGO_ASSETS = {
     default: '/Parallax/Logo.png',
     svg: '/Parallax/Logo.svg',
+    phase4: '/Parallax/AniTune_phaseVier_schwarz.png', // ✅ NEU: Spezielles Phase 4 Logo
     fallback: '/Parallax/fallback-logo.png'
 };
 
@@ -211,15 +212,25 @@ export const calculateLogoScale = (phase, scrollProgress) => {
  * 🎨 GENERIERE KOMPLETTES STYLE-OBJEKT für Logo-Phase
  * @param {string} phase - Phase-Name
  * @param {number} scrollProgress - Scroll-Fortschritt
- * @param {string} imageSrc - Bild-URL
+ * @param {string} imageSrc - Bild-URL (optional, wird automatisch bestimmt)
  * @returns {Object} - Komplettes Style-Objekt
  */
-export const generateLogoStyle = (phase, scrollProgress, imageSrc = LOGO_ASSETS.default) => {
+export const generateLogoStyle = (phase, scrollProgress, imageSrc = null) => {
     const config = getLogoConfigForPhase(phase);
     if (!config) return { display: 'none' };
 
     const opacity = calculateLogoOpacity(phase, scrollProgress);
     const scale = calculateLogoScale(phase, scrollProgress);
+
+    // ✅ AUTOMATISCHE ASSET-AUSWAHL basierend auf Phase
+    let finalImageSrc = imageSrc;
+    if (!finalImageSrc) {
+        if (phase === 'phase4') {
+            finalImageSrc = LOGO_ASSETS.phase4; // Spezielles schwarzes Logo für Phase 4
+        } else {
+            finalImageSrc = LOGO_ASSETS.default; // Standard Logo für andere Phasen
+        }
+    }
 
     return {
         position: 'fixed',
@@ -230,7 +241,7 @@ export const generateLogoStyle = (phase, scrollProgress, imageSrc = LOGO_ASSETS.
         height: config.style.height,
         zIndex: config.style.zIndex,
         opacity: opacity,
-        backgroundImage: `url(${imageSrc})`,
+        backgroundImage: `url(${finalImageSrc})`,
         backgroundSize: config.style.backgroundSize,
         backgroundPosition: config.style.backgroundPosition,
         backgroundRepeat: config.style.backgroundRepeat,
@@ -262,13 +273,20 @@ export const getLogoDebugInfo = (scrollProgress) => {
         const opacity = calculateLogoOpacity(phase, scrollProgress);
         const scale = calculateLogoScale(phase, scrollProgress);
 
+        // ✅ ZEIGE WELCHES ASSET VERWENDET WIRD
+        let assetUsed = 'default';
+        if (phase === 'phase4') {
+            assetUsed = 'phase4 (schwarzes Logo)';
+        }
+
         debugInfo.phases[phase] = {
             enabled: config.enabled,
             range: `${(config.scrollRange.start * 100).toFixed(0)}%-${(config.scrollRange.end * 100).toFixed(0)}%`,
             opacity: opacity.toFixed(3),
             scale: scale.toFixed(3),
             visible: opacity > 0.01,
-            active: activePhase === phase
+            active: activePhase === phase,
+            asset: assetUsed // ✅ NEU: Zeigt welches Asset verwendet wird
         };
     });
 
