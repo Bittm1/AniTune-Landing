@@ -12,8 +12,8 @@ const LoadingScreen = ({ onLoadingComplete }) => {
     // Ressourcen laden
     useEffect(() => {
         const imagesToLoad = [
-            '/Parallax/Logo.png',
-            '/Parallax/Himmel.png',
+            '/Parallax/Logo.svg',
+            '/Parallax/Himmel.webp',
             '/Parallax/Wolken_Vorne_links.png',
             '/Parallax/Wolken_Vorne_rechts.png'
         ];

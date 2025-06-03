@@ -1,5 +1,5 @@
 // src/components/Parallax/Elements/AniTuneCarousel.jsx - ERWEITERT auf 9 Karten mit Bild-Icons
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import { getPositionFromSegments } from '../utils/animationUtils';
 import './AniTuneCarousel.css';
@@ -86,6 +86,14 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         }
     ], []);
 
+    // ✅ NEU: Image Preloading für bessere Performance
+    useEffect(() => {
+        cards.forEach(card => {
+            const img = new Image();
+            img.src = card.icon;
+        });
+    }, [cards]);
+
     // PROFESSIONELL: Scroll-basierte Position wie andere Layer
     const verticalPosition = getPositionFromSegments(carouselSegment, scrollProgress, 'posStart', 'posEnd');
     const opacity = getPositionFromSegments(carouselSegment, scrollProgress, 'opacityStart', 'opacityEnd');
@@ -144,7 +152,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
             }
             setActiveCard(index);
 
-            setTimeout(() => setTransitionDirection(null), 600);
+            setTimeout(() => setTransitionDirection(null), 400); // ✅ BESCHLEUNIGT: 400ms statt 600ms
         }
     };
 
@@ -157,7 +165,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
             }
             return newIndex;
         });
-        setTimeout(() => setTransitionDirection(null), 600);
+        setTimeout(() => setTransitionDirection(null), 400); // ✅ BESCHLEUNIGT
     };
 
     const handleNext = () => {
@@ -169,7 +177,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
             }
             return newIndex;
         });
-        setTimeout(() => setTransitionDirection(null), 600);
+        setTimeout(() => setTransitionDirection(null), 400); // ✅ BESCHLEUNIGT
     };
 
     // PROFESSIONELL: Container Style wie andere Layer
@@ -236,17 +244,16 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                         const isActive = smartPosition === 0;
                         const distance = Math.abs(smartPosition);
 
-                        // PROFESSIONELL: Scroll-basierte Karten-Sichtbarkeit für 9 Karten
-                        // Erste 60% der Animation: Nur aktive Karte + direkte Nachbarn
-                        // Letzte 40%: Alle sichtbaren Karten (maximal 7 gleichzeitig)
-                        const showCard = phase7Progress > 0.6 || Math.abs(smartPosition) <= 1;
+                        // PROFESSIONELL: Karten sofort sichtbar für bessere Performance
+                        // Alle Karten innerhalb des Sichtbereichs werden sofort angezeigt
+                        const showCard = Math.abs(smartPosition) <= 3; // ✅ GEÄNDERT: Sofort sichtbar
 
                         const cardStyle = {
                             '--card-color': card.color,
                             transform: `translateX(calc(-50% + ${smartPosition * 60}px)) scale(${isActive ? 1.1 : Math.max(0.8, 1 - distance * 0.1)}) rotateY(${smartPosition * -15}deg) translateZ(${-distance * 50}px)`,
                             zIndex: 10 - distance,
                             opacity: showCard ? Math.max(0.4, 1 - distance * 0.2) : 0,
-                            transition: transitionDirection ? 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'all 0.3s ease',
+                            transition: transitionDirection ? 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'all 0.3s ease',
                             visibility: showCard ? 'visible' : 'hidden'
                         };
 
@@ -263,6 +270,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                                             src={card.icon}
                                             alt={`${card.title} Icon`}
                                             className="card-icon-image"
+                                            loading="eager" // ✅ NEU: Sofortiges Laden
                                             onError={(e) => {
                                                 // Fallback zu Emoji falls Bild nicht lädt
                                                 e.target.style.display = 'none';
