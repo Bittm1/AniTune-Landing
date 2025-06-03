@@ -42,7 +42,8 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
     const titleAudios = [
         getAudioConfigForPhase(1), // Phase 1: "Von Uns Heißt Für Uns"
         getAudioConfigForPhase(2), // Phase 2: "Der Weg Ist Das Ziel"  
-        getAudioConfigForPhase(3)  // Phase 3: "Die Community Heißt"
+        getAudioConfigForPhase(3),  // Phase 3: "Die Community Heißt"
+        getAudioConfigForPhase(4)  // ✅ NEU: Phase 4: AniTune Theme
     ].filter(Boolean); // Entferne null-Werte
 
     // Portal Setup (unverändert)
