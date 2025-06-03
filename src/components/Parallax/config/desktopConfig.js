@@ -21,8 +21,8 @@ export const desktopConfig = {
     leftCloud: {
         segments: [
             {
-                scrollStart: 0.70,
-                scrollEnd: 1,        // Endet bei 100%
+                scrollStart: 0.9,
+                scrollEnd: 1.05,        // Endet bei 100%
                 posStart: -60,
                 posEnd: 5,
                 opacityStart: 0.9,
@@ -47,8 +47,8 @@ export const desktopConfig = {
     rightCloud: {
         segments: [
             {
-                scrollStart: 0.70,
-                scrollEnd: 1,        // Endet bei 100%
+                scrollStart: 0.9,
+                scrollEnd: 1.05,        // Endet bei 100%
                 posStart: -40,
                 posEnd: 5,
                 opacityStart: 0.9,
@@ -73,8 +73,8 @@ export const desktopConfig = {
     leftCloudHinten: {
         segments: [
             {
-                scrollStart: 0.70,
-                scrollEnd: 1,
+                scrollStart: 0.9,
+                scrollEnd: 1.05,
                 posStart: -140,
                 posEnd: 0,
                 opacityStart: 1,
@@ -94,8 +94,8 @@ export const desktopConfig = {
     rightCloudHinten: {
         segments: [
             {
-                scrollStart: 0.70,
-                scrollEnd: 1,
+                scrollStart: 0.90,
+                scrollEnd: 1.05,
                 posStart: -140,
                 posEnd: 10,
                 opacityStart: 1,
@@ -144,8 +144,8 @@ export const desktopConfig = {
     berge: {
         segments: [
             {
-                scrollStart: 0.60,
-                scrollEnd: 1,
+                scrollStart: 0.9,
+                scrollEnd: 1.05,
                 posStart: -55,
                 posEnd: 0,
                 opacityStart: 1.0,
@@ -158,7 +158,7 @@ export const desktopConfig = {
     tal: {
         segments: [
             {
-                scrollStart: 0.50,
+                scrollStart: 0.60,
                 scrollEnd: 1,
                 posStart: -60,
                 posEnd: 0,
