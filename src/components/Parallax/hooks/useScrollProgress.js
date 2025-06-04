@@ -1,4 +1,4 @@
-// src/components/Parallax/hooks/useScrollProgress.js - MIT MOBILE URL-BAR FIX
+// src/components/Parallax/hooks/useScrollProgress.js - PERFORMANCE OPTIMIERT
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import gsap from 'gsap';
@@ -28,46 +28,39 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
     const scrollDirection = useRef(0);
     const lastScrollEventRef = useRef(0);
 
+    // ⚡ PERFORMANCE: Throttling für updateScrollProgress
+    const updateThrottleRef = useRef(0);
+
     const timingConfig = getDeviceOptimizedTiming();
     const snapTiming = getSnapTiming();
 
-    // ⚡ MOBILE URL-BAR FIX: Erweiterte updateScrollProgress Funktion
+    // ⚡ PERFORMANCE: Optimierte updateScrollProgress mit Throttling
     const updateScrollProgress = useCallback(() => {
         if (!containerRef.current || typeof window === 'undefined') return;
 
-        // ⚡ MOBILE DETECTION
+        // ⚡ THROTTLING: Nur alle 32ms aktualisieren (ca. 30fps)
+        const now = performance.now();
+        if (now - updateThrottleRef.current < 32) return;
+        updateThrottleRef.current = now;
+
+        // ⚡ MOBILE DETECTION - Cached
         const isMobile = window.innerWidth < 768 && 'ontouchstart' in window;
 
         // ⚡ VIEWPORT HEIGHT mit URL-Bar Kompensation
         let viewportHeight;
         if (isMobile) {
-            // Für Mobile: Versuche verschiedene Höhen-Quellen
             viewportHeight = window.visualViewport?.height ||
                 document.documentElement.clientHeight ||
                 window.innerHeight;
         } else {
-            // Desktop: Normal
             viewportHeight = window.innerHeight;
         }
 
-        const totalHeight = document.documentElement.scrollHeight - viewportHeight; // ⚡ FIX!
+        const totalHeight = document.documentElement.scrollHeight - viewportHeight;
         const currentScroll = window.scrollY;
         const progress = Math.max(0, Math.min(3.0, (currentScroll / totalHeight) * 3.0));
 
-        // ⚡ DEBUG: Mobile Scroll Debug
-        const oldProgress = scrollProgress;
-        if (process.env.NODE_ENV === 'development' && Math.abs(progress - oldProgress) > 0.05) {
-            console.log(`📱 MOBILE SCROLL-UPDATE: ${oldProgress.toFixed(3)} → ${progress.toFixed(3)}`, {
-                isMobile,
-                windowHeight: window.innerHeight,
-                viewportHeight,
-                visualViewport: window.visualViewport?.height,
-                totalHeight,
-                currentScroll,
-                urlBarDiff: window.innerHeight - (window.visualViewport?.height || window.innerHeight)
-            });
-        }
-
+        // ⚡ PERFORMANCE: Debug-Logs komplett entfernt
         setScrollProgress(progress);
 
         if (currentTitleIndex === 0) {
@@ -87,30 +80,26 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                 setActiveSection(newSectionIndex);
             }
         }
-    }, [containerRef, sectionsRef, titles, currentTitleIndex, scrollProgress]);
+    }, [containerRef, sectionsRef, titles, currentTitleIndex]);
 
-    // ⚡ VISUAL VIEWPORT LISTENER für moderne Browser
+    // ⚡ VISUAL VIEWPORT LISTENER für moderne Browser - Optimiert
     useEffect(() => {
         if (window.visualViewport) {
+            let viewportTimer;
             const handleVisualViewportChange = () => {
-                // Kurze Verzögerung für Stabilität
-                setTimeout(updateScrollProgress, 100);
-
-                if (process.env.NODE_ENV === 'development') {
-                    console.log('📱 Visual Viewport Changed:', {
-                        height: window.visualViewport.height,
-                        innerHeight: window.innerHeight,
-                        diff: window.innerHeight - window.visualViewport.height
-                    });
-                }
+                clearTimeout(viewportTimer);
+                viewportTimer = setTimeout(updateScrollProgress, 150); // ⚡ Erhöht von 100ms
             };
 
-            window.visualViewport.addEventListener('resize', handleVisualViewportChange);
-            return () => window.visualViewport.removeEventListener('resize', handleVisualViewportChange);
+            window.visualViewport.addEventListener('resize', handleVisualViewportChange, { passive: true });
+            return () => {
+                clearTimeout(viewportTimer);
+                window.visualViewport.removeEventListener('resize', handleVisualViewportChange);
+            };
         }
     }, [updateScrollProgress]);
 
-    // Enhanced snapToTitleIndex mit doppeltem scrollProgress-Update
+    // Enhanced snapToTitleIndex mit optimiertem scrollProgress-Update
     const snapToTitleIndex = useCallback((targetIndex, direction = 'next') => {
         if (isScrollLocked || isSnapping) return;
 
@@ -124,16 +113,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const snapEase = getSnapEasingForTransition(currentTitleIndex, targetIndex);
         const lockDelay = getSnapLockDelayForTransition(currentTitleIndex, targetIndex);
 
-        // DEBUG: Enhanced Snap-Logging
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`🎯 ENHANCED SNAP: ${currentTitleIndex}→${targetIndex}`);
-            console.log(`⏱️ Dauer: ${snapDuration}s | Easing: ${snapEase} | Lock: ${lockDelay}ms`);
-
-            if (targetIndex === 6) {
-                console.log(`📧 NEWSLETTER-SNAP: Ziel Phase 6 (Newsletter CTA)`);
-                console.log(`📊 Expected Range: 1.6-2.0 (64%-80% Debug)`);
-            }
-        }
+        // ⚡ PERFORMANCE: Debug-Logs entfernt
 
         setIsScrollLocked(true);
         setIsSnapping(true);
@@ -155,16 +135,6 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
 
             const totalHeight = document.documentElement.scrollHeight - viewportHeight;
             targetScroll = targetSegment.snapTarget * totalHeight / 3.0;
-
-            // DEBUG: Snap-Target Details
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`📍 Mobile-Aware Snap Details:`);
-                console.log(`   Target Segment: scrollStart=${targetSegment.scrollStart}, scrollEnd=${targetSegment.scrollEnd}`);
-                console.log(`   Snap Target: ${targetSegment.snapTarget} (${(targetSegment.snapTarget * 40).toFixed(1)}% Debug)`);
-                console.log(`   Viewport Height: ${viewportHeight}px (Mobile: ${isMobile})`);
-                console.log(`   Target Scroll: ${targetScroll}px`);
-                console.log(`   Total Height: ${totalHeight}px`);
-            }
         }
 
         gsap.to(window, {
@@ -172,44 +142,15 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
             scrollTo: { y: targetScroll },
             ease: snapEase,
             onUpdate: () => {
-                // Update während Animation
                 updateScrollProgress();
             },
             onComplete: () => {
-                // Doppeltes Update in onComplete
-                updateScrollProgress(); // Sofortiges Update
+                updateScrollProgress();
 
                 setTimeout(() => {
-                    updateScrollProgress(); // Verzögertes Update für Sicherheit
-
-                    // DEBUG: Post-Snap Validation
-                    if (process.env.NODE_ENV === 'development') {
-                        const currentScroll = window.scrollY;
-                        const isMobile = window.innerWidth < 768 && 'ontouchstart' in window;
-                        let viewportHeight;
-                        if (isMobile) {
-                            viewportHeight = window.visualViewport?.height ||
-                                document.documentElement.clientHeight ||
-                                window.innerHeight;
-                        } else {
-                            viewportHeight = window.innerHeight;
-                        }
-                        const totalHeight = document.documentElement.scrollHeight - viewportHeight;
-                        const actualProgress = Math.max(0, Math.min(3.0, (currentScroll / totalHeight) * 3.0));
-
-                        console.log(`✅ MOBILE-AWARE SNAP COMPLETE: Target ${targetIndex}`);
-                        console.log(`📊 Final ScrollProgress: ${actualProgress.toFixed(3)} (${(actualProgress * 40).toFixed(1)}% Debug)`);
-                        console.log(`📍 Final Scroll Position: ${currentScroll}px`);
-                        console.log(`📱 Mobile Compensation: ${window.innerHeight - viewportHeight}px`);
-
-                        if (targetIndex === 6) {
-                            console.log(`📧 NEWSLETTER CHECK: Phase 6 erreicht`);
-                            console.log(`   Expected: 1.6-2.0 (64%-80% Debug)`);
-                            console.log(`   Actual: ${actualProgress.toFixed(3)} (${(actualProgress * 40).toFixed(1)}% Debug)`);
-                            console.log(`   In Range: ${actualProgress >= 1.6 && actualProgress <= 2.0 ? '✅' : '❌'}`);
-                        }
-                    }
-                }, 50); // 50ms Verzögerung für DOM-Stabilisierung
+                    updateScrollProgress();
+                    // ⚡ PERFORMANCE: Debug-Logs entfernt
+                }, 50);
 
                 setCurrentTitleIndex(targetIndex);
 
@@ -224,19 +165,13 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                 setTimeout(() => {
                     setIsScrollLocked(false);
                     setIsSnapping(false);
-
-                    // Finales Update nach Lock-Release
                     updateScrollProgress();
-
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log(`🔓 SNAP UNLOCK: Phase ${targetIndex} erreicht`);
-                    }
                 }, lockDelay);
             }
         });
     }, [isScrollLocked, isSnapping, titles, updateScrollProgress, currentTitleIndex]);
 
-    // handleScrollEvent mit besserer Debouncing
+    // handleScrollEvent mit optimierter Debouncing
     const handleScrollEvent = useCallback((event) => {
         if (isScrollLocked || isSnapping) {
             event.preventDefault();
@@ -246,8 +181,8 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const now = Date.now();
         const timeSinceLastScroll = now - lastScrollEventRef.current;
 
-        // Reduziertes Debouncing für bessere Responsivität
-        if (timeSinceLastScroll < 50) return; // 100ms → 50ms
+        // ⚡ PERFORMANCE: Erhöhtes Debouncing von 50ms auf 80ms
+        if (timeSinceLastScroll < 80) return;
 
         lastScrollEventRef.current = now;
         const delta = event.deltaY || event.detail || (event.wheelDelta * -1);
@@ -256,25 +191,17 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         if (delta > 0) {
             const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);
             if (nextIndex !== currentTitleIndex) {
-                // DEBUG: Scroll Direction
-                if (process.env.NODE_ENV === 'development' && nextIndex === 6) {
-                    console.log(`⬇️ SCROLL DOWN zu Phase 6 (Newsletter)`);
-                }
                 snapToTitleIndex(nextIndex, 'next');
             }
         } else if (delta < 0) {
             const prevIndex = Math.max(currentTitleIndex - 1, 0);
             if (prevIndex !== currentTitleIndex) {
-                // DEBUG: Scroll Direction
-                if (process.env.NODE_ENV === 'development' && currentTitleIndex === 6) {
-                    console.log(`⬆️ SCROLL UP von Phase 6 (Newsletter)`);
-                }
                 snapToTitleIndex(prevIndex, 'prev');
             }
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // Touch Handlers
+    // Touch Handlers - Optimiert
     const touchStartRef = useRef({ y: 0, time: 0 });
     const handleTouchStart = useCallback((event) => {
         if (event.touches.length === 1) {
@@ -293,28 +220,23 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const deltaTime = Date.now() - touchStartRef.current.time;
         const maxIndex = 6; // 7 Phasen (0-6)
 
-        if (Math.abs(deltaY) > 30 && deltaTime < 500) {
+        // ⚡ PERFORMANCE: Erhöhte Schwellenwerte für weniger versehentliche Triggers
+        if (Math.abs(deltaY) > 40 && deltaTime < 600) { // 30→40, 500→600
             if (deltaY > 0) {
                 const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);
                 if (nextIndex !== currentTitleIndex) {
-                    if (process.env.NODE_ENV === 'development' && nextIndex === 6) {
-                        console.log(`👆 TOUCH DOWN zu Phase 6 (Newsletter)`);
-                    }
                     snapToTitleIndex(nextIndex, 'next');
                 }
             } else {
                 const prevIndex = Math.max(currentTitleIndex - 1, 0);
                 if (prevIndex !== currentTitleIndex) {
-                    if (process.env.NODE_ENV === 'development' && currentTitleIndex === 6) {
-                        console.log(`👇 TOUCH UP von Phase 6 (Newsletter)`);
-                    }
                     snapToTitleIndex(prevIndex, 'prev');
                 }
             }
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // Keyboard Navigation
+    // Keyboard Navigation - Unverändert
     const handleKeyboardNavigation = useCallback((direction) => {
         if (isScrollLocked || isSnapping) return;
 
@@ -333,7 +255,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // Event Listeners Setup
+    // Event Listeners Setup - Optimiert
     useEffect(() => {
         if (!containerRef.current || titles.length === 0) return;
 
@@ -345,6 +267,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const handleTouchStartEvent = (e) => handleTouchStart(e);
         const handleTouchEndEvent = (e) => handleTouchEnd(e);
 
+        // ⚡ PERFORMANCE: Passive listeners wo möglich
         window.addEventListener('wheel', handleWheel, { passive: false });
         window.addEventListener('touchstart', handleTouchStartEvent, { passive: true });
         window.addEventListener('touchend', handleTouchEndEvent, { passive: true });
@@ -356,7 +279,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         };
     }, [handleScrollEvent, handleTouchStart, handleTouchEnd, titles]);
 
-    // Keyboard Event Listeners
+    // Keyboard Event Listeners - Unverändert
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
@@ -390,15 +313,11 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleKeyboardNavigation, snapToTitleIndex]);
 
-    // Initial Update
+    // Initial Update - Optimiert
     useEffect(() => {
         if (titles.length > 0) {
             updateScrollProgress();
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🚀 useScrollProgress initialisiert mit ${titles.length} Titeln`);
-                console.log(`📊 7 Phasen verfügbar: 0 (Logo) + 1-4 (Titel) + 5 (Carousel) + 6 (Newsletter)`);
-                console.log(`📱 Mobile URL-Bar Fix: Aktiv`);
-            }
+            // ⚡ PERFORMANCE: Debug-Logs entfernt
         }
     }, [titles, updateScrollProgress]);
 
@@ -461,7 +380,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
             totalPhases: 7, // 7 Phasen (0-6)
             configurable: true,
             snapConfig: getSnapConfigDebugInfo(),
-            mobileOptimized: true // ⚡ NEU: Mobile Flag
+            mobileOptimized: true
         }
     };
 }

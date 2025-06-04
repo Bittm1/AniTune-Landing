@@ -1,4 +1,4 @@
-// src/components/Parallax/ParallaxContainerModular.jsx - MOBILE DEBUG FIX
+// src/components/Parallax/ParallaxContainerModular.jsx - PERFORMANCE OPTIMIERT
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { getConfig } from './config';
@@ -70,8 +70,11 @@ const ParallaxContainerModular = React.memo(() => {
     const [hasSubscribed, setHasSubscribed] = useState(false);
     const [subscriptionSource, setSubscriptionSource] = useState(null);
 
-    // Mobile Detection State
-    const [isMobile, setIsMobile] = useState(false);
+    // ⚡ PERFORMANCE: Mobile Detection optimiert
+    const [isMobile, setIsMobile] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return window.innerWidth < 768;
+    });
 
     // Refs
     const containerRef = useRef(null);
@@ -82,30 +85,28 @@ const ParallaxContainerModular = React.memo(() => {
     // Konfiguration
     const config = useResponsiveConfig();
 
-    // Performance-Messung im Entwicklungsmodus
-    const performanceRef = useRef({
-        startTime: 0,
-        lastRenderTime: 0
-    });
+    // ⚡ PERFORMANCE: Entfernt - Performance-Messung nur bei Bedarf
+    // const performanceRef = useRef({});
 
-    // Mobile Detection mit Resize Listener
+    // ⚡ PERFORMANCE: Optimierte Mobile Detection mit Throttling
     useEffect(() => {
+        let resizeTimer;
         const checkMobile = () => {
-            const mobile = window.innerWidth < 768;
-            setIsMobile(mobile);
-
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`📱 Device Detection: ${mobile ? 'Mobile' : 'Desktop'} (${window.innerWidth}px)`);
-            }
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const mobile = window.innerWidth < 768;
+                if (mobile !== isMobile) {
+                    setIsMobile(mobile);
+                }
+            }, 150); // Throttled für Performance
         };
 
-        // Initial check
-        checkMobile();
-
-        // Resize listener
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
+        window.addEventListener('resize', checkMobile, { passive: true });
+        return () => {
+            clearTimeout(resizeTimer);
+            window.removeEventListener('resize', checkMobile);
+        };
+    }, [isMobile]);
 
     // SCROLL-PROGRESS mit Phase 0-6 Support
     const {
@@ -132,9 +133,6 @@ const ParallaxContainerModular = React.memo(() => {
 
     // Newsletter Subscription Handler
     const handleSubscriptionChange = useCallback((subscribed, source = 'unknown') => {
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`📧 Newsletter-Anmeldung: ${subscribed} (Quelle: ${source})`);
-        }
         setHasSubscribed(subscribed);
         setSubscriptionSource(source);
 
@@ -146,9 +144,8 @@ const ParallaxContainerModular = React.memo(() => {
                     timestamp: Date.now()
                 }));
             } catch (error) {
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn('LocalStorage nicht verfügbar:', error);
-                }
+                // ⚡ PERFORMANCE: Entfernt console.warn für Production
+                // Silent fail für bessere Performance
             }
         }
     }, []);
@@ -163,15 +160,10 @@ const ParallaxContainerModular = React.memo(() => {
                     if (parsed.subscribed) {
                         setHasSubscribed(true);
                         setSubscriptionSource(parsed.source);
-                        if (process.env.NODE_ENV === 'development') {
-                            console.log(`📧 Newsletter-Status geladen: ${parsed.source} (${new Date(parsed.timestamp).toLocaleString()})`);
-                        }
                     }
                 }
             } catch (error) {
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn('Fehler beim Laden des Newsletter-Status:', error);
-                }
+                // ⚡ PERFORMANCE: Silent fail
             }
         }
     }, []);
@@ -184,10 +176,6 @@ const ParallaxContainerModular = React.memo(() => {
         if (typeof window !== 'undefined') {
             window.removeEventListener('scroll', ScrollTrigger.update);
             window.removeEventListener('resize', ScrollTrigger.update);
-        }
-
-        if (process.env.NODE_ENV === 'development') {
-            console.log("ScrollTrigger abgebaut");
         }
     }, []);
 
@@ -217,7 +205,7 @@ const ParallaxContainerModular = React.memo(() => {
                         }
                     }
                 });
-            }, 50);
+            }, 100); // ⚡ PERFORMANCE: Erhöht von 50ms auf 100ms
         }, options);
 
         sectionsRef.current.forEach(section => {
@@ -225,10 +213,6 @@ const ParallaxContainerModular = React.memo(() => {
                 observerRef.current.observe(section);
             }
         });
-
-        if (process.env.NODE_ENV === 'development') {
-            console.log("Section Observer eingerichtet");
-        }
 
         return () => {
             clearTimeout(debounceTimer);
@@ -242,20 +226,11 @@ const ParallaxContainerModular = React.memo(() => {
     useEffect(() => {
         if (isInitialized) return;
 
-        if (process.env.NODE_ENV === 'development') {
-            performanceRef.current.startTime = performance.now();
-        }
-
         const initTimer = setTimeout(() => {
             destroyScrollTrigger();
             const cleanupSectionObserver = setupSectionObserver();
 
             setIsInitialized(true);
-
-            if (process.env.NODE_ENV === 'development') {
-                performanceRef.current.lastRenderTime = performance.now() - performanceRef.current.startTime;
-                console.log(`Parallax-Container initialisiert in ${performanceRef.current.lastRenderTime.toFixed(2)}ms`);
-            }
 
             const handleResize = () => {
                 if (resizeTimeoutRef.current) {
@@ -264,13 +239,10 @@ const ParallaxContainerModular = React.memo(() => {
 
                 resizeTimeoutRef.current = setTimeout(() => {
                     updateScrollProgress();
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log("Window resized - scroll progress updated");
-                    }
-                }, 200);
+                }, 250); // ⚡ PERFORMANCE: Erhöht von 200ms auf 250ms
             };
 
-            window.addEventListener('resize', handleResize);
+            window.addEventListener('resize', handleResize, { passive: true });
 
             return () => {
                 if (cleanupSectionObserver && typeof cleanupSectionObserver === 'function') {
@@ -280,7 +252,7 @@ const ParallaxContainerModular = React.memo(() => {
                 clearTimeout(resizeTimeoutRef.current);
                 window.removeEventListener('resize', handleResize);
             };
-        }, 200);
+        }, 300); // ⚡ PERFORMANCE: Erhöht von 200ms auf 300ms
 
         return () => clearTimeout(initTimer);
     }, [destroyScrollTrigger, setupSectionObserver, isInitialized, updateScrollProgress]);
@@ -317,11 +289,7 @@ const ParallaxContainerModular = React.memo(() => {
 
                         setIsInitialized(true);
                         setIsResetting(false);
-
-                        if (process.env.NODE_ENV === 'development') {
-                            console.log("Komponenten-Reset abgeschlossen");
-                        }
-                    }, 100);
+                    }, 150); // ⚡ PERFORMANCE: Erhöht von 100ms auf 150ms
                 });
             });
         }
@@ -345,32 +313,16 @@ const ParallaxContainerModular = React.memo(() => {
         sectionsRef.current[index] = el;
     }, []);
 
-    // Performance-Tracking im Entwicklungsmodus
+    // ⚡ PERFORMANCE: Entfernt - Performance-Tracking nur bei Bedarf
+    // useEffect(() => { ... performance tracking ... }, [resetCount]);
+
+    // ⚡ PERFORMANCE: Snap-Config Debug nur bei Bedarf laden
     useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
-            const startTime = performance.now();
+        // Snap-Config wird nur geladen, Debug-Ausgabe entfernt
+        const debugInfo = getSnapConfigDebugInfo();
+        const warnings = validateSnapConfig();
 
-            return () => {
-                const endTime = performance.now();
-                console.log(`Parallax component render time: ${endTime - startTime}ms`);
-            };
-        }
-    }, [resetCount]);
-
-    // Snap-Config Debug
-    useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
-            const debugInfo = getSnapConfigDebugInfo();
-            const warnings = validateSnapConfig();
-
-            console.log('🎯 Snap-Config Geladen:', debugInfo);
-
-            if (warnings.length > 0) {
-                console.warn('⚠️ Snap-Config Warnungen:', warnings);
-            } else {
-                console.log('✅ Snap-Config vollständig validiert');
-            }
-        }
+        // Silent validation - keine Console-Ausgabe
     }, []);
 
     // Desktop Background Layers (unverändert)
@@ -613,184 +565,15 @@ const ParallaxContainerModular = React.memo(() => {
         </div>
     ), [resetComponent]);
 
-    // ✅ MOBILE DEBUG: KOMPLETT ENTFERNT - Nur winziger Indikator
-    const mobileDebugDot = useMemo(() => {
-        if (process.env.NODE_ENV !== 'development' || !isMobile) return null;
-
-        return (
-            <div
-                style={{
-                    position: 'fixed',
-                    top: '5px',
-                    right: '5px',
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: currentTitleIndex === 0 ? '#00ff00' :
-                        currentTitleIndex <= 4 ? '#ffffff' :
-                            currentTitleIndex === 5 ? '#a880ff' : '#ff6b6b',
-                    zIndex: 9999,
-                    pointerEvents: 'none',
-                    opacity: 0.7
-                }}
-                title={`Phase ${currentTitleIndex}/6`}
-            />
-        );
-    }, [isMobile, currentTitleIndex]);
-
-    // ✅ DESKTOP DEBUG PANEL (unverändert aber nur Desktop)
-    const desktopDebugIndicator = useMemo(() => {
-        if (process.env.NODE_ENV !== 'development' || isMobile) return null;
-
-        const snapDebug = getSnapConfigDebugInfo();
-        const snapWarnings = validateSnapConfig();
-
-        return (
-            <div className="debug-indicator">
-                <div style={{ borderBottom: '1px solid #333', paddingBottom: '4px', marginBottom: '4px' }}>
-                    Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/50
-                </div>
-
-                <div style={{ fontSize: '10px', marginTop: '2px' }}>
-                    Device: 🖥️ Desktop ({window.innerWidth}px)
-                </div>
-
-                <div style={{ fontSize: '9px', color: '#2196F3', marginTop: '1px' }}>
-                    🖥️ All Desktop Layers (10+ Layers)
-                </div>
-
-                <div style={{ fontSize: '10px', marginTop: '2px' }}>
-                    Phase: {currentTitleIndex}/6 ({currentPhaseDescription})
-                </div>
-
-                <div style={{ fontSize: '10px' }}>
-                    Newsletter: {hasSubscribed ? '✅' : '❌'} | Lock: {isScrollLocked ? '🔒' : '🔓'}
-                </div>
-
-                <div style={{ fontSize: '9px', color: '#a880ff', marginTop: '2px' }}>
-                    📱 Device: {snapDebug.device} | Next Speed:
-                </div>
-                <div style={{ fontSize: '8px', color: '#4CAF50' }}>
-                    {currentTitleIndex < 6 && `${currentTitleIndex}→${currentTitleIndex + 1}: ${Object.values(snapDebug.exampleTransitions)[Math.min(currentTitleIndex, 4)] || 'N/A'}`}
-                </div>
-
-                {snapWarnings.length > 0 && (
-                    <div style={{ fontSize: '8px', color: '#ff6b6b', marginTop: '2px' }}>
-                        Config Issues: {snapWarnings.length}
-                    </div>
-                )}
-
-                <div style={{ fontSize: '9px', marginTop: '2px' }}>
-                    Original: {timingInfo.preset} | Quelle: {subscriptionSource || 'none'}
-                </div>
-
-                <button
-                    onClick={resetComponent}
-                    style={{
-                        marginLeft: '10px',
-                        padding: '2px 8px',
-                        fontSize: '12px',
-                        background: '#555',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    ↻
-                </button>
-            </div>
-        );
-    }, [
-        isMobile,
-        formattedScrollProgress.absolute,
-        activeSection,
-        resetComponent,
-        scrollProgress,
-        currentTitleIndex,
-        currentPhaseDescription,
-        timingInfo,
-        isScrollLocked,
-        hasSubscribed,
-        subscriptionSource
-    ]);
-
-    // Section-Indikatoren (nur Desktop)
-    const sectionIndicators = useMemo(() => {
-        if (process.env.NODE_ENV !== 'development' || isMobile) return null;
-
-        return (
-            <div className="section-indicators">
-                <button
-                    className={`section-indicator ${currentTitleIndex === 0 ? 'active logo-phase' : ''}`}
-                    onClick={() => scrollToTitleIndex(0)}
-                    aria-label="Go to Logo/Newsletter (Phase 0)"
-                    title="Phase 0: Logo/Newsletter"
-                    style={{
-                        backgroundColor: currentTitleIndex === 0 ? '#00ff00' : 'rgba(255, 255, 255, 0.5)'
-                    }}
-                />
-
-                {config.titles?.slice(0, 3).map((title, index) => (
-                    <button
-                        key={index}
-                        className={`section-indicator ${currentTitleIndex === index + 1 ? 'active title-phase' : ''}`}
-                        onClick={() => scrollToTitleIndex(index + 1)}
-                        aria-label={`Go to ${title.text} (Phase ${index + 1})`}
-                        title={`Phase ${index + 1}: ${title.text}`}
-                        style={{
-                            backgroundColor: currentTitleIndex === index + 1 ? '#ffffff' : 'rgba(255, 255, 255, 0.5)'
-                        }}
-                    />
-                )) || []}
-
-                {config.titles?.[3] && (
-                    <button
-                        className={`section-indicator ${currentTitleIndex === 4 ? 'active title-phase' : ''}`}
-                        onClick={() => scrollToTitleIndex(4)}
-                        aria-label={`Go to ${config.titles[3].text} (Phase 4)`}
-                        title={`Phase 4: ${config.titles[3].text}`}
-                        style={{
-                            backgroundColor: currentTitleIndex === 4 ? '#ffffff' : 'rgba(255, 255, 255, 0.5)'
-                        }}
-                    />
-                )}
-
-                <button
-                    className={`section-indicator ${currentTitleIndex === 5 ? 'active carousel-phase' : ''}`}
-                    onClick={() => scrollToTitleIndex(5)}
-                    aria-label="Go to AniTune Carousel (Phase 5)"
-                    title="Phase 5: AniTune Carousel"
-                    style={{
-                        backgroundColor: currentTitleIndex === 5 ? '#a880ff' : 'rgba(255, 255, 255, 0.5)'
-                    }}
-                />
-
-                <button
-                    className={`section-indicator ${currentTitleIndex === 6 ? 'active newsletter-phase' : ''} ${hasSubscribed ? 'subscribed' : ''}`}
-                    onClick={() => scrollToTitleIndex(6)}
-                    aria-label="Go to Newsletter CTA (Phase 6)"
-                    title={hasSubscribed ? "Phase 6: Bereits angemeldet ✅" : "Phase 6: Newsletter CTA"}
-                    style={{
-                        backgroundColor: currentTitleIndex === 6 ? '#ff6b6b' :
-                            hasSubscribed ? '#4CAF50' :
-                                'rgba(255, 255, 255, 0.5)',
-                        opacity: hasSubscribed ? 0.5 : 1
-                    }}
-                />
-            </div>
-        );
-    }, [currentTitleIndex, scrollToTitleIndex, config.titles, hasSubscribed, isMobile]);
+    // ⚡ PERFORMANCE: Debug-Komponenten komplett deaktiviert für Production
+    const mobileDebugDot = null;
+    const desktopDebugIndicator = null;
+    const sectionIndicators = null;
 
     return (
         <ErrorBoundary fallback={errorFallback}>
             <div className="gsap-parallax-container" ref={containerRef} key={`container-${resetCount}`}>
-                {/* ✅ RESPONSIVE DEBUG: Desktop = Full Panel, Mobile = Tiny Dot */}
-                {desktopDebugIndicator}
-                {mobileDebugDot}
-
-                {/* Section-Indikatoren (nur Desktop) */}
-                {sectionIndicators}
+                {/* ⚡ PERFORMANCE: Debug-Elemente entfernt */}
 
                 {/* Responsive Background Layers */}
                 <div className="fixed-layers">
@@ -868,9 +651,9 @@ const ParallaxContainerModular = React.memo(() => {
                     </div>
                 </ErrorBoundary>
 
-                {/* Scroll-Abschnitte */}
+                {/* ⚡ PERFORMANCE: Sections reduziert von 50 auf 30 für bessere Performance */}
                 <div className="gsap-sections-container">
-                    {Array.from({ length: 50 }, (_, i) => i).map((index) => (
+                    {Array.from({ length: 30 }, (_, i) => i).map((index) => (
                         <section
                             key={`section-${index}-${resetCount}`}
                             ref={(el) => setSectionRef(el, index)}
