@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/TitleAudioLayer.jsx - NO MOBILE DEBUG
+// src/components/Parallax/Elements/TitleAudioLayer.jsx - VERBESSERTE HINTERGRUNDMUSIK
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -30,12 +30,13 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
     const phaseDebounceRef = useRef(null);
     const stablePhaseRef = useRef(0);
 
-    // Hintergrundmusik Refs und States
+    // ✅ VERBESSERTE Hintergrundmusik Refs und States
     const backgroundMusicRef = useRef(null);
     const backgroundTweenRef = useRef(null);
     const lastScrollDirectionRef = useRef('none');
     const lastScrollProgressRef = useRef(0);
-    const backgroundMusicPlayedOnceRef = useRef(false);
+    const backgroundMusicWasPlayingRef = useRef(false); // ✅ GEÄNDERT: Tracking ob Musik gespielt wurde
+    const lastPhase1to3StateRef = useRef(false); // ✅ NEU: Tracking ob wir in Phase 1-3 sind
 
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
     const [buttonPortal, setButtonPortal] = useState(null);
@@ -100,37 +101,38 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         }
     }, [titleAudios]);
 
-    // Hintergrundmusik Fade-Funktionen
+    // ✅ VERBESSERTE Hintergrundmusik Fade-Funktionen
     const fadeBackgroundMusicIn = useCallback((duration = 2.0) => {
         if (!backgroundMusicRef.current || !backgroundMusicEnabled) return;
 
         if (process.env.NODE_ENV === 'development') {
-            console.log(`🎵 BACKGROUND: Fade In (${duration}s)`);
+            console.log(`🎵 BACKGROUND: Fade In (${duration}s) - NEU STARTEN`);
         }
 
         if (backgroundTweenRef.current) {
             backgroundTweenRef.current.kill();
         }
 
+        // ✅ WICHTIG: Immer von vorne starten
+        backgroundMusicRef.current.currentTime = 0;
         backgroundMusicRef.current.volume = 0;
         setBackgroundMusicVolume(0);
 
-        if (backgroundMusicRef.current.paused) {
-            const playPromise = backgroundMusicRef.current.play();
-            if (playPromise !== undefined) {
-                playPromise
-                    .then(() => {
-                        setBackgroundMusicPlaying(true);
-                        if (process.env.NODE_ENV === 'development') {
-                            console.log(`✅ BACKGROUND: Spielt erfolgreich`);
-                        }
-                    })
-                    .catch(error => {
-                        if (process.env.NODE_ENV === 'development') {
-                            console.warn(`❌ BACKGROUND: Play-Fehler:`, error);
-                        }
-                    });
-            }
+        const playPromise = backgroundMusicRef.current.play();
+        if (playPromise !== undefined) {
+            playPromise
+                .then(() => {
+                    setBackgroundMusicPlaying(true);
+                    backgroundMusicWasPlayingRef.current = true; // ✅ TRACKING
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log(`✅ BACKGROUND: Spielt erfolgreich (von Anfang)`);
+                    }
+                })
+                .catch(error => {
+                    if (process.env.NODE_ENV === 'development') {
+                        console.warn(`❌ BACKGROUND: Play-Fehler:`, error);
+                    }
+                });
         }
 
         backgroundTweenRef.current = gsap.to(backgroundMusicRef.current, {
@@ -170,7 +172,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                 backgroundMusicRef.current.pause();
                 setBackgroundMusicPlaying(false);
                 if (process.env.NODE_ENV === 'development') {
-                    console.log(`✅ BACKGROUND: Fade Out komplett`);
+                    console.log(`✅ BACKGROUND: Fade Out komplett - GESTOPPT`);
                 }
             }
         });
@@ -190,7 +192,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         return lastScrollDirectionRef.current;
     }, []);
 
-    // Hintergrundmusik-Logik
+    // ✅ NEUE VERBESSERTE Hintergrundmusik-Logik
     useEffect(() => {
         if (!backgroundMusicEnabled || !backgroundMusicRef.current) return;
 
@@ -199,33 +201,60 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         const isAtLogo = scrollProgress < 0.05;
         const isPhase4Plus = scrollProgress >= 1.0;
 
-        if (isInPhase1to3 && scrollDirection === 'down' && !backgroundMusicPlaying) {
+        // ✅ TRACKING: Sind wir in Phase 1-3?
+        const wasInPhase1to3 = lastPhase1to3StateRef.current;
+        lastPhase1to3StateRef.current = isInPhase1to3;
+
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`🎵 BACKGROUND-LOGIC: Phase1-3=${isInPhase1to3}, Direction=${scrollDirection}, Playing=${backgroundMusicPlaying}, WasPlaying=${backgroundMusicWasPlayingRef.current}`);
+        }
+
+        // ✅ REGEL 1: Betrete Phase 1-3 → Musik starten (IMMER NEU)
+        if (isInPhase1to3 && !wasInPhase1to3) {
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎵 BACKGROUND: BETRETE Phase 1-3 → Musik NEU starten`);
+            }
             fadeBackgroundMusicIn(2.0);
         }
-        else if (isPhase4Plus && scrollDirection === 'down' && backgroundMusicPlaying) {
-            fadeBackgroundMusicOut(3.0);
+
+        // ✅ REGEL 2: Verlasse Phase 1-3 nach oben (Logo) → Schneller Fade Out
+        else if (isAtLogo && wasInPhase1to3 && backgroundMusicPlaying) {
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎵 BACKGROUND: VERLASSE Phase 1-3 → Logo (SCHNELL)`);
+            }
+            fadeBackgroundMusicOut(1.0); // ✅ SCHNELLER: 1s statt 2s
         }
-        else if (isInPhase1to3 && scrollDirection === 'up' && !backgroundMusicPlaying && !backgroundMusicPlayedOnceRef.current) {
-            fadeBackgroundMusicIn(2.0);
+
+        // ✅ REGEL 3: Verlasse Phase 1-3 nach unten (Phase 4+) → SEHR SCHNELLER Fade Out
+        else if (isPhase4Plus && wasInPhase1to3 && backgroundMusicPlaying) {
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎵 BACKGROUND: VERLASSE Phase 1-3 → Phase 4+ (SEHR SCHNELL)`);
+            }
+            fadeBackgroundMusicOut(0.8); // ✅ SEHR SCHNELL: 0.8s statt 3s
         }
-        else if (isAtLogo && scrollDirection === 'up' && backgroundMusicPlaying) {
-            fadeBackgroundMusicOut(2.0);
+
+        // ✅ REGEL 4: Reset Tracking wenn wir Phase 1-3 verlassen
+        if (!isInPhase1to3 && wasInPhase1to3) {
+            // Reset erfolgt automatisch beim nächsten Betreten von Phase 1-3
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎵 BACKGROUND: Phase 1-3 verlassen - bereit für Neustart`);
+            }
         }
 
     }, [scrollProgress, backgroundMusicEnabled, backgroundMusicPlaying, fadeBackgroundMusicIn, fadeBackgroundMusicOut, detectScrollDirection]);
 
-    // Background Music Ende-Handler
+    // ✅ GEÄNDERT: Background Music Ende-Handler (keine "playedOnce" Sperre mehr)
     useEffect(() => {
         const audio = backgroundMusicRef.current;
         if (!audio) return;
 
         const handleEnded = () => {
             if (process.env.NODE_ENV === 'development') {
-                console.log(`🎵 BACKGROUND: Song beendet - wird nicht wiederholt`);
+                console.log(`🎵 BACKGROUND: Song beendet - kann erneut gespielt werden`);
             }
-            backgroundMusicPlayedOnceRef.current = true;
             setBackgroundMusicPlaying(false);
             setBackgroundMusicVolume(0);
+            // ✅ ENTFERNT: backgroundMusicPlayedOnceRef.current = true;
         };
 
         audio.addEventListener('ended', handleEnded);
@@ -607,12 +636,13 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     }}
                 >
                     <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
-                        🎵 CENTRALIZED AUDIO (DESKTOP ONLY)
+                        🎵 CENTRALIZED AUDIO + VERBESSERTE HINTERGRUNDMUSIK
                     </div>
 
                     {(() => {
                         const debugInfo = getPhaseDebugInfo(scrollProgress);
                         const currentPhase = getActivePhaseFromScroll(scrollProgress);
+                        const isInPhase1to3 = scrollProgress >= 0.05 && scrollProgress < 1.0;
 
                         return (
                             <>
@@ -625,7 +655,18 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                                 <div>🎵 Expected Audio: {debugInfo.audioConfig}</div>
                                 <div>🔊 Audio Enabled: {isAudioEnabled ? 'Ja' : 'Nein'}</div>
                                 <div>🎶 Currently Playing: {currentAudioRef.current ? 'Ja' : 'Nein'}</div>
-                                <div>🎼 Background: {backgroundMusicPlaying ? 'Ja' : 'Nein'}</div>
+
+                                {/* ✅ ERWEITERTE HINTERGRUNDMUSIK DEBUG */}
+                                <div style={{ marginTop: '4px', borderTop: '1px solid #333', paddingTop: '4px' }}>
+                                    <div style={{ fontSize: '10px', color: '#a880ff' }}>
+                                        🎼 HINTERGRUNDMUSIK (VERBESSERT):
+                                    </div>
+                                    <div>Playing: {backgroundMusicPlaying ? '✅' : '❌'}</div>
+                                    <div>Volume: {(backgroundMusicVolume * 100).toFixed(0)}%</div>
+                                    <div>Phase 1-3: {isInPhase1to3 ? '✅' : '❌'}</div>
+                                    <div>Was Playing: {backgroundMusicWasPlayingRef.current ? '✅' : '❌'}</div>
+                                    <div>Last Phase1-3: {lastPhase1to3StateRef.current ? '✅' : '❌'}</div>
+                                </div>
 
                                 <div style={{ marginTop: '4px', fontSize: '10px', color: '#ff6b6b' }}>
                                     🚫 KEINE isScrollLocked Abhängigkeit!
@@ -634,7 +675,10 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                                     ✅ Nutzt zentrale phaseUtils.js Bereiche
                                 </div>
                                 <div style={{ marginTop: '2px', fontSize: '9px', color: '#ffff00' }}>
-                                    ⏱️ 300ms Debounce verhindert Phase-Hopping
+                                    ⚡ VERBESSERT: Schnellerer Fade-out (0.8s zu Phase 4+)
+                                </div>
+                                <div style={{ marginTop: '2px', fontSize: '9px', color: '#ff6b6b' }}>
+                                    🔄 IMMER NEUSTART: Musik startet immer von vorne
                                 </div>
 
                                 <div style={{ marginTop: '4px', borderTop: '1px solid #333', paddingTop: '4px' }}>
@@ -709,6 +753,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                         🖥️ DESKTOP DEBUG - Mobile Clean
                         <br />🎛️ Bereiche zentral steuerbar in PHASE_CONFIG
                         <br />🎯 Titel + Audio perfekt synchron
+                        <br />⚡ Hintergrundmusik: 0.8s Fade-out, immer Neustart
                     </div>
                 </div>
             )}
@@ -743,7 +788,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     </audio>
                 ))}
 
-                {/* Hintergrundmusik */}
+                {/* ✅ VERBESSERTE Hintergrundmusik */}
                 <audio
                     ref={backgroundMusicRef}
                     preload="auto"
@@ -760,9 +805,8 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     }}
                     onEnded={() => {
                         if (process.env.NODE_ENV === 'development') {
-                            console.log(`🎼 Hintergrundmusik beendet`);
+                            console.log(`🎼 Hintergrundmusik beendet - kann erneut gespielt werden`);
                         }
-                        backgroundMusicPlayedOnceRef.current = true;
                         setBackgroundMusicPlaying(false);
                     }}
                 >
