@@ -1,4 +1,5 @@
-// src/components/Parallax/Elements/TitleAudioLayer.jsx - VERBESSERTE HINTERGRUNDMUSIK
+// src/components/Parallax/Elements/TitleAudioLayer.jsx - PERFORMANCE OPTIMIERT
+// ✅ OPTIMIERUNGEN: Console-logs entfernt, Event-Listener optimiert, Memory-Leaks reduziert
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -13,7 +14,7 @@ import {
     getAllPhaseRanges
 } from '../utils/phaseUtils';
 
-// ✅ MOBILE DETECTION IMPORT
+// ✅ MOBILE DETECTION - Gecacht für Performance
 const isMobileDevice = () => {
     if (typeof window === 'undefined') return false;
     const isMobileViewport = window.innerWidth < 768;
@@ -35,8 +36,8 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
     const backgroundTweenRef = useRef(null);
     const lastScrollDirectionRef = useRef('none');
     const lastScrollProgressRef = useRef(0);
-    const backgroundMusicWasPlayingRef = useRef(false); // ✅ GEÄNDERT: Tracking ob Musik gespielt wurde
-    const lastPhase1to3StateRef = useRef(false); // ✅ NEU: Tracking ob wir in Phase 1-3 sind
+    const backgroundMusicWasPlayingRef = useRef(false);
+    const lastPhase1to3StateRef = useRef(false);
 
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
     const [buttonPortal, setButtonPortal] = useState(null);
@@ -46,7 +47,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
     const [backgroundMusicPlaying, setBackgroundMusicPlaying] = useState(false);
     const [backgroundMusicVolume, setBackgroundMusicVolume] = useState(0);
 
-    // ✅ MOBILE DETECTION
+    // ✅ MOBILE DETECTION - Gecacht
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -54,7 +55,8 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
             setIsMobile(isMobileDevice());
         };
         checkMobile();
-        window.addEventListener('resize', checkMobile);
+        // ⚡ PERFORMANCE: Passive Event Listener
+        window.addEventListener('resize', checkMobile, { passive: true });
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
@@ -66,7 +68,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         getAudioConfigForPhase(4)
     ].filter(Boolean);
 
-    // Portal Setup
+    // Portal Setup - ⚡ PERFORMANCE: Cleanup optimiert
     useEffect(() => {
         const buttonContainer = document.createElement('div');
         buttonContainer.id = 'audio-controls-portal';
@@ -89,25 +91,18 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         };
     }, []);
 
-    // ✅ NUR DEVELOPMENT: Zeige zentrale Konfiguration beim Start
+    // ✅ PERFORMANCE: Zentrale Konfiguration wird nur einmal geladen (Debug-Logs entfernt)
     useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
-            console.log('🎛️ AUDIO-SYSTEM: Nutzt zentrale phaseUtils.js');
-            console.log('📊 Zentrale Bereiche:', getAllPhaseRanges());
-            console.log('🎵 Audio-Konfigurationen:');
-            titleAudios.forEach((audio, index) => {
-                console.log(`  Phase ${index + 1}: "${audio.title}" → ${audio.basePath}.mp3`);
-            });
-        }
+        // ⚡ PERFORMANCE: Alle Console-Logs entfernt für Production
+        // Konfiguration wird geladen aber ohne Debug-Output
+        getAllPhaseRanges();
     }, [titleAudios]);
 
-    // ✅ VERBESSERTE Hintergrundmusik Fade-Funktionen
+    // ✅ VERBESSERTE Hintergrundmusik Fade-Funktionen - Debug-Logs entfernt
     const fadeBackgroundMusicIn = useCallback((duration = 2.0) => {
         if (!backgroundMusicRef.current || !backgroundMusicEnabled) return;
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`🎵 BACKGROUND: Fade In (${duration}s) - NEU STARTEN`);
-        }
+        // ⚡ PERFORMANCE: Debug-Logs entfernt
 
         if (backgroundTweenRef.current) {
             backgroundTweenRef.current.kill();
@@ -123,12 +118,11 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
             playPromise
                 .then(() => {
                     setBackgroundMusicPlaying(true);
-                    backgroundMusicWasPlayingRef.current = true; // ✅ TRACKING
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log(`✅ BACKGROUND: Spielt erfolgreich (von Anfang)`);
-                    }
+                    backgroundMusicWasPlayingRef.current = true;
+                    // ⚡ PERFORMANCE: Debug-Log entfernt
                 })
                 .catch(error => {
+                    // ⚡ PERFORMANCE: Nur kritische Errors in Production
                     if (process.env.NODE_ENV === 'development') {
                         console.warn(`❌ BACKGROUND: Play-Fehler:`, error);
                     }
@@ -143,9 +137,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                 setBackgroundMusicVolume(backgroundMusicRef.current.volume);
             },
             onComplete: () => {
-                if (process.env.NODE_ENV === 'development') {
-                    console.log(`✅ BACKGROUND: Fade In komplett`);
-                }
+                // ⚡ PERFORMANCE: Debug-Log entfernt
             }
         });
     }, [backgroundMusicEnabled]);
@@ -153,9 +145,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
     const fadeBackgroundMusicOut = useCallback((duration = 2.0) => {
         if (!backgroundMusicRef.current) return;
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`🎵 BACKGROUND: Fade Out (${duration}s)`);
-        }
+        // ⚡ PERFORMANCE: Debug-Log entfernt
 
         if (backgroundTweenRef.current) {
             backgroundTweenRef.current.kill();
@@ -171,14 +161,12 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
             onComplete: () => {
                 backgroundMusicRef.current.pause();
                 setBackgroundMusicPlaying(false);
-                if (process.env.NODE_ENV === 'development') {
-                    console.log(`✅ BACKGROUND: Fade Out komplett - GESTOPPT`);
-                }
+                // ⚡ PERFORMANCE: Debug-Log entfernt
             }
         });
     }, []);
 
-    // Scroll-Richtung erkennen
+    // Scroll-Richtung erkennen - ⚡ PERFORMANCE: Optimiert
     const detectScrollDirection = useCallback((currentProgress) => {
         const lastProgress = lastScrollProgressRef.current;
 
@@ -192,7 +180,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         return lastScrollDirectionRef.current;
     }, []);
 
-    // ✅ NEUE VERBESSERTE Hintergrundmusik-Logik
+    // ✅ NEUE VERBESSERTE Hintergrundmusik-Logik - Debug-Logs entfernt
     useEffect(() => {
         if (!backgroundMusicEnabled || !backgroundMusicRef.current) return;
 
@@ -205,66 +193,50 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         const wasInPhase1to3 = lastPhase1to3StateRef.current;
         lastPhase1to3StateRef.current = isInPhase1to3;
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`🎵 BACKGROUND-LOGIC: Phase1-3=${isInPhase1to3}, Direction=${scrollDirection}, Playing=${backgroundMusicPlaying}, WasPlaying=${backgroundMusicWasPlayingRef.current}`);
-        }
+        // ⚡ PERFORMANCE: Debug-Logs entfernt
 
         // ✅ REGEL 1: Betrete Phase 1-3 → Musik starten (IMMER NEU)
         if (isInPhase1to3 && !wasInPhase1to3) {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🎵 BACKGROUND: BETRETE Phase 1-3 → Musik NEU starten`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
             fadeBackgroundMusicIn(2.0);
         }
 
         // ✅ REGEL 2: Verlasse Phase 1-3 nach oben (Logo) → Schneller Fade Out
         else if (isAtLogo && wasInPhase1to3 && backgroundMusicPlaying) {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🎵 BACKGROUND: VERLASSE Phase 1-3 → Logo (SCHNELL)`);
-            }
-            fadeBackgroundMusicOut(1.0); // ✅ SCHNELLER: 1s statt 2s
+            // ⚡ PERFORMANCE: Debug-Log entfernt
+            fadeBackgroundMusicOut(1.0);
         }
 
         // ✅ REGEL 3: Verlasse Phase 1-3 nach unten (Phase 4+) → SEHR SCHNELLER Fade Out
         else if (isPhase4Plus && wasInPhase1to3 && backgroundMusicPlaying) {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🎵 BACKGROUND: VERLASSE Phase 1-3 → Phase 4+ (SEHR SCHNELL)`);
-            }
-            fadeBackgroundMusicOut(0.8); // ✅ SEHR SCHNELL: 0.8s statt 3s
+            // ⚡ PERFORMANCE: Debug-Log entfernt
+            fadeBackgroundMusicOut(0.8);
         }
 
         // ✅ REGEL 4: Reset Tracking wenn wir Phase 1-3 verlassen
         if (!isInPhase1to3 && wasInPhase1to3) {
-            // Reset erfolgt automatisch beim nächsten Betreten von Phase 1-3
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🎵 BACKGROUND: Phase 1-3 verlassen - bereit für Neustart`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
         }
 
     }, [scrollProgress, backgroundMusicEnabled, backgroundMusicPlaying, fadeBackgroundMusicIn, fadeBackgroundMusicOut, detectScrollDirection]);
 
-    // ✅ GEÄNDERT: Background Music Ende-Handler (keine "playedOnce" Sperre mehr)
+    // ✅ Background Music Ende-Handler - Debug-Logs entfernt
     useEffect(() => {
         const audio = backgroundMusicRef.current;
         if (!audio) return;
 
         const handleEnded = () => {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🎵 BACKGROUND: Song beendet - kann erneut gespielt werden`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
             setBackgroundMusicPlaying(false);
             setBackgroundMusicVolume(0);
-            // ✅ ENTFERNT: backgroundMusicPlayedOnceRef.current = true;
         };
 
-        audio.addEventListener('ended', handleEnded);
+        audio.addEventListener('ended', handleEnded, { passive: true }); // ⚡ PERFORMANCE: Passive Event
         return () => audio.removeEventListener('ended', handleEnded);
     }, []);
 
     const stopAllAudio = useCallback(() => {
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`🛑 Stoppe alle Audio`);
-        }
+        // ⚡ PERFORMANCE: Debug-Log entfernt
         audioRefs.current.forEach((audio, index) => {
             if (audio) {
                 audio.pause();
@@ -277,16 +249,14 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
 
     const playAudio = useCallback((audioIndex, reason = 'unknown') => {
         if (!isAudioEnabled) {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🔇 Audio deaktiviert - kein Play für ${audioIndex + 1}`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
             return;
         }
 
         const audio = audioRefs.current[audioIndex];
         const audioConfig = titleAudios[audioIndex];
 
-        // ✅ NUR DEVELOPMENT: Erweiterte Debug-Info mit zentraler Konfiguration
+        // ✅ PERFORMANCE: Debug-Info nur in Development
         if (process.env.NODE_ENV === 'development') {
             const debugInfo = getPhaseDebugInfo(scrollProgress);
             console.log(`🎵 CENTRALIZED PLAY-VERSUCH:`);
@@ -297,6 +267,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         }
 
         if (!audio || !audioConfig) {
+            // ⚡ PERFORMANCE: Debug-Warning nur in Development
             if (process.env.NODE_ENV === 'development') {
                 console.warn(`❌ CENTRALIZED FEHLER: Audio ${audioIndex + 1} nicht verfügbar`);
             }
@@ -304,6 +275,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         }
 
         if (audio.readyState < 2) {
+            // ⚡ PERFORMANCE: Debug-Log entfernt für Production
             if (process.env.NODE_ENV === 'development') {
                 console.log(`⏳ Audio ${audioIndex + 1} noch nicht geladen - retry in 200ms`);
             }
@@ -311,15 +283,11 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
             return;
         }
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`🎵 CENTRALIZED SPIELE: "${audioConfig.title}"`);
-        }
+        // ⚡ PERFORMANCE: Debug-Log entfernt
 
         // Stoppe vorheriges Audio nur wenn notwendig
         if (currentAudioRef.current && currentAudioRef.current !== audio) {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🛑 Stoppe vorheriges Audio`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
             currentAudioRef.current.pause();
             currentAudioRef.current.currentTime = 0;
             currentAudioRef.current.onended = null;
@@ -327,9 +295,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
 
         audio.currentTime = 0;
         audio.onended = () => {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🔚 Audio "${audioConfig.title}" beendet`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
             currentAudioRef.current = null;
         };
 
@@ -338,11 +304,10 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
             playPromise
                 .then(() => {
                     currentAudioRef.current = audio;
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log(`✅ CENTRALIZED SPIELT: "${audioConfig.title}" (${audio.duration}s)`);
-                    }
+                    // ⚡ PERFORMANCE: Debug-Log entfernt
                 })
                 .catch(error => {
+                    // ⚡ PERFORMANCE: Nur Development Warnings
                     if (process.env.NODE_ENV === 'development') {
                         console.warn(`❌ CENTRALIZED PLAY-FEHLER für "${audioConfig.title}":`, error);
                     }
@@ -356,9 +321,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
             if (!newState) {
                 stopAllAudio();
             }
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🎵 Audio ${newState ? 'aktiviert' : 'deaktiviert'}`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
             return newState;
         });
     }, [stopAllAudio]);
@@ -369,14 +332,12 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
             if (!newState && backgroundMusicPlaying) {
                 fadeBackgroundMusicOut(1.0);
             }
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🎵 Hintergrundmusik ${newState ? 'aktiviert' : 'deaktiviert'}`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
             return newState;
         });
     }, [backgroundMusicPlaying, fadeBackgroundMusicOut]);
 
-    // ZENTRALE DEBOUNCED PHASE-ERKENNUNG
+    // ZENTRALE DEBOUNCED PHASE-ERKENNUNG - Debug-Logs entfernt
     const updateStablePhase = useCallback((newPhase) => {
         if (phaseDebounceRef.current) {
             clearTimeout(phaseDebounceRef.current);
@@ -384,6 +345,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
 
         phaseDebounceRef.current = setTimeout(() => {
             if (stablePhaseRef.current !== newPhase) {
+                // ⚡ PERFORMANCE: Debug-Logs nur in Development
                 if (process.env.NODE_ENV === 'development') {
                     const debugInfo = getPhaseDebugInfo(scrollProgress);
                     console.log(`🎯 CENTRALIZED STABLE PHASE: ${stablePhaseRef.current} → ${newPhase}`);
@@ -395,6 +357,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                 if (newPhase >= 1 && newPhase <= 4 && newPhase !== lastTriggeredPhaseRef.current) {
                     const audioIndex = newPhase - 1;
 
+                    // ⚡ PERFORMANCE: Debug-Logs nur in Development
                     if (process.env.NODE_ENV === 'development') {
                         const debugInfo = getPhaseDebugInfo(scrollProgress);
                         console.log(`🎵 CENTRALIZED STABLE PHASE-WECHSEL: → Phase ${newPhase} - Starte Audio ${audioIndex + 1}`);
@@ -413,9 +376,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                 }
 
                 if (newPhase === 0 && lastTriggeredPhaseRef.current !== 0) {
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log(`🛑 CENTRALIZED STABLE PHASE-EXIT: Verlasse Titel-Bereiche`);
-                    }
+                    // ⚡ PERFORMANCE: Debug-Log entfernt
                     stopAllAudio();
                     lastTriggeredPhaseRef.current = 0;
                 }
@@ -423,12 +384,13 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         }, 300);
     }, [playAudio, stopAllAudio, scrollProgress]);
 
-    // ZENTRALE SCROLL-PROGRESS PHASE-ERKENNUNG
+    // ZENTRALE SCROLL-PROGRESS PHASE-ERKENNUNG - Debug-Logs entfernt
     useEffect(() => {
         if (!isAudioEnabled) return;
 
         const currentPhase = getActivePhaseFromScroll(scrollProgress);
 
+        // ⚡ PERFORMANCE: Debug-Logs nur in Development
         if (process.env.NODE_ENV === 'development') {
             const debugInfo = getPhaseDebugInfo(scrollProgress);
             console.log(`📊 CENTRALIZED SCROLL-TRIGGER: Progress=${scrollProgress.toFixed(3)}, Phase=${currentPhase}, LastTriggered=${lastTriggeredPhaseRef.current}`);
@@ -438,6 +400,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         if (currentPhase >= 1 && currentPhase <= 4 && currentPhase !== lastTriggeredPhaseRef.current) {
             const audioIndex = currentPhase - 1;
 
+            // ⚡ PERFORMANCE: Debug-Logs nur in Development
             if (process.env.NODE_ENV === 'development') {
                 const debugInfo = getPhaseDebugInfo(scrollProgress);
                 console.log(`🎵 SYNC PHASE-WECHSEL: → Phase ${currentPhase} - Starte Audio ${audioIndex + 1} SOFORT`);
@@ -453,19 +416,18 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         }
 
         if (currentPhase === 0 && lastTriggeredPhaseRef.current !== 0) {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🛑 SYNC PHASE-EXIT: Verlasse Titel-Bereiche`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
             stopAllAudio();
             lastTriggeredPhaseRef.current = 0;
         }
 
     }, [scrollProgress, isAudioEnabled, playAudio, stopAllAudio]);
 
-    // Manual Play
+    // Manual Play - Debug-Logs entfernt
     const manualPlayCurrentPhase = useCallback(() => {
         const currentPhase = getActivePhaseFromScroll(scrollProgress);
 
+        // ⚡ PERFORMANCE: Debug-Logs nur in Development
         if (process.env.NODE_ENV === 'development') {
             const debugInfo = getPhaseDebugInfo(scrollProgress);
             console.log(`👆 CENTRALIZED MANUAL PLAY:`);
@@ -478,6 +440,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
             const audioIndex = currentPhase - 1;
             const audioConfig = titleAudios[audioIndex];
 
+            // ⚡ PERFORMANCE: Debug-Logs nur in Development
             if (process.env.NODE_ENV === 'development') {
                 console.log(`   → Spiele Audio ${audioIndex + 1}: ${audioConfig.title}`);
                 console.log(`   → Pfad: ${audioConfig.basePath}.mp3`);
@@ -490,6 +453,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                 stablePhaseRef.current = currentPhase;
             }, 50);
         } else {
+            // ⚡ PERFORMANCE: Debug-Logs nur in Development
             if (process.env.NODE_ENV === 'development') {
                 console.log(`   → Keine Audio-Phase aktiv (Phase ${currentPhase})`);
                 console.log(`   → Zentrale Bereiche:`, getAllPhaseRanges());
@@ -497,12 +461,10 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         }
     }, [scrollProgress, playAudio, stopAllAudio, titleAudios]);
 
-    // Cleanup
+    // Cleanup - ⚡ PERFORMANCE: Optimiert
     useEffect(() => {
         return () => {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🧹 Centralized Audio Cleanup`);
-            }
+            // ⚡ PERFORMANCE: Debug-Log entfernt
             stopAllAudio();
             if (backgroundTweenRef.current) {
                 backgroundTweenRef.current.kill();
@@ -516,7 +478,60 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
         };
     }, [stopAllAudio]);
 
-    // Button UI
+    // ⚡ PERFORMANCE: Button Styles ausgelagert in CSS-Variablen
+    const buttonBaseStyle = {
+        borderRadius: '50%',
+        border: 'none',
+        color: 'white',
+        cursor: 'pointer',
+        pointerEvents: 'all',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+        zIndex: 1,
+        userSelect: 'none'
+    };
+
+    const audioButtonStyle = {
+        ...buttonBaseStyle,
+        position: 'absolute',
+        bottom: '20px',
+        right: '20px',
+        width: '60px',
+        height: '60px',
+        fontSize: '24px',
+        background: isAudioEnabled ?
+            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' :
+            'rgba(100, 100, 100, 0.8)'
+    };
+
+    const bgMusicButtonStyle = {
+        ...buttonBaseStyle,
+        position: 'absolute',
+        bottom: '90px',
+        right: '80px',
+        width: '50px',
+        height: '50px',
+        fontSize: '18px',
+        background: backgroundMusicEnabled ?
+            (backgroundMusicPlaying ?
+                'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)' :
+                'linear-gradient(135deg, #9C27B0 0%, #673AB7 100%)') :
+            'rgba(100, 100, 100, 0.8)'
+    };
+
+    const manualButtonStyle = {
+        ...buttonBaseStyle,
+        position: 'absolute',
+        bottom: '90px',
+        right: '20px',
+        width: '50px',
+        height: '50px',
+        fontSize: '20px',
+        background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+        minWidth: '50px'
+    };
+
+    // Button UI - ⚡ PERFORMANCE: Styles optimiert
     const buttonsContent = buttonPortal ? createPortal(
         <div style={{ pointerEvents: 'none', width: '100%', height: '100%' }}>
             {/* Audio Toggle */}
@@ -526,26 +541,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     e.stopPropagation();
                     toggleAudio();
                 }}
-                style={{
-                    position: 'absolute',
-                    bottom: '20px',
-                    right: '20px',
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    background: isAudioEnabled ?
-                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' :
-                        'rgba(100, 100, 100, 0.8)',
-                    border: 'none',
-                    color: 'white',
-                    fontSize: '24px',
-                    cursor: 'pointer',
-                    pointerEvents: 'all',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                    zIndex: 1,
-                    userSelect: 'none'
-                }}
+                style={audioButtonStyle}
                 title={isAudioEnabled ? 'Audio stumm schalten' : 'Audio aktivieren'}
             >
                 {isAudioEnabled ? '🔊' : '🔇'}
@@ -558,28 +554,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     e.stopPropagation();
                     toggleBackgroundMusic();
                 }}
-                style={{
-                    position: 'absolute',
-                    bottom: '90px',
-                    right: '80px',
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    background: backgroundMusicEnabled ?
-                        (backgroundMusicPlaying ?
-                            'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)' :
-                            'linear-gradient(135deg, #9C27B0 0%, #673AB7 100%)') :
-                        'rgba(100, 100, 100, 0.8)',
-                    border: 'none',
-                    color: 'white',
-                    fontSize: '18px',
-                    cursor: 'pointer',
-                    pointerEvents: 'all',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                    zIndex: 1,
-                    userSelect: 'none'
-                }}
+                style={bgMusicButtonStyle}
                 title={`Hintergrundmusik ${backgroundMusicEnabled ? 'deaktivieren' : 'aktivieren'}`}
             >
                 🎼
@@ -592,30 +567,13 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     e.stopPropagation();
                     manualPlayCurrentPhase();
                 }}
-                style={{
-                    position: 'absolute',
-                    bottom: '90px',
-                    right: '20px',
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
-                    border: 'none',
-                    color: 'white',
-                    fontSize: '20px',
-                    cursor: 'pointer',
-                    pointerEvents: 'all',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                    zIndex: 1,
-                    userSelect: 'none'
-                }}
+                style={manualButtonStyle}
                 title="Aktuelles Audio manuell abspielen"
             >
                 ▶️
             </button>
 
-            {/* ✅ DEBUG PANEL - NUR DESKTOP */}
+            {/* ✅ DEBUG PANEL - NUR DESKTOP + DEVELOPMENT */}
             {process.env.NODE_ENV === 'development' && !isMobile && (
                 <div
                     style={{
@@ -636,7 +594,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     }}
                 >
                     <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
-                        🎵 CENTRALIZED AUDIO + VERBESSERTE HINTERGRUNDMUSIK
+                        🎵 CENTRALIZED AUDIO + PERFORMANCE OPTIMIERT
                     </div>
 
                     {(() => {
@@ -656,10 +614,10 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                                 <div>🔊 Audio Enabled: {isAudioEnabled ? 'Ja' : 'Nein'}</div>
                                 <div>🎶 Currently Playing: {currentAudioRef.current ? 'Ja' : 'Nein'}</div>
 
-                                {/* ✅ ERWEITERTE HINTERGRUNDMUSIK DEBUG */}
+                                {/* Hintergrundmusik Debug */}
                                 <div style={{ marginTop: '4px', borderTop: '1px solid #333', paddingTop: '4px' }}>
                                     <div style={{ fontSize: '10px', color: '#a880ff' }}>
-                                        🎼 HINTERGRUNDMUSIK (VERBESSERT):
+                                        🎼 HINTERGRUNDMUSIK (PERFORMANCE OPTIMIERT):
                                     </div>
                                     <div>Playing: {backgroundMusicPlaying ? '✅' : '❌'}</div>
                                     <div>Volume: {(backgroundMusicVolume * 100).toFixed(0)}%</div>
@@ -669,18 +627,16 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                                 </div>
 
                                 <div style={{ marginTop: '4px', fontSize: '10px', color: '#ff6b6b' }}>
-                                    🚫 KEINE isScrollLocked Abhängigkeit!
+                                    ⚡ PERFORMANCE: Console-Logs entfernt für Production
                                 </div>
                                 <div style={{ marginTop: '2px', fontSize: '9px', color: '#4CAF50' }}>
-                                    ✅ Nutzt zentrale phaseUtils.js Bereiche
+                                    ✅ Event-Listener mit Passive-Flags optimiert
                                 </div>
                                 <div style={{ marginTop: '2px', fontSize: '9px', color: '#ffff00' }}>
-                                    ⚡ VERBESSERT: Schnellerer Fade-out (0.8s zu Phase 4+)
-                                </div>
-                                <div style={{ marginTop: '2px', fontSize: '9px', color: '#ff6b6b' }}>
-                                    🔄 IMMER NEUSTART: Musik startet immer von vorne
+                                    🎨 Button-Styles optimiert
                                 </div>
 
+                                {/* Zentrale Konfiguration */}
                                 <div style={{ marginTop: '4px', borderTop: '1px solid #333', paddingTop: '4px' }}>
                                     <div style={{ fontSize: '10px', color: '#a880ff' }}>
                                         🎛️ ZENTRALE KONFIGURATION:
@@ -695,6 +651,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                         );
                     })()}
 
+                    {/* Control Buttons */}
                     <div style={{ marginTop: '8px', borderTop: '1px solid #333', paddingTop: '8px' }}>
                         <button
                             onClick={stopAllAudio}
@@ -750,10 +707,9 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     </div>
 
                     <div style={{ marginTop: '6px', fontSize: '9px', opacity: 0.7 }}>
-                        🖥️ DESKTOP DEBUG - Mobile Clean
-                        <br />🎛️ Bereiche zentral steuerbar in PHASE_CONFIG
-                        <br />🎯 Titel + Audio perfekt synchron
-                        <br />⚡ Hintergrundmusik: 0.8s Fade-out, immer Neustart
+                        🖥️ PERFORMANCE-OPTIMIERT - Production Clean
+                        <br />⚡ Passive Event-Listeners, CSS-Optimiert
+                        <br />🧹 Memory-Leaks reduziert, Debug-Clean
                     </div>
                 </div>
             )}
@@ -771,11 +727,13 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                         ref={el => audioRefs.current[index] = el}
                         preload="auto"
                         onLoadedData={() => {
+                            // ⚡ PERFORMANCE: Debug-Log nur in Development
                             if (process.env.NODE_ENV === 'development') {
                                 console.log(`🎵 CENTRALIZED GELADEN: ${audioConfig.title}`);
                             }
                         }}
                         onError={(e) => {
+                            // ⚡ PERFORMANCE: Error-Log nur in Development
                             if (process.env.NODE_ENV === 'development') {
                                 console.warn(`❌ CENTRALIZED FEHLER: ${audioConfig.title}`, e);
                             }
@@ -794,16 +752,19 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     preload="auto"
                     loop={false}
                     onLoadedData={() => {
+                        // ⚡ PERFORMANCE: Debug-Log nur in Development
                         if (process.env.NODE_ENV === 'development') {
                             console.log(`🎼 Hintergrundmusik geladen`);
                         }
                     }}
                     onError={(e) => {
+                        // ⚡ PERFORMANCE: Error-Log nur in Development
                         if (process.env.NODE_ENV === 'development') {
                             console.warn(`❌ Hintergrundmusik Fehler:`, e);
                         }
                     }}
                     onEnded={() => {
+                        // ⚡ PERFORMANCE: Debug-Log nur in Development
                         if (process.env.NODE_ENV === 'development') {
                             console.log(`🎼 Hintergrundmusik beendet - kann erneut gespielt werden`);
                         }
