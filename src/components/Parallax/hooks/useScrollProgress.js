@@ -1,4 +1,4 @@
-// src/components/Parallax/hooks/useScrollProgress.js - SCROLL-UPDATE FIX
+// src/components/Parallax/hooks/useScrollProgress.js - MIT MOBILE URL-BAR FIX
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import gsap from 'gsap';
@@ -31,18 +31,41 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
     const timingConfig = getDeviceOptimizedTiming();
     const snapTiming = getSnapTiming();
 
-    // ✅ FIX: Erweiterte updateScrollProgress Funktion
+    // ⚡ MOBILE URL-BAR FIX: Erweiterte updateScrollProgress Funktion
     const updateScrollProgress = useCallback(() => {
         if (!containerRef.current || typeof window === 'undefined') return;
 
-        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+        // ⚡ MOBILE DETECTION
+        const isMobile = window.innerWidth < 768 && 'ontouchstart' in window;
+
+        // ⚡ VIEWPORT HEIGHT mit URL-Bar Kompensation
+        let viewportHeight;
+        if (isMobile) {
+            // Für Mobile: Versuche verschiedene Höhen-Quellen
+            viewportHeight = window.visualViewport?.height ||
+                document.documentElement.clientHeight ||
+                window.innerHeight;
+        } else {
+            // Desktop: Normal
+            viewportHeight = window.innerHeight;
+        }
+
+        const totalHeight = document.documentElement.scrollHeight - viewportHeight; // ⚡ FIX!
         const currentScroll = window.scrollY;
         const progress = Math.max(0, Math.min(3.0, (currentScroll / totalHeight) * 3.0));
 
-        // ✅ DEBUG: Log bei größeren Änderungen
+        // ⚡ DEBUG: Mobile Scroll Debug
         const oldProgress = scrollProgress;
         if (process.env.NODE_ENV === 'development' && Math.abs(progress - oldProgress) > 0.05) {
-            console.log(`📊 SCROLL-UPDATE: ${oldProgress.toFixed(3)} → ${progress.toFixed(3)} (Δ${(progress - oldProgress).toFixed(3)})`);
+            console.log(`📱 MOBILE SCROLL-UPDATE: ${oldProgress.toFixed(3)} → ${progress.toFixed(3)}`, {
+                isMobile,
+                windowHeight: window.innerHeight,
+                viewportHeight,
+                visualViewport: window.visualViewport?.height,
+                totalHeight,
+                currentScroll,
+                urlBarDiff: window.innerHeight - (window.visualViewport?.height || window.innerHeight)
+            });
         }
 
         setScrollProgress(progress);
@@ -66,7 +89,28 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [containerRef, sectionsRef, titles, currentTitleIndex, scrollProgress]);
 
-    // ✅ FIX: Enhanced snapToTitleIndex mit doppeltem scrollProgress-Update
+    // ⚡ VISUAL VIEWPORT LISTENER für moderne Browser
+    useEffect(() => {
+        if (window.visualViewport) {
+            const handleVisualViewportChange = () => {
+                // Kurze Verzögerung für Stabilität
+                setTimeout(updateScrollProgress, 100);
+
+                if (process.env.NODE_ENV === 'development') {
+                    console.log('📱 Visual Viewport Changed:', {
+                        height: window.visualViewport.height,
+                        innerHeight: window.innerHeight,
+                        diff: window.innerHeight - window.visualViewport.height
+                    });
+                }
+            };
+
+            window.visualViewport.addEventListener('resize', handleVisualViewportChange);
+            return () => window.visualViewport.removeEventListener('resize', handleVisualViewportChange);
+        }
+    }, [updateScrollProgress]);
+
+    // Enhanced snapToTitleIndex mit doppeltem scrollProgress-Update
     const snapToTitleIndex = useCallback((targetIndex, direction = 'next') => {
         if (isScrollLocked || isSnapping) return;
 
@@ -80,7 +124,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const snapEase = getSnapEasingForTransition(currentTitleIndex, targetIndex);
         const lockDelay = getSnapLockDelayForTransition(currentTitleIndex, targetIndex);
 
-        // ✅ DEBUG: Enhanced Snap-Logging
+        // DEBUG: Enhanced Snap-Logging
         if (process.env.NODE_ENV === 'development') {
             console.log(`🎯 ENHANCED SNAP: ${currentTitleIndex}→${targetIndex}`);
             console.log(`⏱️ Dauer: ${snapDuration}s | Easing: ${snapEase} | Lock: ${lockDelay}ms`);
@@ -97,14 +141,27 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         let targetScroll = 0;
         if (segments[targetIndex]) {
             const targetSegment = segments[targetIndex];
-            const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+
+            // ⚡ MOBILE FIX: Verwende kompensierte Höhe auch beim Snapping
+            const isMobile = window.innerWidth < 768 && 'ontouchstart' in window;
+            let viewportHeight;
+            if (isMobile) {
+                viewportHeight = window.visualViewport?.height ||
+                    document.documentElement.clientHeight ||
+                    window.innerHeight;
+            } else {
+                viewportHeight = window.innerHeight;
+            }
+
+            const totalHeight = document.documentElement.scrollHeight - viewportHeight;
             targetScroll = targetSegment.snapTarget * totalHeight / 3.0;
 
-            // ✅ DEBUG: Snap-Target Details
+            // DEBUG: Snap-Target Details
             if (process.env.NODE_ENV === 'development') {
-                console.log(`📍 Snap Details:`);
+                console.log(`📍 Mobile-Aware Snap Details:`);
                 console.log(`   Target Segment: scrollStart=${targetSegment.scrollStart}, scrollEnd=${targetSegment.scrollEnd}`);
                 console.log(`   Snap Target: ${targetSegment.snapTarget} (${(targetSegment.snapTarget * 40).toFixed(1)}% Debug)`);
+                console.log(`   Viewport Height: ${viewportHeight}px (Mobile: ${isMobile})`);
                 console.log(`   Target Scroll: ${targetScroll}px`);
                 console.log(`   Total Height: ${totalHeight}px`);
             }
@@ -115,25 +172,35 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
             scrollTo: { y: targetScroll },
             ease: snapEase,
             onUpdate: () => {
-                // ✅ FIX: Update während Animation
+                // Update während Animation
                 updateScrollProgress();
             },
             onComplete: () => {
-                // ✅ HAUPTFIX: Doppeltes Update in onComplete
+                // Doppeltes Update in onComplete
                 updateScrollProgress(); // Sofortiges Update
 
                 setTimeout(() => {
                     updateScrollProgress(); // Verzögertes Update für Sicherheit
 
-                    // ✅ DEBUG: Post-Snap Validation
+                    // DEBUG: Post-Snap Validation
                     if (process.env.NODE_ENV === 'development') {
                         const currentScroll = window.scrollY;
-                        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+                        const isMobile = window.innerWidth < 768 && 'ontouchstart' in window;
+                        let viewportHeight;
+                        if (isMobile) {
+                            viewportHeight = window.visualViewport?.height ||
+                                document.documentElement.clientHeight ||
+                                window.innerHeight;
+                        } else {
+                            viewportHeight = window.innerHeight;
+                        }
+                        const totalHeight = document.documentElement.scrollHeight - viewportHeight;
                         const actualProgress = Math.max(0, Math.min(3.0, (currentScroll / totalHeight) * 3.0));
 
-                        console.log(`✅ SNAP COMPLETE: Target ${targetIndex}`);
+                        console.log(`✅ MOBILE-AWARE SNAP COMPLETE: Target ${targetIndex}`);
                         console.log(`📊 Final ScrollProgress: ${actualProgress.toFixed(3)} (${(actualProgress * 40).toFixed(1)}% Debug)`);
                         console.log(`📍 Final Scroll Position: ${currentScroll}px`);
+                        console.log(`📱 Mobile Compensation: ${window.innerHeight - viewportHeight}px`);
 
                         if (targetIndex === 6) {
                             console.log(`📧 NEWSLETTER CHECK: Phase 6 erreicht`);
@@ -158,7 +225,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
                     setIsScrollLocked(false);
                     setIsSnapping(false);
 
-                    // ✅ FIX: Finales Update nach Lock-Release
+                    // Finales Update nach Lock-Release
                     updateScrollProgress();
 
                     if (process.env.NODE_ENV === 'development') {
@@ -169,7 +236,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         });
     }, [isScrollLocked, isSnapping, titles, updateScrollProgress, currentTitleIndex]);
 
-    // ✅ VERBESSERT: handleScrollEvent mit besserer Debouncing
+    // handleScrollEvent mit besserer Debouncing
     const handleScrollEvent = useCallback((event) => {
         if (isScrollLocked || isSnapping) {
             event.preventDefault();
@@ -179,7 +246,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         const now = Date.now();
         const timeSinceLastScroll = now - lastScrollEventRef.current;
 
-        // ✅ FIX: Reduziertes Debouncing für bessere Responsivität
+        // Reduziertes Debouncing für bessere Responsivität
         if (timeSinceLastScroll < 50) return; // 100ms → 50ms
 
         lastScrollEventRef.current = now;
@@ -189,7 +256,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         if (delta > 0) {
             const nextIndex = Math.min(currentTitleIndex + 1, maxIndex);
             if (nextIndex !== currentTitleIndex) {
-                // ✅ DEBUG: Scroll Direction
+                // DEBUG: Scroll Direction
                 if (process.env.NODE_ENV === 'development' && nextIndex === 6) {
                     console.log(`⬇️ SCROLL DOWN zu Phase 6 (Newsletter)`);
                 }
@@ -198,7 +265,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         } else if (delta < 0) {
             const prevIndex = Math.max(currentTitleIndex - 1, 0);
             if (prevIndex !== currentTitleIndex) {
-                // ✅ DEBUG: Scroll Direction
+                // DEBUG: Scroll Direction
                 if (process.env.NODE_ENV === 'development' && currentTitleIndex === 6) {
                     console.log(`⬆️ SCROLL UP von Phase 6 (Newsletter)`);
                 }
@@ -207,7 +274,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // Touch Handlers (unverändert aber mit verbessertem Logging)
+    // Touch Handlers
     const touchStartRef = useRef({ y: 0, time: 0 });
     const handleTouchStart = useCallback((event) => {
         if (event.touches.length === 1) {
@@ -247,7 +314,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // Keyboard Navigation (unverändert)
+    // Keyboard Navigation
     const handleKeyboardNavigation = useCallback((direction) => {
         if (isScrollLocked || isSnapping) return;
 
@@ -266,7 +333,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         }
     }, [isScrollLocked, isSnapping, currentTitleIndex, snapToTitleIndex]);
 
-    // Event Listeners Setup (unverändert)
+    // Event Listeners Setup
     useEffect(() => {
         if (!containerRef.current || titles.length === 0) return;
 
@@ -289,7 +356,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         };
     }, [handleScrollEvent, handleTouchStart, handleTouchEnd, titles]);
 
-    // Keyboard Event Listeners (unverändert)
+    // Keyboard Event Listeners
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
@@ -323,18 +390,19 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleKeyboardNavigation, snapToTitleIndex]);
 
-    // Initial Update (mit verbessertem Logging)
+    // Initial Update
     useEffect(() => {
         if (titles.length > 0) {
             updateScrollProgress();
             if (process.env.NODE_ENV === 'development') {
                 console.log(`🚀 useScrollProgress initialisiert mit ${titles.length} Titeln`);
                 console.log(`📊 7 Phasen verfügbar: 0 (Logo) + 1-4 (Titel) + 5 (Carousel) + 6 (Newsletter)`);
+                console.log(`📱 Mobile URL-Bar Fix: Aktiv`);
             }
         }
     }, [titles, updateScrollProgress]);
 
-    // Helper Functions (unverändert)
+    // Helper Functions
     const scrollToSection = useCallback((index) => {
         snapToTitleIndex(index);
     }, [snapToTitleIndex]);
@@ -343,7 +411,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         snapToTitleIndex(index);
     }, [snapToTitleIndex]);
 
-    // ✅ FIX: Verbesserte formattedScrollProgress
+    // Verbesserte formattedScrollProgress
     const formattedScrollProgress = {
         normalized: (Math.min(3.0, Math.max(0, scrollProgress)) * 40).toFixed(0),
         absolute: (scrollProgress * 40).toFixed(0),
@@ -351,7 +419,7 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         phase2: Math.max(0, Math.min(1, scrollProgress - 1)),
         phase3: Math.max(0, scrollProgress - 2),
         percentage: (scrollProgress * 40).toFixed(0) + '%',
-        // ✅ NEU: Newsletter-spezifische Werte
+        // Newsletter-spezifische Werte
         isInNewsletterRange: scrollProgress >= 1.6 && scrollProgress <= 2.0,
         newsletterProgress: scrollProgress >= 1.6 ?
             Math.min(1, (scrollProgress - 1.6) / 0.4).toFixed(3) : '0.000'
@@ -375,11 +443,11 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
         isLogoPhase: currentTitleIndex === 0,
         isTitlePhase: currentTitleIndex >= 1 && currentTitleIndex <= 4,
         isCarouselPhase: currentTitleIndex === 5,
-        isNewsletterPhase: currentTitleIndex === 6, // ✅ FIX: Newsletter Phase
+        isNewsletterPhase: currentTitleIndex === 6,
         currentPhaseDescription:
             currentTitleIndex === 0 ? 'Logo/Newsletter' :
                 currentTitleIndex === 5 ? 'AniTune Carousel' :
-                    currentTitleIndex === 6 ? 'Newsletter CTA' : // ✅ FIX
+                    currentTitleIndex === 6 ? 'Newsletter CTA' :
                         titles[currentTitleIndex - 1]?.text || `Titel ${currentTitleIndex}`,
 
         timingInfo: {
@@ -388,11 +456,12 @@ export function useScrollProgress(containerRef, sectionsRef, titles = []) {
             snapEase: snapTiming.ease,
             currentPhase: currentTitleIndex === 0 ? 'Logo/Newsletter' :
                 currentTitleIndex === 5 ? 'AniTune Carousel' :
-                    currentTitleIndex === 6 ? 'Newsletter CTA' : // ✅ FIX
+                    currentTitleIndex === 6 ? 'Newsletter CTA' :
                         `Titel ${currentTitleIndex}`,
             totalPhases: 7, // 7 Phasen (0-6)
             configurable: true,
-            snapConfig: getSnapConfigDebugInfo()
+            snapConfig: getSnapConfigDebugInfo(),
+            mobileOptimized: true // ⚡ NEU: Mobile Flag
         }
     };
 }
