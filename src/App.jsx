@@ -1,12 +1,12 @@
 // src/App.jsx
-import React from 'react';  // Diese Zeile hinzufügen!
-import Home from './pages/Home';
+import React from 'react';
+import SimplePage from './pages/SimplePage'; // ✅ DIESE ZEILE
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <Home />
+      <SimplePage /> {/* ✅ UND DIESE ZEILE */}
     </div>
   );
 }
