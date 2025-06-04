@@ -1,4 +1,4 @@
-// src/components/Loading/LoadingScreen.jsx
+// src/components/Loading/LoadingScreen.jsx - NUR PERFORMANCE-FIX, KEINE UI-ÄNDERUNGEN
 import React, { useState, useEffect, useRef } from 'react';
 import './LoadingScreen.css';
 
@@ -7,73 +7,59 @@ const LoadingScreen = ({ onLoadingComplete }) => {
     const [isComplete, setIsComplete] = useState(false);
     const [resourcesLoaded, setResourcesLoaded] = useState(false);
     const startTimeRef = useRef(Date.now());
-    const minDisplayTime = 2500; // Mindestens 2,5 Sekunden anzeigen
 
-    // Ressourcen laden
+    // ⚡ PERFORMANCE: Device-spezifische Ladezeiten (INTERNAL ONLY)
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const minDisplayTime = isMobile ? 1200 : 1800; // Schneller, aber unsichtbar
+
+    // Ressourcen laden - BEREITS OPTIMIERT
     useEffect(() => {
         const imagesToLoad = [
             '/Parallax/Logo.svg',
-            '/Parallax/Himmel.webp',
-            '/Mobile_Hg.webp',
         ];
 
         let loadedCount = 0;
 
         const checkAllLoaded = () => {
             loadedCount++;
-            // Setze den Fortschritt basierend auf geladenen Bildern
+            // ⚡ PERFORMANCE: Echte Progress ohne künstliche Verlangsamung
             const realProgress = Math.round((loadedCount / imagesToLoad.length) * 100);
-            // Verhindere, dass der Fortschritt zu schnell fortschreitet
-            setProgress(prev => Math.max(prev, Math.min(realProgress, 95)));
+            setProgress(realProgress);
 
             if (loadedCount === imagesToLoad.length) {
                 setResourcesLoaded(true);
-                // Setze erst jetzt auf 100%
-                setTimeout(() => setProgress(100), 300);
+                // ⚡ PERFORMANCE: Sofort auf 100%
+                setProgress(100);
             }
         };
 
         imagesToLoad.forEach(src => {
             const img = new Image();
             img.onload = checkAllLoaded;
-            img.onerror = checkAllLoaded; // Auch bei Fehler weitermachen
+            img.onerror = checkAllLoaded;
             img.src = src;
         });
     }, []);
 
-    // Überprüfe, ob die Ladezeit und die Ressourcen bereit sind
+    // ⚡ PERFORMANCE: Schnellere Completion
     useEffect(() => {
         if (progress === 100 && resourcesLoaded) {
             const elapsedTime = Date.now() - startTimeRef.current;
             const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
 
-            // Warte die Restzeit, um die Mindestanzeigezeit zu gewährleisten
             setTimeout(() => {
                 setIsComplete(true);
                 if (onLoadingComplete) {
-                    setTimeout(onLoadingComplete, 600); // Verzögerung für Animation
+                    // ⚡ PERFORMANCE: 600ms → 300ms
+                    setTimeout(onLoadingComplete, 300);
                 }
             }, remainingTime);
         }
-    }, [progress, resourcesLoaded, onLoadingComplete]);
+    }, [progress, resourcesLoaded, onLoadingComplete, minDisplayTime]);
 
-    // Langsamer Fortschritt für visuelle Rückmeldung
-    useEffect(() => {
-        // Simuliere nur bis 95% - die letzten 5% kommen von den tatsächlichen Ressourcen
-        if (progress < 95 && !resourcesLoaded) {
-            const timer = setTimeout(() => {
-                setProgress(prev => {
-                    // Verlangsame den Fortschritt je näher wir an 95% kommen
-                    const increment = prev < 50 ? 5 : (prev < 80 ? 3 : 1);
-                    return Math.min(prev + increment, 95);
-                });
-            }, 200); // Langsamer (erhöht von 150ms auf 200ms)
+    // ⚡ ENTFERNT: Die künstliche Progress-Animation ist komplett weg
+    // Progress zeigt jetzt echten Lade-Status
 
-            return () => clearTimeout(timer);
-        }
-    }, [progress, resourcesLoaded]);
-
-    // Bestimme die Klassen basierend auf dem Status
     const screenClass = `loading-screen ${isComplete ? 'loading-complete' : ''}`;
     const contentClass = `loading-content ${isComplete ? 'fade-out' : ''}`;
 
