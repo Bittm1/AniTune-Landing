@@ -104,7 +104,7 @@ export const assetPaths = {
         fallback: '/Parallax/fallback-road.png'
     },
     dog: {
-        default: '/Parallax/Hund.png',
+        default: '/Parallax/Hund.webp',
         fallback: '/Parallax/fallback-Hund.png'
     },
     menge: {
