@@ -64,12 +64,12 @@ function Newsletter() {
             >
                 <input
                     type="email"
-                    placeholder="Deine E-Mail"
+                    placeholder="Erhalte unseren Newsletter"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isSubmitting}
-                    className={`email-input bg-gray-800/80 backdrop-blur-sm placeholder:italic placeholder:text-gray-300 border-2 border-violet-500 px-4 py-2 rounded w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all duration-300 ${isInputHovered ? 'input-hover' : ''} ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onMouseEnter={() => !isSubmitting && setIsInputHovered(true)}
+                    className={`email-input mobile-centered-placeholder bg-gray-800/80 backdrop-blur-sm placeholder:italic placeholder:text-gray-300 border-2 border-violet-500 px-4 py-2 rounded w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all duration-300 text-center ${isInputHovered ? 'input-hover' : ''}`}
+                    onMouseEnter={() => setIsInputHovered(true)}
                     onMouseLeave={() => setIsInputHovered(false)}
                     style={{
                         pointerEvents: 'all', // ✅ Input explizit klickbar
@@ -97,7 +97,7 @@ function Newsletter() {
             {/* ✅ Status-Nachricht */}
             {message && (
                 <div
-                    className="mt-3 text-sm"
+                    className="mt- text-sm"
                     style={{
                         color: message.includes('✅') ? '#4ade80' :
                             message.includes('📧') ? '#fbbf24' : '#ef4444',

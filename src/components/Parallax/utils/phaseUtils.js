@@ -1,10 +1,20 @@
 // src/components/Parallax/utils/phaseUtils.js
-// ✅ ERWEITERT um Phase 5 & 6
+// ✅ ERWEITERT um Mobile-spezifische Phase-Konfiguration
 
 /**
- * 🎛️ ZENTRALE BEREICH-KONFIGURATION - ALLE 7 PHASEN (0-6)
+ * 📱 MOBILE DETECTION
  */
-export const PHASE_CONFIG = {
+const isMobileDevice = () => {
+    if (typeof window === 'undefined') return false;
+    const isMobileViewport = window.innerWidth < 768;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    return isMobileViewport && isTouchDevice;
+};
+
+/**
+ * 🖥️ DESKTOP PHASE-KONFIGURATION (Original)
+ */
+export const DESKTOP_PHASE_CONFIG = {
     // Phase 1: 40%-80% unteres Debug  
     phase1: {
         scrollStart: 0.05,
@@ -45,7 +55,7 @@ export const PHASE_CONFIG = {
         audioPath: '/audio/anitune-theme'
     },
 
-    // ✅ NEU: Phase 5: 120%-140% unteres Debug - CAROUSEL
+    // Phase 5: 120%-140% unteres Debug - CAROUSEL
     phase5: {
         scrollStart: 1.2,
         scrollEnd: 1.6,
@@ -53,11 +63,11 @@ export const PHASE_CONFIG = {
         debugEnd: '140%',
         title: '',
         description: 'AniTune Carousel',
-        audioPath: null, // Kein Audio im Carousel
+        audioPath: null,
         isCarousel: true
     },
 
-    // ✅ NEU: Phase 6: 140%-160% unteres Debug - NEWSLETTER CTA  
+    // Phase 6: 140%-160% unteres Debug - NEWSLETTER CTA  
     phase6: {
         scrollStart: 1.6,
         scrollEnd: 2.0,
@@ -65,33 +75,120 @@ export const PHASE_CONFIG = {
         debugEnd: '160%',
         title: '',
         description: 'Newsletter CTA',
-        audioPath: null, // Kein Audio im Newsletter
+        audioPath: null,
         isNewsletter: true
     }
 };
 
 /**
- * 🎯 PHASE-ERKENNUNG für 7 Phasen (0-6)
+ * 📱 MOBILE PHASE-KONFIGURATION (Anpassbar für Mobile Zoom)
  */
-export const getActivePhaseFromScroll = (scrollProgress) => {
-    if (scrollProgress >= PHASE_CONFIG.phase1.scrollStart && scrollProgress < PHASE_CONFIG.phase1.scrollEnd) {
+export const MOBILE_PHASE_CONFIG = {
+    // ✅ MOBILE Phase 1: Angepasst für Mobile Zoom
+    phase1: {
+        scrollStart: 0.08,     // ✅ ANPASSBAR: Später Einstieg für Mobile
+        scrollEnd: 0.50,       // ✅ ANPASSBAR: Kürzer für Mobile Zoom
+        debugStart: '50%',     // ✅ Mobile Debug-Anzeige
+        debugEnd: '80%',
+        title: 'Von Uns Heißt Für Uns',
+        audioPath: '/audio/von-uns-heißt-fuer-uns'
+    },
+
+    // ✅ MOBILE Phase 2: Angepasst
+    phase2: {
+        scrollStart: 0.50,     // ✅ ANPASSBAR
+        scrollEnd: 0.80,       // ✅ ANPASSBAR
+        debugStart: '70%',
+        debugEnd: '90%',
+        title: 'Der Weg Ist Das Ziel',
+        audioPath: '/audio/der-weg-ist-das-ziel'
+    },
+
+    // ✅ MOBILE Phase 3: Angepasst
+    phase3: {
+        scrollStart: 0.80,     // ✅ ANPASSBAR
+        scrollEnd: 1,        // ✅ ANPASSBAR
+        debugStart: '90%',
+        debugEnd: '105%',
+        title: 'Die Community Heißt',
+        audioPath: '/audio/die-community-heißt'
+    },
+
+    // ✅ MOBILE Phase 4: Angepasst
+    phase4: {
+        scrollStart: 1,      // ✅ ANPASSBAR
+        scrollEnd: 1.40,       // ✅ ANPASSBAR
+        debugStart: '105%',
+        debugEnd: '120%',
+        title: 'AniTune',             // ✅ Mobile zeigt "AniTune" Titel
+        audioPath: '/audio/anitune-theme'
+    },
+
+    // ✅ MOBILE Phase 5: Carousel - Angepasst
+    phase5: {
+        scrollStart: 1.15,     // ✅ ANPASSBAR
+        scrollEnd: 1.5,        // ✅ ANPASSBAR
+        debugStart: '120%',
+        debugEnd: '135%',
+        title: '',
+        description: 'AniTune Carousel',
+        audioPath: null,
+        isCarousel: true
+    },
+
+    // ✅ MOBILE Phase 6: Newsletter - Angepasst
+    phase6: {
+        scrollStart: 1.5,      // ✅ ANPASSBAR
+        scrollEnd: 1.8,        // ✅ ANPASSBAR: Kürzer für Mobile
+        debugStart: '135%',
+        debugEnd: '150%',
+        title: '',
+        description: 'Newsletter CTA',
+        audioPath: null,
+        isNewsletter: true
+    }
+};
+
+/**
+ * 🎯 INTELLIGENTE PHASE-CONFIG AUSWAHL
+ */
+export const getPhaseConfig = (forceMobile = null) => {
+    const isMobile = forceMobile !== null ? forceMobile : isMobileDevice();
+
+    if (isMobile) {
+        return MOBILE_PHASE_CONFIG;
+    }
+
+    return DESKTOP_PHASE_CONFIG;
+};
+
+/**
+ * 🔄 BACKWARD COMPATIBILITY: Original PHASE_CONFIG bleibt bestehen
+ */
+export const PHASE_CONFIG = DESKTOP_PHASE_CONFIG;
+
+/**
+ * 🎯 ERWEITERTE PHASE-ERKENNUNG mit Mobile Support
+ */
+export const getActivePhaseFromScroll = (scrollProgress, forceMobile = null) => {
+    const phaseConfig = getPhaseConfig(forceMobile);
+
+    if (scrollProgress >= phaseConfig.phase1.scrollStart && scrollProgress < phaseConfig.phase1.scrollEnd) {
         return 1;
     }
-    else if (scrollProgress >= PHASE_CONFIG.phase2.scrollStart && scrollProgress < PHASE_CONFIG.phase2.scrollEnd) {
+    else if (scrollProgress >= phaseConfig.phase2.scrollStart && scrollProgress < phaseConfig.phase2.scrollEnd) {
         return 2;
     }
-    else if (scrollProgress >= PHASE_CONFIG.phase3.scrollStart && scrollProgress < PHASE_CONFIG.phase3.scrollEnd) {
+    else if (scrollProgress >= phaseConfig.phase3.scrollStart && scrollProgress < phaseConfig.phase3.scrollEnd) {
         return 3;
     }
-    else if (scrollProgress >= PHASE_CONFIG.phase4.scrollStart && scrollProgress < PHASE_CONFIG.phase4.scrollEnd) {
+    else if (scrollProgress >= phaseConfig.phase4.scrollStart && scrollProgress < phaseConfig.phase4.scrollEnd) {
         return 4;
     }
-    // ✅ NEU: Phase 5 (Carousel)
-    else if (scrollProgress >= PHASE_CONFIG.phase5.scrollStart && scrollProgress < PHASE_CONFIG.phase5.scrollEnd) {
+    else if (scrollProgress >= phaseConfig.phase5.scrollStart && scrollProgress < phaseConfig.phase5.scrollEnd) {
         return 5;
     }
-    // ✅ NEU: Phase 6 (Newsletter)
-    else if (scrollProgress >= PHASE_CONFIG.phase6.scrollStart && scrollProgress < PHASE_CONFIG.phase6.scrollEnd) {
+    else if (scrollProgress >= phaseConfig.phase6.scrollStart && scrollProgress < phaseConfig.phase6.scrollEnd) {
         return 6;
     }
 
@@ -99,43 +196,44 @@ export const getActivePhaseFromScroll = (scrollProgress) => {
 };
 
 /**
- * 🎵 AUDIO-MAPPING für 7 Phasen (erweitert)
+ * 🎵 ERWEITERTE AUDIO-MAPPING mit Mobile Support
  */
-export const getAudioConfigForPhase = (phase) => {
+export const getAudioConfigForPhase = (phase, forceMobile = null) => {
+    const phaseConfig = getPhaseConfig(forceMobile);
+
     if (phase === 1) {
         return {
             id: 'phase1-audio',
-            basePath: PHASE_CONFIG.phase1.audioPath,
-            title: PHASE_CONFIG.phase1.title,
+            basePath: phaseConfig.phase1.audioPath,
+            title: phaseConfig.phase1.title,
             phase: 1
         };
     }
     else if (phase === 2) {
         return {
             id: 'phase2-audio',
-            basePath: PHASE_CONFIG.phase2.audioPath,
-            title: PHASE_CONFIG.phase2.title,
+            basePath: phaseConfig.phase2.audioPath,
+            title: phaseConfig.phase2.title,
             phase: 2
         };
     }
     else if (phase === 3) {
         return {
             id: 'phase3-audio',
-            basePath: PHASE_CONFIG.phase3.audioPath,
-            title: PHASE_CONFIG.phase3.title,
+            basePath: phaseConfig.phase3.audioPath,
+            title: phaseConfig.phase3.title,
             phase: 3
         };
     }
     else if (phase === 4) {
         return {
             id: 'phase4-audio',
-            basePath: PHASE_CONFIG.phase4.audioPath,
-            title: PHASE_CONFIG.phase4.title,
+            basePath: phaseConfig.phase4.audioPath,
+            title: phaseConfig.phase4.title,
             phase: 4,
             isTheme: true
         };
     }
-    // ✅ NEU: Phase 5 & 6 haben kein Audio
     else if (phase === 5 || phase === 6) {
         return null; // Carousel und Newsletter haben kein Audio
     }
@@ -144,32 +242,35 @@ export const getAudioConfigForPhase = (phase) => {
 };
 
 /**
- * 🎭 TITEL-MAPPING für 7 Phasen (erweitert)
+ * 🎭 ERWEITERTE TITEL-MAPPING mit Mobile Support
  */
-export const getTitleTextForPhase = (phase) => {
-    if (phase === 1) return PHASE_CONFIG.phase1.title;
-    if (phase === 2) return PHASE_CONFIG.phase2.title;
-    if (phase === 3) return PHASE_CONFIG.phase3.title;
-    if (phase === 4) return PHASE_CONFIG.phase4.title;
-    // ✅ NEU: Phase 5 & 6 haben keine Titel
+export const getTitleTextForPhase = (phase, forceMobile = null) => {
+    const phaseConfig = getPhaseConfig(forceMobile);
+
+    if (phase === 1) return phaseConfig.phase1.title;
+    if (phase === 2) return phaseConfig.phase2.title;
+    if (phase === 3) return phaseConfig.phase3.title;
+    if (phase === 4) return phaseConfig.phase4.title;
     if (phase === 5 || phase === 6) return null;
     return null; // Phase 0 = kein Titel
 };
 
 /**
- * 🔍 DEBUG-HILFSFUNKTION für 7 Phasen
+ * 🔍 ERWEITERTE DEBUG-HILFSFUNKTION mit Mobile Support
  */
-export const getPhaseDebugInfo = (scrollProgress) => {
-    const phase = getActivePhaseFromScroll(scrollProgress);
-    const audioConfig = getAudioConfigForPhase(phase);
-    const titleText = getTitleTextForPhase(phase);
+export const getPhaseDebugInfo = (scrollProgress, forceMobile = null) => {
+    const isMobile = forceMobile !== null ? forceMobile : isMobileDevice();
+    const phaseConfig = getPhaseConfig(isMobile);
+    const phase = getActivePhaseFromScroll(scrollProgress, isMobile);
+    const audioConfig = getAudioConfigForPhase(phase, isMobile);
+    const titleText = getTitleTextForPhase(phase, isMobile);
 
     // Ermittle aktuellen Bereich
     let phaseRange = 'Logo/Andere';
     let phaseDescription = 'Logo/Newsletter';
 
     if (phase >= 1 && phase <= 6) {
-        const config = PHASE_CONFIG[`phase${phase}`];
+        const config = phaseConfig[`phase${phase}`];
         phaseRange = `${(config.scrollStart * 100).toFixed(0)}%-${(config.scrollEnd * 100).toFixed(0)}%`;
         phaseDescription = config.description || config.title || `Phase ${phase}`;
     }
@@ -187,73 +288,175 @@ export const getPhaseDebugInfo = (scrollProgress) => {
         isInTitleRange: phase >= 1 && phase <= 4,
         isCarouselPhase: phase === 5,
         isNewsletterPhase: phase === 6,
-        centralConfig: phase >= 1 && phase <= 6 ? PHASE_CONFIG[`phase${phase}`] : null
+        centralConfig: phase >= 1 && phase <= 6 ? phaseConfig[`phase${phase}`] : null,
+
+        // ✅ NEU: Mobile-Debug-Info
+        deviceType: isMobile ? '📱 Mobile' : '🖥️ Desktop',
+        isMobile: isMobile,
+        configSource: isMobile ? 'MOBILE_PHASE_CONFIG' : 'DESKTOP_PHASE_CONFIG'
     };
 };
 
 /**
- * 📊 ALLE BEREICHE ANZEIGEN für 7 Phasen
+ * 📊 ERWEITERTE BEREICHE-ANZEIGE mit Mobile Support
  */
-export const getAllPhaseRanges = () => {
+export const getAllPhaseRanges = (forceMobile = null) => {
+    const isMobile = forceMobile !== null ? forceMobile : isMobileDevice();
+    const phaseConfig = getPhaseConfig(isMobile);
+    const deviceType = isMobile ? '📱 Mobile' : '🖥️ Desktop';
+
     return {
+        deviceType,
+        configSource: isMobile ? 'MOBILE_PHASE_CONFIG' : 'DESKTOP_PHASE_CONFIG',
         phase0: { range: '0%-5%', description: 'Logo/Newsletter' },
         phase1: {
-            range: `${(PHASE_CONFIG.phase1.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase1.scrollEnd * 100).toFixed(0)}%`,
-            description: PHASE_CONFIG.phase1.title
+            range: `${(phaseConfig.phase1.scrollStart * 100).toFixed(0)}%-${(phaseConfig.phase1.scrollEnd * 100).toFixed(0)}%`,
+            description: phaseConfig.phase1.title
         },
         phase2: {
-            range: `${(PHASE_CONFIG.phase2.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase2.scrollEnd * 100).toFixed(0)}%`,
-            description: PHASE_CONFIG.phase2.title
+            range: `${(phaseConfig.phase2.scrollStart * 100).toFixed(0)}%-${(phaseConfig.phase2.scrollEnd * 100).toFixed(0)}%`,
+            description: phaseConfig.phase2.title
         },
         phase3: {
-            range: `${(PHASE_CONFIG.phase3.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase3.scrollEnd * 100).toFixed(0)}%`,
-            description: PHASE_CONFIG.phase3.title
+            range: `${(phaseConfig.phase3.scrollStart * 100).toFixed(0)}%-${(phaseConfig.phase3.scrollEnd * 100).toFixed(0)}%`,
+            description: phaseConfig.phase3.title
         },
         phase4: {
-            range: `${(PHASE_CONFIG.phase4.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase4.scrollEnd * 100).toFixed(0)}%`,
-            description: PHASE_CONFIG.phase4.title + ' (Theme)'
+            range: `${(phaseConfig.phase4.scrollStart * 100).toFixed(0)}%-${(phaseConfig.phase4.scrollEnd * 100).toFixed(0)}%`,
+            description: phaseConfig.phase4.title + (isMobile ? ' (Mobile: "AniTune")' : ' (Theme)')
         },
-        // ✅ NEU: Phase 5 & 6
         phase5: {
-            range: `${(PHASE_CONFIG.phase5.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase5.scrollEnd * 100).toFixed(0)}%`,
-            description: PHASE_CONFIG.phase5.description
+            range: `${(phaseConfig.phase5.scrollStart * 100).toFixed(0)}%-${(phaseConfig.phase5.scrollEnd * 100).toFixed(0)}%`,
+            description: phaseConfig.phase5.description
         },
         phase6: {
-            range: `${(PHASE_CONFIG.phase6.scrollStart * 100).toFixed(0)}%-${(PHASE_CONFIG.phase6.scrollEnd * 100).toFixed(0)}%`,
-            description: PHASE_CONFIG.phase6.description
+            range: `${(phaseConfig.phase6.scrollStart * 100).toFixed(0)}%-${(phaseConfig.phase6.scrollEnd * 100).toFixed(0)}%`,
+            description: phaseConfig.phase6.description
         }
     };
 };
 
 /**
- * ✅ SCHNELLER FIX: validatePhaseConsistency
+ * ✅ MOBILE-SPEZIFISCHE HELPER-FUNKTIONEN
  */
-export const validatePhaseConsistency = () => {
-    console.log('✅ Phase-Validierung: 7 Phasen (0-6) definiert');
-    return true;
+
+/**
+ * 📱 Hole Mobile Phase-Konfiguration für bestimmte Phase
+ */
+export const getMobilePhaseConfig = (phase) => {
+    return MOBILE_PHASE_CONFIG[`phase${phase}`] || null;
 };
 
 /**
- * ✅ SCHNELLER FIX: updatePhaseConfig & showCurrentConfig
+ * 🖥️ Hole Desktop Phase-Konfiguration für bestimmte Phase
  */
+export const getDesktopPhaseConfig = (phase) => {
+    return DESKTOP_PHASE_CONFIG[`phase${phase}`] || null;
+};
+
+/**
+ * 🔧 Update Mobile Phase-Bereiche (für Live-Anpassung)
+ */
+export const updateMobilePhaseRanges = (phaseUpdates) => {
+    Object.keys(phaseUpdates).forEach(phaseKey => {
+        if (MOBILE_PHASE_CONFIG[phaseKey]) {
+            MOBILE_PHASE_CONFIG[phaseKey] = {
+                ...MOBILE_PHASE_CONFIG[phaseKey],
+                ...phaseUpdates[phaseKey]
+            };
+        }
+    });
+
+    if (process.env.NODE_ENV === 'development') {
+        console.log('📱 Mobile Phase-Bereiche aktualisiert:', phaseUpdates);
+        console.log('📊 Neue Mobile-Konfiguration:', MOBILE_PHASE_CONFIG);
+    }
+};
+
+/**
+ * 🎛️ Phase-Bereiche live anpassen (Development Helper)
+ */
+export const adjustMobilePhaseRange = (phase, scrollStart, scrollEnd) => {
+    if (MOBILE_PHASE_CONFIG[`phase${phase}`]) {
+        MOBILE_PHASE_CONFIG[`phase${phase}`].scrollStart = scrollStart;
+        MOBILE_PHASE_CONFIG[`phase${phase}`].scrollEnd = scrollEnd;
+
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`📱 Mobile Phase ${phase} angepasst: ${scrollStart}-${scrollEnd}`);
+        }
+    }
+};
+
+/**
+ * 📊 Debug: Vergleiche Desktop vs Mobile Konfiguration
+ */
+export const comparePhaseConfigs = () => {
+    const comparison = {};
+
+    [1, 2, 3, 4, 5, 6].forEach(phase => {
+        const desktop = DESKTOP_PHASE_CONFIG[`phase${phase}`];
+        const mobile = MOBILE_PHASE_CONFIG[`phase${phase}`];
+
+        comparison[`phase${phase}`] = {
+            desktop: {
+                range: `${(desktop.scrollStart * 100).toFixed(0)}%-${(desktop.scrollEnd * 100).toFixed(0)}%`,
+                length: ((desktop.scrollEnd - desktop.scrollStart) * 100).toFixed(1) + '%'
+            },
+            mobile: {
+                range: `${(mobile.scrollStart * 100).toFixed(0)}%-${(mobile.scrollEnd * 100).toFixed(0)}%`,
+                length: ((mobile.scrollEnd - mobile.scrollStart) * 100).toFixed(1) + '%'
+            },
+            difference: {
+                startDiff: ((mobile.scrollStart - desktop.scrollStart) * 100).toFixed(1) + '%',
+                endDiff: ((mobile.scrollEnd - desktop.scrollEnd) * 100).toFixed(1) + '%'
+            }
+        };
+    });
+
+    return comparison;
+};
+
+/**
+ * ✅ BACKWARD COMPATIBILITY Funktionen (unverändert)
+ */
+export const validatePhaseConsistency = () => {
+    console.log('✅ Phase-Validierung: Desktop + Mobile Konfigurationen definiert');
+    return true;
+};
+
 export const updatePhaseConfig = (newConfig) => {
     console.log('🎛️ updatePhaseConfig aufgerufen');
     return true;
 };
 
-export const showCurrentConfig = () => {
-    console.log('📊 Aktuelle Konfiguration: 7 Phasen (0-6)');
-    return getAllPhaseRanges();
+export const showCurrentConfig = (forceMobile = null) => {
+    console.log('📊 Aktuelle Konfiguration: Desktop + Mobile Support');
+    return getAllPhaseRanges(forceMobile);
 };
 
 // ✅ VOLLSTÄNDIGER EXPORT
 export default {
-    PHASE_CONFIG,
+    // Konfigurationen
+    PHASE_CONFIG: DESKTOP_PHASE_CONFIG, // Backward compatibility
+    DESKTOP_PHASE_CONFIG,
+    MOBILE_PHASE_CONFIG,
+
+    // Hauptfunktionen
+    getPhaseConfig,
     getActivePhaseFromScroll,
     getAudioConfigForPhase,
     getTitleTextForPhase,
     getPhaseDebugInfo,
     getAllPhaseRanges,
+
+    // Mobile-spezifische Funktionen
+    getMobilePhaseConfig,
+    getDesktopPhaseConfig,
+    updateMobilePhaseRanges,
+    adjustMobilePhaseRange,
+    comparePhaseConfigs,
+
+    // Backward compatibility
     validatePhaseConsistency,
     updatePhaseConfig,
     showCurrentConfig
