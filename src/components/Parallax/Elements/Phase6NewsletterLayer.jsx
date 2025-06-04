@@ -1,10 +1,10 @@
-// src/components/Parallax/Elements/Phase6NewsletterLayer.jsx - KORRIGIERT mit Blur Container
+// src/components/Parallax/Elements/Phase6NewsletterLayer.jsx - Newsletter + Impressum
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import Newsletter from '../../Newsletter/Newsletter';
 import { getPositionFromSegments } from '../utils/animationUtils';
-import { PHASE_CONFIG, getPhaseDebugInfo } from '../utils/phaseUtils';
+import { PHASE_CONFIG } from '../utils/phaseUtils';
 
 const Phase6NewsletterLayer = ({
     scrollProgress,
@@ -13,200 +13,268 @@ const Phase6NewsletterLayer = ({
     hasSubscribed,
     onSubscriptionChange
 }) => {
-    // ✅ KORRIGIERT: Newsletter soll über Phase 4 Logo enden
+    const [showImpressum, setShowImpressum] = useState(false);
+
+    // Newsletter-Segment - IN DER SONNE
     const newsletterSegment = useMemo(() => [{
         scrollStart: PHASE_CONFIG.phase6.scrollStart, // 1.6 (64% Debug)
         scrollEnd: PHASE_CONFIG.phase6.scrollEnd,     // 2.0 (80% Debug)
-        posStart: 100,       // Startet weit unten (off-screen)
-        posEnd: -10,         // ✅ ENDET über Phase 4 Logo (-10vh = über Mitte)
+        posStart: 100,       // Startet unten
+        posEnd: -40,         // ✅ HOCH IN DER SONNE (-40vh = weit über Logo)
         opacityStart: 0.0,   // Startet unsichtbar
         opacityEnd: 1.0      // Endet voll sichtbar
     }], []);
 
-    // Scroll-basierte Position
-    const verticalPosition = getPositionFromSegments(newsletterSegment, scrollProgress, 'posStart', 'posEnd');
-    const opacity = getPositionFromSegments(newsletterSegment, scrollProgress, 'opacityStart', 'opacityEnd');
+    // Impressum-Segment - ERSCHEINT FRÜHER
+    const impressumSegment = useMemo(() => [{
+        scrollStart: 1.5,    // ✅ NOCH FRÜHER: bei Phase 5 Ende (60% Debug)
+        scrollEnd: PHASE_CONFIG.phase6.scrollEnd,     // 2.0 (80% Debug)
+        posStart: 50,        // ✅ WENIGER off-screen
+        posEnd: 0,           // ✅ NORMAL Position (0vh = an richtiger Stelle)
+        opacityStart: 0.0,   // Startet unsichtbar
+        opacityEnd: 1.0      // Endet voll sichtbar
+    }], []);
 
-    // ✅ KORRIGIERT: Newsletter zeigen auch wenn subscribed (für Demo/Testing)
-    if (scrollProgress < PHASE_CONFIG.phase6.scrollStart ||
-        scrollProgress > PHASE_CONFIG.phase6.scrollEnd + 0.1) {
+    // Newsletter Position
+    const newsletterVerticalPosition = getPositionFromSegments(newsletterSegment, scrollProgress, 'posStart', 'posEnd');
+    const newsletterOpacity = getPositionFromSegments(newsletterSegment, scrollProgress, 'opacityStart', 'opacityEnd');
+
+    // Impressum Position
+    const impressumVerticalPosition = getPositionFromSegments(impressumSegment, scrollProgress, 'posStart', 'posEnd');
+    const impressumOpacity = getPositionFromSegments(impressumSegment, scrollProgress, 'opacityStart', 'opacityEnd');
+
+    // Sichtbarkeitsprüfung
+    const showNewsletter = scrollProgress >= PHASE_CONFIG.phase6.scrollStart &&
+        scrollProgress <= PHASE_CONFIG.phase6.scrollEnd + 0.1;
+    const showImpressumContainer = scrollProgress >= 1.5 &&
+        scrollProgress <= impressumSegment[0].scrollEnd + 0.1;
+
+    if (!showNewsletter && !showImpressumContainer) {
         return null;
     }
 
     return (
         <ErrorBoundary>
-            <div
-                className="phase6-newsletter-container"
-                style={{
-                    position: 'fixed',
-                    top: '50%',
-                    right: '5%', // ✅ RECHTS im Bild positioniert
-                    transform: `translateY(-50%) translateY(${verticalPosition}vh)`,
-                    width: '380px', // ✅ Etwas breiter für Impressum
-                    maxWidth: '90vw', // ✅ Responsive
-                    zIndex: 35, // ✅ Über Logo (Logo hat zIndex 30)
-                    pointerEvents: 'all',
-                    opacity: Math.max(0, Math.min(1, opacity)),
-                    transition: isScrollLocked ? 'none' : 'all 0.4s ease-out'
-                }}
-            >
-                {/* ✅ NEUER: Blur Container mit Impressum */}
-                <div style={{
-                    background: 'rgba(0, 18, 53, 0.85)', // Dunkles Blau mit Transparenz
-                    backdropFilter: 'blur(20px)',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    padding: '20px', // ✅ Etwas weniger Padding für mehr Platz
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-                    textAlign: 'center'
-                }}>
-                    {/* Header */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <h2 style={{
-                            fontFamily: 'Lobster, cursive, sans-serif',
-                            fontSize: '1.8rem',
-                            fontWeight: 'bold',
-                            color: 'white',
-                            textShadow: '0 0 15px rgba(168, 128, 255, 0.8)',
-                            margin: '0 0 8px 0',
-                            letterSpacing: '1px'
-                        }}>
-                            {hasSubscribed ? '✅ Bereits angemeldet!' : 'Noch nicht angemeldet?'}
-                        </h2>
-                        <p style={{
-                            fontSize: '0.9rem',
-                            color: 'rgba(255, 255, 255, 0.85)',
-                            textShadow: '0 2px 4px rgba(0, 0, 0, 0.6)',
-                            margin: 0,
-                            lineHeight: '1.4'
-                        }}>
-                            {hasSubscribed ? 'Du erhältst bereits Updates! 🎌' : 'Verpasse keine Updates! 🎌'}
-                        </p>
-                    </div>
-
-                    {/* Newsletter Komponente - nur zeigen wenn nicht subscribed */}
-                    {!hasSubscribed && (
-                        <div style={{ marginBottom: '15px' }}>
-                            <Newsletter onSubscriptionChange={onSubscriptionChange} />
-                        </div>
-                    )}
-
-                    {/* Wenn bereits subscribed, zeige Bestätigung */}
-                    {hasSubscribed && (
-                        <div style={{
-                            marginBottom: '15px',
-                            padding: '12px',
-                            background: 'rgba(76, 175, 80, 0.2)',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(76, 175, 80, 0.4)'
-                        }}>
-                            <div style={{ fontSize: '0.9rem', color: 'rgba(76, 175, 80, 1)' }}>
-                                ✅ Newsletter-Anmeldung erfolgreich!
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ✅ ECHTES IMPRESSUM */}
+            {/* ✅ NEWSLETTER - HOCH IN DER SONNE - KLICKBAR FIX */}
+            {showNewsletter && (
+                <div
+                    className="phase6-newsletter-container"
+                    style={{
+                        position: 'fixed',
+                        top: '15%',           // ✅ HÖHER - weit in der Sonne
+                        left: '50%',          // ✅ ZENTRAL horizontal  
+                        transform: `translate(-50%, -50%) translateY(${newsletterVerticalPosition}vh)`, // ✅ ZENTRAL + Movement
+                        width: '80%',         // ✅ WIE PHASE 0
+                        maxWidth: '500px',    // ✅ WIE PHASE 0
+                        zIndex: 60,           // ✅ HÖHER: Über allem
+                        pointerEvents: 'all', // ✅ EXPLIZIT
+                        opacity: Math.max(0, Math.min(1, newsletterOpacity)),
+                        transition: isScrollLocked ? 'none' : 'all 0.4s ease-out'
+                    }}
+                >
+                    {/* ✅ NEWSLETTER-WRAPPER - KLICKBAR */}
                     <div style={{
-                        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                        paddingTop: '12px',
-                        fontSize: '0.65rem',
-                        color: 'rgba(255, 255, 255, 0.6)',
-                        lineHeight: '1.3',
-                        textAlign: 'left'
+                        pointerEvents: 'all',
+                        position: 'relative',
+                        zIndex: 1
                     }}>
-                        <div style={{ marginBottom: '6px', textAlign: 'center' }}>
-                            <strong style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.7rem' }}>
-                                Impressum
-                            </strong>
-                        </div>
+                        {/* ✅ IDENTISCHES DESIGN WIE PHASE 0 */}
+                        {!hasSubscribed && (
+                            <div style={{ pointerEvents: 'all' }}>
+                                <Newsletter onSubscriptionChange={onSubscriptionChange} />
+                            </div>
+                        )}
 
-                        <div style={{ marginBottom: '3px' }}>
-                            <strong>Michael Schernthaner</strong>
-                        </div>
-                        <div style={{ marginBottom: '2px' }}>
-                            Bruchsaler Straße 12
-                        </div>
-                        <div style={{ marginBottom: '4px' }}>
-                            10715 Berlin
-                        </div>
-
-                        <div style={{ marginBottom: '2px' }}>
-                            <strong>Kontakt:</strong>
-                        </div>
-                        <div style={{ marginBottom: '1px' }}>
-                            Tel: <a href="tel:+4917636155061" style={{ color: 'rgba(168, 128, 255, 0.8)', textDecoration: 'none' }}>
-                                +49 17636155061
-                            </a>
-                        </div>
-                        <div style={{ marginBottom: '4px' }}>
-                            E-Mail: <a href="mailto:admin@anitune.com" style={{ color: 'rgba(168, 128, 255, 0.8)', textDecoration: 'none' }}>
-                                admin@anitune.com
-                            </a>
-                        </div>
-
-                        <div style={{ fontSize: '0.6rem', opacity: 0.7, textAlign: 'center' }}>
-                            Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)
-                        </div>
+                        {/* ✅ EINFACHE SUCCESS MESSAGE wie Phase 0 */}
+                        {hasSubscribed && (
+                            <div style={{
+                                textAlign: 'center',
+                                background: 'rgba(76, 175, 80, 0.9)',
+                                padding: '20px',
+                                borderRadius: '15px',
+                                color: 'white',
+                                backdropFilter: 'blur(20px)',
+                                pointerEvents: 'all'
+                            }}>
+                                <h3 style={{ margin: '0 0 10px 0', fontFamily: 'Lobster, cursive' }}>
+                                    ✅ Bereits angemeldet!
+                                </h3>
+                                <p style={{ margin: 0, fontSize: '1rem' }}>
+                                    Du erhältst bereits unsere Updates.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
+            )}
 
-                {/* ✅ DEVELOPMENT: Enhanced Debug mit Position-Info */}
-                {process.env.NODE_ENV === 'development' && (
-                    <div style={{
-                        position: 'absolute',
-                        left: '-350px', // ✅ Angepasst für breiteren Newsletter
-                        top: '0',
-                        background: 'rgba(255, 107, 107, 0.9)',
-                        color: 'white',
-                        padding: '10px',
-                        borderRadius: '6px',
-                        fontSize: '10px',
-                        fontFamily: 'monospace',
-                        lineHeight: '1.3',
+            {/* ✅ IMPRESSUM-CONTAINER - UNTEN RECHTS - VEREINFACHT */}
+            {showImpressumContainer && (
+                <div
+                    className="impressum-container"
+                    style={{
+                        position: 'fixed',
+                        bottom: '20px',       // ✅ FESTE POSITION
+                        right: '20px',        // ✅ FESTE POSITION
+                        // KEIN transform mehr - direkte Position
+                        zIndex: 50,           // ✅ HÖHER: Über allem
                         pointerEvents: 'all',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        minWidth: '280px'
-                    }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                            📧 Phase 6: Newsletter + ECHTES Impressum
-                        </div>
-                        <div>ScrollProgress: {scrollProgress.toFixed(3)}</div>
-                        <div>Debug %: {(scrollProgress * 40).toFixed(1)}%</div>
-                        <div>Range: 64%-80% Debug (1.6-2.0 scrollProgress)</div>
-                        <div>VerticalPos: {verticalPosition.toFixed(1)}vh</div>
-                        <div>Opacity: {opacity.toFixed(2)}</div>
-                        <div>Position: Rechts (5% from right)</div>
-                        <div>Target: Über Phase 4 Logo (-10vh)</div>
+                        opacity: Math.max(0, Math.min(1, impressumOpacity)),
+                        transition: isScrollLocked ? 'none' : 'opacity 0.4s ease-out'
+                    }}
+                >
+                    {/* ✅ IMPRESSUM BUTTON */}
+                    <button
+                        onClick={() => setShowImpressum(!showImpressum)}
+                        style={{
+                            background: 'rgba(0, 18, 53, 0.85)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            borderRadius: '12px',
+                            color: 'white',
+                            padding: '12px 20px',
+                            fontSize: '0.9rem',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                            fontFamily: 'Lobster, cursive, sans-serif'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.transform = 'scale(1.05)';
+                            e.target.style.boxShadow = '0 6px 20px rgba(168, 128, 255, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.transform = 'scale(1)';
+                            e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+                        }}
+                    >
+                        📋 Impressum
+                    </button>
 
-                        <div style={{ marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '4px' }}>
-                            <div style={{ fontSize: '9px', color: '#ffff00' }}>
-                                📍 Movement: 100vh → -10vh
-                            </div>
-                            <div style={{ fontSize: '8px', color: '#ccc' }}>
-                                Start: Off-screen unten
-                            </div>
-                            <div style={{ fontSize: '8px', color: '#ccc' }}>
-                                End: Über Phase 4 Logo
-                            </div>
-                        </div>
+                    {/* ✅ IMPRESSUM POPUP - LEGAL KONFORM */}
+                    {showImpressum && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                bottom: '60px',
+                                right: '0',
+                                background: 'rgba(0, 18, 53, 0.95)',
+                                backdropFilter: 'blur(25px)',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                borderRadius: '15px',
+                                padding: '20px',
+                                color: 'white',
+                                fontSize: '0.8rem',
+                                lineHeight: '1.4',
+                                minWidth: '280px',
+                                maxWidth: '350px',
+                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                                animation: showImpressum ? 'fadeInUp 0.3s ease-out' : 'none'
+                            }}
+                        >
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setShowImpressum(false)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '10px',
+                                    right: '10px',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    fontSize: '1.2rem',
+                                    cursor: 'pointer',
+                                    padding: '0',
+                                    width: '24px',
+                                    height: '24px'
+                                }}
+                            >
+                                ×
+                            </button>
 
-                        <div style={{ color: '#00ff00', fontSize: '9px', marginTop: '4px' }}>
-                            ✅ Blur Container + ECHTES Impressum | Rechts positioniert
-                        </div>
+                            {/* Header */}
+                            <div style={{
+                                marginBottom: '15px',
+                                paddingBottom: '10px',
+                                borderBottom: '1px solid rgba(255, 255, 255, 0.2)'
+                            }}>
+                                <h3 style={{
+                                    margin: 0,
+                                    fontFamily: 'Lobster, cursive',
+                                    fontSize: '1.2rem',
+                                    color: 'rgba(168, 128, 255, 1)'
+                                }}>
+                                    Impressum
+                                </h3>
+                            </div>
 
-                        {(() => {
-                            const debugInfo = getPhaseDebugInfo(scrollProgress);
-                            return (
-                                <div style={{ fontSize: '9px', color: '#ffff00', marginTop: '2px' }}>
-                                    Central Phase: {debugInfo.phase} ({debugInfo.phaseDescription})
+                            {/* ✅ ECHTES IMPRESSUM - LEGAL KONFORM */}
+                            <div style={{ textAlign: 'left' }}>
+                                <div style={{ marginBottom: '8px' }}>
+                                    <strong>Michael Schernthaner</strong>
                                 </div>
-                            );
-                        })()}
-                    </div>
-                )}
-            </div>
+                                <div style={{ marginBottom: '4px' }}>
+                                    Bruchsaler Straße 12
+                                </div>
+                                <div style={{ marginBottom: '12px' }}>
+                                    10715 Berlin
+                                </div>
+
+                                <div style={{ marginBottom: '4px' }}>
+                                    <strong>Kontakt:</strong>
+                                </div>
+                                <div style={{ marginBottom: '2px' }}>
+                                    Tel: <a
+                                        href="tel:+4917636155061"
+                                        style={{
+                                            color: 'rgba(168, 128, 255, 0.9)',
+                                            textDecoration: 'none'
+                                        }}
+                                    >
+                                        +49 17636155061
+                                    </a>
+                                </div>
+                                <div style={{ marginBottom: '12px' }}>
+                                    E-Mail: <a
+                                        href="mailto:admin@anitune.com"
+                                        style={{
+                                            color: 'rgba(168, 128, 255, 0.9)',
+                                            textDecoration: 'none'
+                                        }}
+                                    >
+                                        admin@anitune.com
+                                    </a>
+                                </div>
+
+                                <div style={{
+                                    fontSize: '0.7rem',
+                                    opacity: 0.8,
+                                    textAlign: 'center',
+                                    paddingTop: '10px',
+                                    borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                                }}>
+                                    Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* ✅ CSS Animation für Impressum Popup */}
+            <style jsx>{`
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            `}</style>
         </ErrorBoundary>
     );
 };

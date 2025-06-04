@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/TitleLayer.jsx - MIT ZENTRALER PHASE-DEFINITION - DEBUG NUR LOKAL
+// src/components/Parallax/Elements/TitleLayer.jsx - FIX für Phase 5 & 6
 
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
@@ -52,13 +52,43 @@ const TitleLayer = React.memo(({
         );
     }
 
-    // Titel-Phasen 1-3 - Zentrale Logik
-    const titleArrayIndex = activePhase - 1; // Phase 1 → titles[0]
+    // ✅ FIX: Phase 5 & 6 haben keine Titel - früh beenden
+    if (activePhase >= 5) {
+        return (
+            <ErrorBoundary>
+                <div
+                    className="title-layer-container no-title-phase"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 20,
+                        pointerEvents: 'none'
+                    }}
+                >
+                    {/* ✅ NUR DEVELOPMENT: Debug-Info für Phase 5 & 6 */}
+                    {process.env.NODE_ENV === 'development' && (
+                        <NoTitlePhaseDebugPanel
+                            scrollProgress={scrollProgress}
+                            activePhase={activePhase}
+                            isScrollLocked={isScrollLocked}
+                        />
+                    )}
+                </div>
+            </ErrorBoundary>
+        );
+    }
+
+    // Titel-Phasen 1-4 - Zentrale Logik
+    const titleArrayIndex = activePhase - 1; // Phase 1 → titles[0], Phase 4 → titles[3]
     const currentTitle = titles[titleArrayIndex];
 
     if (!currentTitle) {
         if (process.env.NODE_ENV === 'development') {
             console.warn(`❌ TITEL-FEHLER: Kein Titel für Phase ${activePhase} gefunden (Array-Index: ${titleArrayIndex})`);
+            console.warn(`📊 Verfügbare Titel: ${titles.length}, Erwartet für Phase ${activePhase}: Index ${titleArrayIndex}`);
             const debugInfo = getPhaseDebugInfo(scrollProgress);
             console.warn('📊 Phase Debug Info:', debugInfo);
         }
@@ -115,7 +145,7 @@ const TitleLayer = React.memo(({
     );
 });
 
-// Titel-Komponente mit zentraler Phase-Logik
+// Titel-Komponente mit zentraler Phase-Logik (unverändert)
 const CentralizedTitle = React.memo(({
     title,
     isActive,
@@ -348,7 +378,7 @@ const CentralizedTitle = React.memo(({
     );
 });
 
-// ✅ NUR DEVELOPMENT: Debug-Panel für Logo-Phase
+// ✅ NUR DEVELOPMENT: Debug-Panel für Logo-Phase (unverändert)
 const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollLocked }) => {
     if (process.env.NODE_ENV !== 'development') return null;
 
@@ -385,7 +415,47 @@ const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollL
     );
 });
 
-// ✅ NUR DEVELOPMENT: Erweiterte Debug-Info mit Validierung
+// ✅ NEU: Debug-Panel für Phase 5 & 6 (keine Titel)
+const NoTitlePhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollLocked }) => {
+    if (process.env.NODE_ENV !== 'development') return null;
+
+    const debugInfo = getPhaseDebugInfo(scrollProgress);
+
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                top: '60px',
+                left: '10px',
+                background: 'rgba(168, 128, 255, 0.8)',
+                color: 'white',
+                padding: '12px',
+                fontSize: '11px',
+                borderRadius: '6px',
+                pointerEvents: 'all',
+                fontFamily: 'monospace',
+                lineHeight: '1.4'
+            }}
+        >
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                {activePhase === 5 ? '🎠' : '📧'} Phase {activePhase} - {debugInfo.phaseDescription} (CENTRALIZED)
+            </div>
+            <div>ScrollProgress: {debugInfo.scrollProgress}</div>
+            <div>Active Phase: {debugInfo.phase}</div>
+            <div>Debug %: {debugInfo.debugPercentage}</div>
+            <div>Range: {debugInfo.phaseRange}</div>
+            <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+            <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8, color: '#ffff00' }}>
+                ✅ KEINE TITEL - Phase {activePhase} korrekt erkannt
+            </div>
+            <div style={{ marginTop: '2px', fontSize: '9px', color: '#90EE90' }}>
+                🎯 Titel-Layer übersprungen (Phase {activePhase} ≥ 5)
+            </div>
+        </div>
+    );
+});
+
+// ✅ NUR DEVELOPMENT: Erweiterte Debug-Info mit Validierung (angepasst)
 const CentralizedDebugPanel = React.memo(({
     scrollProgress,
     activePhase,
@@ -417,15 +487,15 @@ const CentralizedDebugPanel = React.memo(({
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
-                🎭 CENTRALIZED TITEL (SCHRITT 3)
+                🎭 CENTRALIZED TITEL (FIXED)
             </div>
 
             {/* Zentrale Debug-Info */}
             <div>ScrollProgress: {debugInfo.scrollProgress}</div>
             <div>Debug %: {debugInfo.debugPercentage}</div>
-            <div>Active Phase: {debugInfo.phase}/3 (Array: {titleArrayIndex}/2)</div>
+            <div>Active Phase: {debugInfo.phase}/4 (Array: {titleArrayIndex}/3)</div>
             <div>Range: {debugInfo.phaseRange}</div>
-            <div>Snap Index: {currentTitleIndex}/8 (nur Navigation)</div>
+            <div>Snap Index: {currentTitleIndex}/6 (nur Navigation)</div>
 
             {/* Titel-Validierung */}
             <div style={{
@@ -451,7 +521,7 @@ const CentralizedDebugPanel = React.memo(({
                 📍 {debugInfo.phaseRange}: {debugInfo.titleText || 'Kein Titel'}
             </div>
             <div style={{ marginTop: '2px', fontSize: '9px', color: '#a880ff' }}>
-                🔧 SCHRITT 3: Titel folgen zentraler Phase-Definition
+                🔧 FIX: Phase 5 & 6 übersprungen (≥ 5)
             </div>
         </div>
     );
@@ -461,6 +531,7 @@ const CentralizedDebugPanel = React.memo(({
 TitleLayer.displayName = 'CentralizedTitleLayer';
 CentralizedTitle.displayName = 'CentralizedTitle';
 LogoPhaseDebugPanel.displayName = 'LogoPhaseDebugPanel';
+NoTitlePhaseDebugPanel.displayName = 'NoTitlePhaseDebugPanel';
 CentralizedDebugPanel.displayName = 'CentralizedDebugPanel';
 
 export default TitleLayer;
