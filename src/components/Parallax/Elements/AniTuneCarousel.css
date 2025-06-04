@@ -1,4 +1,4 @@
-/* src/components/Parallax/Elements/AniTuneCarousel.css - ERWEITERT für 9 Karten mit Bild-Icons */
+/* src/components/Parallax/Elements/AniTuneCarousel.css - ERWEITERT für 9 Karten mit Desktop + Mobile Navigation */
 
 /* ===== CONTAINER ===== */
 .anitune-carousel-container {
@@ -12,7 +12,6 @@
     justify-content: center;
     align-items: center;
     z-index: 6;
-    /* ✅ DEINE ANPASSUNG: 6 statt 20 */
     pointer-events: none;
 
     /* Von unten hereinfahren */
@@ -75,13 +74,12 @@
 /* ===== NAVIGATION ===== */
 .carousel-navigation {
     position: absolute;
-    top: 50%;
+    top: 45%;
     width: 110%;
     display: flex;
     justify-content: space-between;
     padding: 0 40px;
-    /* ✅ ZURÜCKGESETZT: Original 40px */
-    z-index: 3;
+    z-index: 100;
     pointer-events: none;
 }
 
@@ -97,7 +95,6 @@
     font-weight: bold;
     cursor: pointer;
     pointer-events: all;
-    /* ✅ ZURÜCKGESETZT: Ohne !important */
 
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -114,6 +111,127 @@
 
 .nav-button:active {
     transform: scale(0.95);
+}
+
+/* ===== DESKTOP NAVIGATION (1025px+) ===== */
+@media (min-width: 1025px) {
+    .carousel-navigation {
+        padding: 0 60px;
+        /* Mehr Abstand für Desktop */
+        width: 100%;
+        /* Breiter für Desktop */
+    }
+
+    .nav-button {
+        width: 80px;
+        /* Größer für Desktop */
+        height: 80px;
+        font-size: 32px;
+        /* Größere Icons */
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(15px);
+
+        /* Erweiterte Schatten für Desktop */
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-button:hover {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.6);
+        transform: scale(1.15);
+
+        /* Erweiterte Hover-Effekte für Desktop */
+        box-shadow:
+            0 12px 40px rgba(0, 0, 0, 0.4),
+            0 0 30px rgba(255, 255, 255, 0.3),
+            0 0 60px rgba(168, 128, 255, 0.4);
+
+        /* Glow-Effekt */
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+
+    .nav-button:active {
+        transform: scale(1.05);
+    }
+
+    /* Desktop-spezifische Button-Icons */
+    .nav-prev {
+        margin-left: -10px;
+        /* Bessere Positionierung */
+    }
+
+    .nav-next {
+        margin-right: -10px;
+        /* Bessere Positionierung */
+    }
+}
+
+/* ===== MOBILE NAVIGATION (bis 1024px) ===== */
+@media (max-width: 1024px) {
+    .carousel-navigation {
+        padding: 0 60px;
+        /* Gleich wie Desktop */
+        width: 125%;
+        /* Gleich wie Desktop */
+        top: 50%;
+    }
+
+    .nav-button {
+        width: 30px;
+        /* Gleich wie Desktop */
+        height: 70px;
+        /* Gleich wie Desktop */
+        font-size: 32px;
+        /* Gleich wie Desktop */
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        /* Gleich wie Desktop */
+        background: rgba(255, 255, 255, 0.15);
+        /* Gleich wie Desktop */
+        backdrop-filter: blur(15px);
+        /* Gleich wie Desktop */
+
+        /* Erweiterte Schatten für Mobile */
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-button:hover {
+        background: rgba(255, 255, 255, 0.25);
+        /* Gleich wie Desktop */
+        border-color: rgba(255, 255, 255, 0.6);
+        /* Gleich wie Desktop */
+        transform: scale(1.15);
+        /* Gleich wie Desktop */
+
+        /* Erweiterte Hover-Effekte für Mobile */
+        box-shadow:
+            0 12px 40px rgba(0, 0, 0, 0.4),
+            0 0 30px rgba(255, 255, 255, 0.3),
+            0 0 60px rgba(168, 128, 255, 0.4);
+
+        /* Glow-Effekt */
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+
+    .nav-button:active {
+        transform: scale(1.05);
+        /* Gleich wie Desktop */
+    }
+
+    /* Mobile-spezifische Button-Icons */
+    .nav-prev {
+        margin-left: -10px;
+        /* Gleich wie Desktop */
+    }
+
+    .nav-next {
+        margin-right: -10px;
+        /* Gleich wie Desktop */
+    }
 }
 
 /* ===== KARTEN CONTAINER ===== */
@@ -237,7 +355,7 @@
 /* ===== KARTEN CONTENT ===== */
 .card-content {
     padding: 30px 20px;
-    height: 100%;
+    height: 80%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -249,8 +367,8 @@
 
 /* ✅ ERWEITERT: Icon für Bilder und Fallback */
 .card-icon {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
@@ -283,8 +401,6 @@
     transform: scale(1.05) rotateY(10deg);
 }
 
-/* ✅ ENTFERNT: card-title Styles - Titel sind nicht mehr auf den Karten */
-
 .card-description {
     font-size: 1rem;
     color: rgba(255, 255, 255, 0.8);
@@ -315,36 +431,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
-@media (max-width: 1024px) {
-    .cards-container {
-        max-width: 1200px;
-    }
-
-    .carousel-card {
-        width: 160px;
-        height: 240px;
-    }
-
-    .card-icon {
-        width: 70px;
-        height: 70px;
-    }
-
-    .fixed-title {
-        font-size: 3rem;
-    }
-
-    .sliding-title {
-        font-size: 2rem;
-    }
-
-    .carousel-navigation {
-        padding: 0 20px;
-        /* ✅ ZURÜCKGESETZT: Original responsive Werte */
-    }
-}
-
+/* ===== KLEINERE DEVICES RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
     .carousel-title-section {
         margin-bottom: 40px;
@@ -388,17 +475,6 @@
 
     .card-description {
         font-size: 0.9rem;
-    }
-
-    .nav-button {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-    }
-
-    .carousel-navigation {
-        padding: 0 20px;
-        /* ✅ ZURÜCKGESETZT: Original */
     }
 }
 

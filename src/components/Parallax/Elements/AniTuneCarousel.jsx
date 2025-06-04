@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/AniTuneCarousel.jsx - KORRIGIERT Position
+// src/components/Parallax/Elements/AniTuneCarousel.jsx - KORRIGIERT Position + Meilensteine
 
 import React, { useState, useMemo, useEffect } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
@@ -7,7 +7,7 @@ import { PHASE_CONFIG, getPhaseDebugInfo } from '../utils/phaseUtils';
 import './AniTuneCarousel.css';
 
 const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) => {
-    const [activeCard, setActiveCard] = useState(4);
+    const [activeCard, setActiveCard] = useState(5); // ✅ ANGEPASST: Mittlere Karte bei 10 Karten (Index 5)
     const [transitionDirection, setTransitionDirection] = useState(null);
 
     // ✅ KORRIGIERT: Mehrstufiges Segment-System für bessere Kontrolle
@@ -41,70 +41,67 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         }
     ], []);
 
-    // 9 AniTune-Karten Daten
+    // 10 AniTune-Karten Daten (mit Meilensteine, ohne descriptions)
     const cards = useMemo(() => [
         {
             id: 'discord',
             title: 'Discord',
             icon: '/icons/discord.webp',
-            color: '#5865F2',
-            description: 'Community Chat'
+            color: '#5865F2'
         },
         {
             id: 'podcast',
             title: 'Podcast',
             icon: '/icons/podcast.webp',
-            color: '#FF6B6B',
-            description: 'Anime Talks'
+            color: '#FF6B6B'
         },
         {
             id: 'lizenzen',
             title: 'Lizenzen',
             icon: '/icons/lizenz.webp',
-            color: '#4ECDC4',
-            description: 'Rights & Licenses'
+            color: '#4ECDC4'
         },
         {
             id: 'events',
             title: 'Events',
+            icon: '/icons/events.webp',
+            color: '#45B7D1'
+        },
+        {
+            id: 'meilensteine',
+            title: 'Meilensteine',
             icon: '/icons/meilensteine.png',
-            color: '#45B7D1',
-            description: 'Community Events'
+            color: '#8B5CF6'
         },
         {
             id: 'shop',
-            title: 'Shop',
+            title: 'Merch',
             icon: '/icons/merch.webp',
-            color: '#96CEB4',
-            description: 'Merchandise'
+            color: '#96CEB4'
         },
         {
             id: 'dubbing',
             title: 'Dubbing',
             icon: '/icons/dubbing.webp',
-            color: '#9B59B6',
-            description: 'Voice Acting'
+            color: '#9B59B6'
         },
         {
             id: 'vote',
             title: 'Vote',
             icon: '/icons/vote.webp',
-            color: '#F39C12',
-            description: 'Voting'
+            color: '#F39C12'
         },
         {
             id: 'donations',
             title: 'Donations',
             icon: '/icons/donations.webp',
-            color: '#E74C3C',
-            description: 'Spenden'
+            color: '#E74C3C'
         },
         {
             id: 'katalog',
             title: 'Katalog',
             icon: '/icons/katalog.webp',
-            color: '#2ECC71',
-            description: 'StimmKatalog'
+            color: '#2ECC71'
         }
     ], []);
 
@@ -303,6 +300,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                                             {card.id === 'podcast' && '🎙️'}
                                             {card.id === 'lizenzen' && '📄'}
                                             {card.id === 'events' && '🎉'}
+                                            {card.id === 'meilensteine' && '🏆'}
                                             {card.id === 'shop' && '🛍️'}
                                             {card.id === 'dubbing' && '🎭'}
                                             {card.id === 'vote' && '⭐'}
@@ -310,7 +308,6 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                                             {card.id === 'katalog' && '🎤'}
                                         </div>
                                     </div>
-                                    <p className="card-description">{card.description}</p>
                                 </div>
                             </div>
                         );
@@ -336,7 +333,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                         minWidth: '280px'
                     }}>
                         <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                            🎠 Phase 5: AniTune Carousel (KORRIGIERT)
+                            🎠 Phase 5: AniTune Carousel (10 Karten + Meilensteine)
                         </div>
                         <div>ScrollProgress: {scrollProgress.toFixed(3)}</div>
                         <div>Debug %: {(scrollProgress * 40).toFixed(1)}%</div>
@@ -361,7 +358,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
                         </div>
 
                         <div style={{ color: '#00ff00', fontSize: '9px', marginTop: '4px' }}>
-                            ✅ 3-Segment System | Position korrigiert
+                            ✅ 3-Segment System | 10 Karten inkl. Meilensteine
                         </div>
                     </div>
                 )}
