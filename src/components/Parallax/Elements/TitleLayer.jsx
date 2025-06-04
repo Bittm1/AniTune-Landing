@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/TitleLayer.jsx - FIX für Phase 5 & 6
+// src/components/Parallax/Elements/TitleLayer.jsx - MOBILE PHASE 4 + DEBUG CLEANUP
 
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
@@ -21,6 +21,8 @@ const TitleLayer = React.memo(({
 }) => {
     if (!titles || titles.length === 0) return null;
 
+    // ✅ MOBILE DETECTION
+    const isMobile = window.innerWidth < 768;
     const activePhase = getActivePhaseFromScroll(scrollProgress);
 
     // Phase 0 = Logo/Newsletter - zeige keine Titel
@@ -39,8 +41,8 @@ const TitleLayer = React.memo(({
                         pointerEvents: 'none'
                     }}
                 >
-                    {/* ✅ NUR DEVELOPMENT: Debug-Info für Logo-Phase */}
-                    {process.env.NODE_ENV === 'development' && (
+                    {/* ✅ DEBUG CLEANUP: Nur Desktop */}
+                    {process.env.NODE_ENV === 'development' && !isMobile && (
                         <LogoPhaseDebugPanel
                             scrollProgress={scrollProgress}
                             activePhase={activePhase}
@@ -68,8 +70,8 @@ const TitleLayer = React.memo(({
                         pointerEvents: 'none'
                     }}
                 >
-                    {/* ✅ NUR DEVELOPMENT: Debug-Info für Phase 5 & 6 */}
-                    {process.env.NODE_ENV === 'development' && (
+                    {/* ✅ DEBUG CLEANUP: Nur Desktop */}
+                    {process.env.NODE_ENV === 'development' && !isMobile && (
                         <NoTitlePhaseDebugPanel
                             scrollProgress={scrollProgress}
                             activePhase={activePhase}
@@ -81,8 +83,86 @@ const TitleLayer = React.memo(({
         );
     }
 
-    // Titel-Phasen 1-4 - Zentrale Logik
-    const titleArrayIndex = activePhase - 1; // Phase 1 → titles[0], Phase 4 → titles[3]
+    // ✅ PHASE 4 MOBILE SPEZIALBEHANDLUNG
+    if (activePhase === 4 && isMobile) {
+        // Hardcoded "AniTune" Titel für Mobile Phase 4
+        const mobilePhase4Title = {
+            id: 'mobile-phase4-title',
+            text: 'AniTune',
+            index: 3,
+            position: { top: '50%', left: '50%' },
+            style: {
+                fontSize: '2rem',
+                fontWeight: 700,
+                color: 'white',
+                textShadow: '0 0 15px rgba(0,0,0,0.8), 0 3px 6px rgba(0,0,0,0.6)',
+                fontFamily: 'Lobster, cursive, sans-serif',
+                letterSpacing: '0.5px',
+                textAlign: 'center',
+                transform: 'translateX(-50%)',
+                opacity: 0.95
+            }
+        };
+
+        return (
+            <ErrorBoundary>
+                <div
+                    className="title-layer-container mobile-phase4"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 20,
+                        pointerEvents: 'none'
+                    }}
+                >
+                    <CentralizedTitle
+                        title={mobilePhase4Title}
+                        isActive={true}
+                        isScrollLocked={isScrollLocked}
+                        activePhase={activePhase}
+                        titleArrayIndex={3}
+                        scrollProgress={scrollProgress}
+                        isMobile={true}
+                    />
+                </div>
+            </ErrorBoundary>
+        );
+    }
+
+    // ✅ PHASE 4 DESKTOP: Kein Titel (Logo bleibt)
+    if (activePhase === 4 && !isMobile) {
+        return (
+            <ErrorBoundary>
+                <div
+                    className="title-layer-container desktop-phase4"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 20,
+                        pointerEvents: 'none'
+                    }}
+                >
+                    {/* ✅ DEBUG CLEANUP: Nur Desktop */}
+                    {process.env.NODE_ENV === 'development' && (
+                        <DesktopPhase4DebugPanel
+                            scrollProgress={scrollProgress}
+                            activePhase={activePhase}
+                            isScrollLocked={isScrollLocked}
+                        />
+                    )}
+                </div>
+            </ErrorBoundary>
+        );
+    }
+
+    // Titel-Phasen 1-3 - Zentrale Logik (für alle Geräte)
+    const titleArrayIndex = activePhase - 1; // Phase 1 → titles[0]
     const currentTitle = titles[titleArrayIndex];
 
     if (!currentTitle) {
@@ -126,10 +206,11 @@ const TitleLayer = React.memo(({
                     activePhase={activePhase}
                     titleArrayIndex={titleArrayIndex}
                     scrollProgress={scrollProgress}
+                    isMobile={isMobile}
                 />
 
-                {/* ✅ NUR DEVELOPMENT: Erweiterte Debug-Info mit zentraler Validierung */}
-                {process.env.NODE_ENV === 'development' && (
+                {/* ✅ DEBUG CLEANUP: Nur Desktop */}
+                {process.env.NODE_ENV === 'development' && !isMobile && (
                     <CentralizedDebugPanel
                         scrollProgress={scrollProgress}
                         activePhase={activePhase}
@@ -138,6 +219,7 @@ const TitleLayer = React.memo(({
                         isScrollLocked={isScrollLocked}
                         currentTitleIndex={currentTitleIndex}
                         expectedTitleText={expectedTitleText}
+                        isMobile={isMobile}
                     />
                 )}
             </div>
@@ -145,14 +227,15 @@ const TitleLayer = React.memo(({
     );
 });
 
-// Titel-Komponente mit zentraler Phase-Logik (unverändert)
+// Titel-Komponente mit zentraler Phase-Logik
 const CentralizedTitle = React.memo(({
     title,
     isActive,
     isScrollLocked,
     activePhase,
     titleArrayIndex,
-    scrollProgress
+    scrollProgress,
+    isMobile = false
 }) => {
     const titleRef = useRef(null);
     const lettersRef = useRef([]);
@@ -160,15 +243,15 @@ const CentralizedTitle = React.memo(({
     const currentStateRef = useRef('hidden');
     const lastActivePhaseRef = useRef(0);
 
-    // Letter-Reveal Konfiguration
+    // Letter-Reveal Konfiguration (angepasst für Mobile)
     const config = useMemo(() => ({
-        duration: 0.5,
-        delay: 0.1,
-        stagger: 0.2,
+        duration: isMobile ? 0.4 : 0.5,
+        delay: isMobile ? 0.08 : 0.1,
+        stagger: isMobile ? 0.15 : 0.2,
         ease: 'power2.out',
         startScale: 0.8,
         startBlur: 5,
-    }), []);
+    }), [isMobile]);
 
     // Buchstaben aufteilen
     const letters = useMemo(() => {
@@ -183,7 +266,7 @@ const CentralizedTitle = React.memo(({
         if (!titleRef.current) return;
 
         if (process.env.NODE_ENV === 'development') {
-            console.log(`🎭 CENTRALIZED-REVEAL: "${title.text}" (Phase ${activePhase}) wird eingeblendet`);
+            console.log(`🎭 CENTRALIZED-REVEAL: "${title.text}" (Phase ${activePhase}) wird eingeblendet${isMobile ? ' [MOBILE]' : ' [DESKTOP]'}`);
         }
 
         if (timelineRef.current) {
@@ -196,7 +279,7 @@ const CentralizedTitle = React.memo(({
             onComplete: () => {
                 currentStateRef.current = 'visible';
                 if (process.env.NODE_ENV === 'development') {
-                    console.log(`✅ CENTRALIZED-REVEAL fertig: "${title.text}" (Phase ${activePhase})`);
+                    console.log(`✅ CENTRALIZED-REVEAL fertig: "${title.text}" (Phase ${activePhase})${isMobile ? ' [MOBILE]' : ' [DESKTOP]'}`);
                 }
             }
         });
@@ -220,13 +303,13 @@ const CentralizedTitle = React.memo(({
 
         timelineRef.current = tl;
 
-    }, [title.text, activePhase, config]);
+    }, [title.text, activePhase, config, isMobile]);
 
     const animateOut = useCallback(() => {
         if (!titleRef.current) return;
 
         if (process.env.NODE_ENV === 'development') {
-            console.log(`🎭 CENTRALIZED-HIDE: "${title.text}" (Phase ${activePhase}) wird ausgeblendet`);
+            console.log(`🎭 CENTRALIZED-HIDE: "${title.text}" (Phase ${activePhase}) wird ausgeblendet${isMobile ? ' [MOBILE]' : ' [DESKTOP]'}`);
         }
 
         if (timelineRef.current) {
@@ -262,7 +345,7 @@ const CentralizedTitle = React.memo(({
     useEffect(() => {
         if (activePhase !== lastActivePhaseRef.current) {
             if (process.env.NODE_ENV === 'development') {
-                console.log(`🔄 CENTRALIZED TITEL Phase-Wechsel: ${lastActivePhaseRef.current} → ${activePhase}`);
+                console.log(`🔄 CENTRALIZED TITEL Phase-Wechsel: ${lastActivePhaseRef.current} → ${activePhase}${isMobile ? ' [MOBILE]' : ' [DESKTOP]'}`);
                 console.log(`📊 Phase Debug:`, getPhaseDebugInfo(scrollProgress));
             }
 
@@ -274,13 +357,13 @@ const CentralizedTitle = React.memo(({
 
             lastActivePhaseRef.current = activePhase;
         }
-    }, [activePhase, isActive, animateIn, animateOut, scrollProgress]);
+    }, [activePhase, isActive, animateIn, animateOut, scrollProgress, isMobile]);
 
     // Initialisierung bei Phase-Wechsel
     useEffect(() => {
         if (titleRef.current && lettersRef.current.length > 0) {
             if (process.env.NODE_ENV === 'development') {
-                console.log(`🔧 Initialisiere CENTRALIZED-Titel: "${title.text}" (Phase ${activePhase})`);
+                console.log(`🔧 Initialisiere CENTRALIZED-Titel: "${title.text}" (Phase ${activePhase})${isMobile ? ' [MOBILE]' : ' [DESKTOP]'}`);
             }
             gsap.set(lettersRef.current, {
                 opacity: 0,
@@ -289,7 +372,7 @@ const CentralizedTitle = React.memo(({
             });
             currentStateRef.current = 'hidden';
         }
-    }, [title.text, activePhase, config]);
+    }, [title.text, activePhase, config, isMobile]);
 
     // Cleanup
     useEffect(() => {
@@ -300,13 +383,18 @@ const CentralizedTitle = React.memo(({
         };
     }, [title.text, activePhase]);
 
-    // Styles
+    // Styles (angepasst für Mobile)
     const titleStyles = useMemo(() => ({
         position: 'absolute',
         top: title.position.top,
         left: title.position.left,
         transform: 'translate(-50%, -50%)',
         ...title.style,
+        // Mobile-spezifische Anpassungen
+        ...(isMobile && {
+            fontSize: '1.8rem', // Kleiner für Mobile
+            letterSpacing: '0.3px'
+        }),
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -316,7 +404,7 @@ const CentralizedTitle = React.memo(({
         ...(isScrollLocked && {
             filter: 'brightness(1.1)',
         })
-    }), [title.position, title.style, isScrollLocked]);
+    }), [title.position, title.style, isScrollLocked, isMobile]);
 
     const letterStyles = useMemo(() => ({
         display: 'inline-block',
@@ -334,6 +422,10 @@ const CentralizedTitle = React.memo(({
             `centralized-phase-${activePhase}`
         ];
 
+        if (isMobile) {
+            classes.push('mobile-title');
+        }
+
         if (isActive) {
             classes.push('active-title');
         }
@@ -343,7 +435,7 @@ const CentralizedTitle = React.memo(({
         }
 
         return classes.join(' ');
-    }, [title.index, isActive, isScrollLocked, activePhase]);
+    }, [title.index, isActive, isScrollLocked, activePhase, isMobile]);
 
     return (
         <div
@@ -356,10 +448,11 @@ const CentralizedTitle = React.memo(({
             data-array-index={titleArrayIndex}
             data-scroll-progress={scrollProgress.toFixed(3)}
             data-is-active={isActive}
+            data-is-mobile={isMobile}
         >
             {letters.map((letter, index) => (
                 <span
-                    key={`${activePhase}-${title.text}-${index}`}
+                    key={`${activePhase}-${title.text}-${index}-${isMobile ? 'mobile' : 'desktop'}`}
                     ref={el => {
                         if (el) {
                             lettersRef.current[index] = el;
@@ -370,6 +463,7 @@ const CentralizedTitle = React.memo(({
                     data-letter={letter.char}
                     data-index={index}
                     data-phase={activePhase}
+                    data-mobile={isMobile}
                 >
                     {letter.char}
                 </span>
@@ -378,10 +472,10 @@ const CentralizedTitle = React.memo(({
     );
 });
 
-// ✅ NUR DEVELOPMENT: Debug-Panel für Logo-Phase (unverändert)
-const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollLocked }) => {
-    if (process.env.NODE_ENV !== 'development') return null;
+// ✅ DEBUG PANELS - NUR DESKTOP
 
+// Debug-Panel für Logo-Phase (nur Desktop)
+const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollLocked }) => {
     const debugInfo = getPhaseDebugInfo(scrollProgress);
 
     return (
@@ -401,7 +495,7 @@ const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollL
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                🏠 Phase 0 - Logo/Newsletter (CENTRALIZED)
+                🏠 Phase 0 - Logo/Newsletter (DESKTOP ONLY)
             </div>
             <div>ScrollProgress: {debugInfo.scrollProgress}</div>
             <div>Active Phase: {debugInfo.phase}</div>
@@ -415,10 +509,8 @@ const LogoPhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollL
     );
 });
 
-// ✅ NEU: Debug-Panel für Phase 5 & 6 (keine Titel)
+// Debug-Panel für Phase 5 & 6 (nur Desktop)
 const NoTitlePhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScrollLocked }) => {
-    if (process.env.NODE_ENV !== 'development') return null;
-
     const debugInfo = getPhaseDebugInfo(scrollProgress);
 
     return (
@@ -438,7 +530,7 @@ const NoTitlePhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScro
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                {activePhase === 5 ? '🎠' : '📧'} Phase {activePhase} - {debugInfo.phaseDescription} (CENTRALIZED)
+                {activePhase === 5 ? '🎠' : '📧'} Phase {activePhase} - {debugInfo.phaseDescription} (DESKTOP ONLY)
             </div>
             <div>ScrollProgress: {debugInfo.scrollProgress}</div>
             <div>Active Phase: {debugInfo.phase}</div>
@@ -448,14 +540,46 @@ const NoTitlePhaseDebugPanel = React.memo(({ scrollProgress, activePhase, isScro
             <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8, color: '#ffff00' }}>
                 ✅ KEINE TITEL - Phase {activePhase} korrekt erkannt
             </div>
-            <div style={{ marginTop: '2px', fontSize: '9px', color: '#90EE90' }}>
-                🎯 Titel-Layer übersprungen (Phase {activePhase} ≥ 5)
+        </div>
+    );
+});
+
+// Debug-Panel für Desktop Phase 4 (nur Desktop)
+const DesktopPhase4DebugPanel = React.memo(({ scrollProgress, activePhase, isScrollLocked }) => {
+    const debugInfo = getPhaseDebugInfo(scrollProgress);
+
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                top: '60px',
+                left: '10px',
+                background: 'rgba(76, 175, 80, 0.8)',
+                color: 'white',
+                padding: '12px',
+                fontSize: '11px',
+                borderRadius: '6px',
+                pointerEvents: 'all',
+                fontFamily: 'monospace',
+                lineHeight: '1.4'
+            }}
+        >
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                🖥️ Phase 4 - Desktop (KEIN TITEL, LOGO BLEIBT)
+            </div>
+            <div>ScrollProgress: {debugInfo.scrollProgress}</div>
+            <div>Active Phase: {debugInfo.phase}</div>
+            <div>Debug %: {debugInfo.debugPercentage}</div>
+            <div>Range: {debugInfo.phaseRange}</div>
+            <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
+            <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8, color: '#ffff00' }}>
+                🖥️ DESKTOP: Logo Phase 4 bleibt aktiv
             </div>
         </div>
     );
 });
 
-// ✅ NUR DEVELOPMENT: Erweiterte Debug-Info mit Validierung (angepasst)
+// Hauptdebug-Panel für Titel-Phasen (nur Desktop)
 const CentralizedDebugPanel = React.memo(({
     scrollProgress,
     activePhase,
@@ -463,10 +587,9 @@ const CentralizedDebugPanel = React.memo(({
     currentTitle,
     isScrollLocked,
     currentTitleIndex,
-    expectedTitleText
+    expectedTitleText,
+    isMobile = false
 }) => {
-    if (process.env.NODE_ENV !== 'development') return null;
-
     const debugInfo = getPhaseDebugInfo(scrollProgress);
     const isValidMapping = currentTitle.text === expectedTitleText;
 
@@ -487,17 +610,15 @@ const CentralizedDebugPanel = React.memo(({
             }}
         >
             <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
-                🎭 CENTRALIZED TITEL (FIXED)
+                🎭 CENTRALIZED TITEL (MOBILE CLEAN)
             </div>
 
-            {/* Zentrale Debug-Info */}
             <div>ScrollProgress: {debugInfo.scrollProgress}</div>
             <div>Debug %: {debugInfo.debugPercentage}</div>
             <div>Active Phase: {debugInfo.phase}/4 (Array: {titleArrayIndex}/3)</div>
             <div>Range: {debugInfo.phaseRange}</div>
-            <div>Snap Index: {currentTitleIndex}/6 (nur Navigation)</div>
+            <div>Device: {isMobile ? '📱 Mobile' : '🖥️ Desktop'}</div>
 
-            {/* Titel-Validierung */}
             <div style={{
                 marginTop: '4px',
                 color: isValidMapping ? '#4CAF50' : '#ff6b6b',
@@ -515,13 +636,13 @@ const CentralizedDebugPanel = React.memo(({
             <div>Scroll Lock: {isScrollLocked ? '🔒' : '🔓'}</div>
 
             <div style={{ marginTop: '6px', fontSize: '10px', opacity: 0.8 }}>
-                ✅ Nutzt zentrale phaseUtils.js
+                ✅ Mobile Debug Panels entfernt
             </div>
             <div style={{ marginTop: '2px', fontSize: '9px', color: '#4CAF50' }}>
-                📍 {debugInfo.phaseRange}: {debugInfo.titleText || 'Kein Titel'}
+                📱 Mobile Phase 4: "AniTune" Titel
             </div>
             <div style={{ marginTop: '2px', fontSize: '9px', color: '#a880ff' }}>
-                🔧 FIX: Phase 5 & 6 übersprungen (≥ 5)
+                🖥️ Desktop Phase 4: Kein Titel (Logo)
             </div>
         </div>
     );
@@ -532,6 +653,7 @@ TitleLayer.displayName = 'CentralizedTitleLayer';
 CentralizedTitle.displayName = 'CentralizedTitle';
 LogoPhaseDebugPanel.displayName = 'LogoPhaseDebugPanel';
 NoTitlePhaseDebugPanel.displayName = 'NoTitlePhaseDebugPanel';
+DesktopPhase4DebugPanel.displayName = 'DesktopPhase4DebugPanel';
 CentralizedDebugPanel.displayName = 'CentralizedDebugPanel';
 
 export default TitleLayer;

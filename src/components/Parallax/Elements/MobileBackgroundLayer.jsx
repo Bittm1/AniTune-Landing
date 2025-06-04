@@ -1,28 +1,34 @@
-// src/components/Parallax/Elements/MobileBackgroundLayer.jsx - CLEAN (NO DEBUG PANELS)
+// src/components/Parallax/Elements/MobileBackgroundLayer.jsx - ANGEPASSTE ZOOM KONFIGURATION
+
 import React from 'react';
 import SafeImage from './SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
 import { zIndices } from '../config/constants/index';
 
 /**
- * 📱 MOBILE BACKGROUND LAYER - CLEAN VERSION
- * Ahmt das Desktop Zoom-Verhalten nach: Startet oben, bewegt sich zur Mitte
- * OHNE störende Debug-Panels für Mobile
+ * 📱 MOBILE BACKGROUND LAYER - ANGEPASSTER ZOOM
  */
 const MobileBackgroundLayer = ({ scrollProgress }) => {
-    // Zoom-Konfiguration (gleich wie Desktop BackgroundLayer)
-    const startScale = 4.0;
-    const endScale = 1.0;
-    const maxZoomProgress = 1.05; // Zoom stoppt bei 105% (42% Debug)
+    // ===== ZOOM-KONFIGURATION - HIER ANPASSEN =====
 
-    // Zoom-Progress Berechnung (identisch mit BackgroundLayer)
+    // 🎯 ZOOM-STÄRKE ANPASSEN
+    const startScale = 3.0;      // ⬅️ ERHÖHT: Stärkerer Zoom (war 4.0)
+    const endScale = 1.0;        // ⬅️ Bleibt gleich: Normale Größe am Ende
+
+    // 🎯 ZOOM-DAUER ANPASSEN (mit Phasen abgleichen)
+    const maxZoomProgress = 1.2; // ⬅️ VERLÄNGERT: Zoom bis 160% (64% Debug) - Ende Phase 5
+
+    // 🎯 VERTIKALE POSITION ANPASSEN (weiter oben starten)
+    const startOffsetY = 0;    // ⬅️ ERHÖHT: Startet 40% höher (war -20%)
+    const endOffsetY = 0;      // ⬅️ ANGEPASST: Endet 10% höher (war 0%)
+
+    // ===== BERECHNUNGEN =====
+
+    // Zoom-Progress Berechnung
     const zoomProgress = Math.min(maxZoomProgress, scrollProgress) / maxZoomProgress;
     const scale = startScale - (zoomProgress * (startScale - endScale));
 
-    // Vertikale Bewegung während Zoom (simuliert Desktop-Verhalten)
-    // Startet oben (-20%) und bewegt sich zur Mitte (0%)
-    const startOffsetY = -20; // Startet 20% höher
-    const endOffsetY = 0;     // Endet in normaler Position
+    // Vertikale Bewegung während Zoom
     const offsetY = startOffsetY + (zoomProgress * (endOffsetY - startOffsetY));
 
     return (
@@ -35,7 +41,7 @@ const MobileBackgroundLayer = ({ scrollProgress }) => {
                     width: '100%',
                     height: '100vh',
                     overflow: 'hidden',
-                    // Transform Origin oben + zusätzliche Y-Bewegung
+                    // Transform mit Scale + Y-Offset
                     transform: `scale(${scale}) translateY(${offsetY}%)`,
                     transformOrigin: 'center top',
                     transition: 'transform 0.3s ease-out',
@@ -46,7 +52,7 @@ const MobileBackgroundLayer = ({ scrollProgress }) => {
                 data-zoom-progress={(zoomProgress * 100).toFixed(1)}
                 data-offset-y={offsetY.toFixed(1)}
             >
-                {/* Modern Picture Element mit WebP + JPG Fallback */}
+                {/* Mobile Composite Background */}
                 <picture>
                     <source
                         srcSet="/Parallax/mobile/Anitune_all_mobile.webp"
@@ -58,7 +64,7 @@ const MobileBackgroundLayer = ({ scrollProgress }) => {
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
-                            objectPosition: 'center center',
+                            objectPosition: 'center top', // ⬅️ WICHTIG: Position für Zoom
                             display: 'block'
                         }}
                         alt="AniTune Mobile Background"
@@ -73,25 +79,37 @@ const MobileBackgroundLayer = ({ scrollProgress }) => {
                     />
                 </picture>
 
-                {/* ✅ KEIN DEBUG PANEL MEHR - Nur Console-Logs für Development */}
+                {/* ✅ ERWEITERTE DEBUG-INFO (nur Development) */}
                 {process.env.NODE_ENV === 'development' && (() => {
-                    // Debug-Info nur in Console, nicht als UI-Element
+                    // Debug-Info nur in Console für bessere Performance
                     const debugData = {
                         scrollProgress: scrollProgress.toFixed(3),
                         debugPercentage: (scrollProgress * 40).toFixed(1) + '%',
                         zoomProgress: (zoomProgress * 100).toFixed(1) + '%',
                         scale: scale.toFixed(3),
                         offsetY: offsetY.toFixed(1) + '%',
-                        maxZoom: maxZoomProgress + ' (' + (maxZoomProgress * 40).toFixed(0) + '% Debug)'
+                        maxZoom: maxZoomProgress + ' (' + (maxZoomProgress * 40).toFixed(0) + '% Debug)',
+
+                        // ✅ NEU: Phasen-Info
+                        currentPhase: scrollProgress < 0.05 ? 'Phase 0 (Logo)' :
+                            scrollProgress < 0.5 ? 'Phase 1 (Titel 1)' :
+                                scrollProgress < 0.8 ? 'Phase 2 (Titel 2)' :
+                                    scrollProgress < 1.0 ? 'Phase 3 (Titel 3)' :
+                                        scrollProgress < 1.2 ? 'Phase 4 (Titel 4)' :
+                                            scrollProgress < 1.6 ? 'Phase 5 (Carousel)' :
+                                                'Phase 6+ (Newsletter)',
+
+                        zoomActive: zoomProgress < 1.0,
+                        zoomComplete: zoomProgress >= 1.0
                     };
 
-                    // Nur bei signifikanten Änderungen loggen
+                    // Nur bei größeren Änderungen loggen
                     if (Math.abs(scrollProgress - (window.lastMobileDebugProgress || 0)) > 0.1) {
-                        console.log('📱 Mobile Background Update:', debugData);
+                        console.log('📱 Mobile Zoom Update:', debugData);
                         window.lastMobileDebugProgress = scrollProgress;
                     }
 
-                    return null; // Kein UI-Element
+                    return null;
                 })()}
             </div>
         </ErrorBoundary>
