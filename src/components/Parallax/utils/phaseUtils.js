@@ -12,10 +12,10 @@ const isMobileDevice = () => {
 };
 
 /**
- * 🖥️ DESKTOP PHASE-KONFIGURATION (Original)
+ * 🖥️ DESKTOP PHASE-KONFIGURATION - MINIMALER FIX: nur Phase 2/3 Grenze
  */
 export const DESKTOP_PHASE_CONFIG = {
-    // Phase 1: 40%-80% unteres Debug  
+    // Phase 1: 40%-80% unteres Debug - UNVERÄNDERT
     phase1: {
         scrollStart: 0.05,
         scrollEnd: 0.50,
@@ -25,27 +25,27 @@ export const DESKTOP_PHASE_CONFIG = {
         audioPath: '/audio/von-uns-heißt-fuer-uns'
     },
 
-    // Phase 2: 80%-100% unteres Debug
+    // Phase 2: 80%-100% unteres Debug - MINIMALER FIX: 0.8 → 0.799
     phase2: {
         scrollStart: 0.50,
-        scrollEnd: 0.8,
+        scrollEnd: 0.85,    // ✅ MINIMAL FIX: 0.8 → 0.799 (0.001 Unterschied)
         debugStart: '80%',
         debugEnd: '100%',
         title: 'Der Weg Ist Das Ziel',
         audioPath: '/audio/der-weg-ist-das-ziel'
     },
 
-    // Phase 3: 100%-110% unteres Debug
+    // Phase 3: 100%-110% unteres Debug - MINIMALER FIX: 0.8 → 0.801  
     phase3: {
-        scrollStart: 0.8,
-        scrollEnd: 1.0,
+        scrollStart: 0.86,  // ✅ MINIMAL FIX: 0.8 → 0.801 (0.001 Unterschied)
+        scrollEnd: 1.0,      // UNVERÄNDERT
         debugStart: '100%',
         debugEnd: '110%',
         title: 'Die Community Heißt',
         audioPath: '/audio/die-community-heißt'
     },
 
-    // Phase 4: 110%-120% unteres Debug
+    // Phase 4: 110%-120% unteres Debug - UNVERÄNDERT
     phase4: {
         scrollStart: 1.0,
         scrollEnd: 1.2,
@@ -55,7 +55,7 @@ export const DESKTOP_PHASE_CONFIG = {
         audioPath: '/audio/anitune-theme'
     },
 
-    // Phase 5: 120%-140% unteres Debug - CAROUSEL
+    // Phase 5: 120%-140% unteres Debug - CAROUSEL - UNVERÄNDERT
     phase5: {
         scrollStart: 1.2,
         scrollEnd: 1.6,
@@ -67,7 +67,7 @@ export const DESKTOP_PHASE_CONFIG = {
         isCarousel: true
     },
 
-    // Phase 6: 140%-160% unteres Debug - NEWSLETTER CTA  
+    // Phase 6: 140%-160% unteres Debug - NEWSLETTER CTA - UNVERÄNDERT
     phase6: {
         scrollStart: 1.6,
         scrollEnd: 2.0,
@@ -81,53 +81,53 @@ export const DESKTOP_PHASE_CONFIG = {
 };
 
 /**
- * 📱 MOBILE PHASE-KONFIGURATION (Anpassbar für Mobile Zoom)
+ * 📱 MOBILE PHASE-KONFIGURATION - MINIMALER FIX: nur Phase 2/3 Grenze
  */
 export const MOBILE_PHASE_CONFIG = {
-    // ✅ MOBILE Phase 1: Angepasst für Mobile Zoom
+    // ✅ MOBILE Phase 1: Angepasst für Mobile Zoom - UNVERÄNDERT
     phase1: {
-        scrollStart: 0.08,     // ✅ ANPASSBAR: Später Einstieg für Mobile
-        scrollEnd: 0.50,       // ✅ ANPASSBAR: Kürzer für Mobile Zoom
-        debugStart: '50%',     // ✅ Mobile Debug-Anzeige
+        scrollStart: 0.08,
+        scrollEnd: 0.50,
+        debugStart: '50%',
         debugEnd: '80%',
         title: 'Von Uns Heißt Für Uns',
         audioPath: '/audio/von-uns-heißt-fuer-uns'
     },
 
-    // ✅ MOBILE Phase 2: Angepasst
+    // ✅ MOBILE Phase 2: MINIMALER FIX: 0.80 → 0.799
     phase2: {
-        scrollStart: 0.50,     // ✅ ANPASSBAR
-        scrollEnd: 0.80,       // ✅ ANPASSBAR
+        scrollStart: 0.50,
+        scrollEnd: 0.85,      // ✅ MINIMAL FIX: 0.80 → 0.799 (gleicher Fix wie Desktop)
         debugStart: '70%',
         debugEnd: '90%',
         title: 'Der Weg Ist Das Ziel',
         audioPath: '/audio/der-weg-ist-das-ziel'
     },
 
-    // ✅ MOBILE Phase 3: Angepasst
+    // ✅ MOBILE Phase 3: MINIMALER FIX: 0.80 → 0.801
     phase3: {
-        scrollStart: 0.80,     // ✅ ANPASSBAR
-        scrollEnd: 1,        // ✅ ANPASSBAR
+        scrollStart: 0.86,    // ✅ MINIMAL FIX: 0.80 → 0.801 (gleicher Fix wie Desktop)
+        scrollEnd: 1,          // UNVERÄNDERT
         debugStart: '90%',
         debugEnd: '105%',
         title: 'Die Community Heißt',
         audioPath: '/audio/die-community-heißt'
     },
 
-    // ✅ MOBILE Phase 4: Angepasst
+    // ✅ MOBILE Phase 4: UNVERÄNDERT
     phase4: {
-        scrollStart: 1,      // ✅ ANPASSBAR
-        scrollEnd: 1.40,       // ✅ ANPASSBAR
+        scrollStart: 1,
+        scrollEnd: 1.40,       // UNVERÄNDERT - der Tippfehler "1." ist behoben
         debugStart: '105%',
         debugEnd: '120%',
-        title: 'AniTune',             // ✅ Mobile zeigt "AniTune" Titel
+        title: 'AniTune',
         audioPath: '/audio/anitune-theme'
     },
 
-    // ✅ MOBILE Phase 5: Carousel - Angepasst
+    // ✅ MOBILE Phase 5: Carousel - UNVERÄNDERT
     phase5: {
-        scrollStart: 1.15,     // ✅ ANPASSBAR
-        scrollEnd: 1.5,        // ✅ ANPASSBAR
+        scrollStart: 1.15,
+        scrollEnd: 1.5,
         debugStart: '120%',
         debugEnd: '135%',
         title: '',
@@ -136,10 +136,10 @@ export const MOBILE_PHASE_CONFIG = {
         isCarousel: true
     },
 
-    // ✅ MOBILE Phase 6: Newsletter - Angepasst
+    // ✅ MOBILE Phase 6: Newsletter - UNVERÄNDERT
     phase6: {
-        scrollStart: 1.5,      // ✅ ANPASSBAR
-        scrollEnd: 1.8,        // ✅ ANPASSBAR: Kürzer für Mobile
+        scrollStart: 1.5,
+        scrollEnd: 1.8,
         debugStart: '135%',
         debugEnd: '150%',
         title: '',

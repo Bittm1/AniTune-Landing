@@ -81,7 +81,7 @@ const LogoLayer = ({ scrollProgress, config }) => {
                 <div
                     style={{
                         position: 'fixed',
-                        top: '37%',
+                        top: isMobile ? '37%' : '42%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
                         zIndex: zIndices.logo + 1,
