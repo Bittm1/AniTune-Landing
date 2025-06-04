@@ -1,4 +1,4 @@
-// src/components/Parallax/Elements/TitleAudioLayer.jsx - MIT ZENTRALER PHASE-DEFINITION - DEBUG NUR LOKAL
+// src/components/Parallax/Elements/TitleAudioLayer.jsx - NO MOBILE DEBUG
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -12,6 +12,14 @@ import {
     PHASE_CONFIG,
     getAllPhaseRanges
 } from '../utils/phaseUtils';
+
+// ✅ MOBILE DETECTION IMPORT
+const isMobileDevice = () => {
+    if (typeof window === 'undefined') return false;
+    const isMobileViewport = window.innerWidth < 768;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    return isMobileViewport && isTouchDevice;
+};
 
 const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0 }) => {
     const audioRefs = useRef([]);
@@ -36,6 +44,18 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
     const [backgroundMusicEnabled, setBackgroundMusicEnabled] = useState(true);
     const [backgroundMusicPlaying, setBackgroundMusicPlaying] = useState(false);
     const [backgroundMusicVolume, setBackgroundMusicVolume] = useState(0);
+
+    // ✅ MOBILE DETECTION
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(isMobileDevice());
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Audio-Konfiguration aus zentraler phaseUtils.js
     const titleAudios = [
@@ -566,8 +586,8 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                 ▶️
             </button>
 
-            {/* ✅ NUR DEVELOPMENT: Debug-Info */}
-            {process.env.NODE_ENV === 'development' && (
+            {/* ✅ DEBUG PANEL - NUR DESKTOP */}
+            {process.env.NODE_ENV === 'development' && !isMobile && (
                 <div
                     style={{
                         position: 'absolute',
@@ -587,7 +607,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     }}
                 >
                     <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
-                        🎵 CENTRALIZED AUDIO (SCHRITT 4)
+                        🎵 CENTRALIZED AUDIO (DESKTOP ONLY)
                     </div>
 
                     {(() => {
@@ -686,7 +706,7 @@ const TitleAudioLayer = ({ currentTitleIndex, isScrollLocked, scrollProgress = 0
                     </div>
 
                     <div style={{ marginTop: '6px', fontSize: '9px', opacity: 0.7 }}>
-                        ✅ SCHRITT 4: Audio folgt zentraler phaseUtils.js
+                        🖥️ DESKTOP DEBUG - Mobile Clean
                         <br />🎛️ Bereiche zentral steuerbar in PHASE_CONFIG
                         <br />🎯 Titel + Audio perfekt synchron
                     </div>

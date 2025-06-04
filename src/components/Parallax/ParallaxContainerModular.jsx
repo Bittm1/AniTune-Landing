@@ -1,7 +1,12 @@
-// src/components/Parallax/ParallaxContainerModular.jsx - ANGEPASST für Phasen 0-6
+// src/components/Parallax/ParallaxContainerModular.jsx - MOBILE DEBUG FIX
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { getConfig } from './config';
+
+// ✅ Mobile Background Layer
+import MobileBackgroundLayer from './Elements/MobileBackgroundLayer';
+
+// Desktop Background Layer Imports
 import BackgroundLayer from './Elements/BackgroundLayer';
 import CloudLayer from './Elements/CloudLayer';
 import WolkenHintenLayer from './Elements/WolkenHintenLayer';
@@ -13,6 +18,8 @@ import RoadLayer from './Elements/RoadLayer';
 import DogLayer from './Elements/DogLayer';
 import MengeLayer from './Elements/MengeLayer';
 import StarfieldLayer from './Elements/StarfieldLayer';
+
+// Gemeinsame Layer (Desktop + Mobile)
 import LogoLayer from './Elements/LogoLayer';
 import TitleLayer from './Elements/TitleLayer';
 import TitleAudioLayer from './Elements/TitleAudioLayer';
@@ -63,6 +70,9 @@ const ParallaxContainerModular = React.memo(() => {
     const [hasSubscribed, setHasSubscribed] = useState(false);
     const [subscriptionSource, setSubscriptionSource] = useState(null);
 
+    // Mobile Detection State
+    const [isMobile, setIsMobile] = useState(false);
+
     // Refs
     const containerRef = useRef(null);
     const sectionsRef = useRef([]);
@@ -77,6 +87,25 @@ const ParallaxContainerModular = React.memo(() => {
         startTime: 0,
         lastRenderTime: 0
     });
+
+    // Mobile Detection mit Resize Listener
+    useEffect(() => {
+        const checkMobile = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`📱 Device Detection: ${mobile ? 'Mobile' : 'Desktop'} (${window.innerWidth}px)`);
+            }
+        };
+
+        // Initial check
+        checkMobile();
+
+        // Resize listener
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // SCROLL-PROGRESS mit Phase 0-6 Support
     const {
@@ -95,7 +124,7 @@ const ParallaxContainerModular = React.memo(() => {
         isScrollLocked,
         isLogoPhase,
         isTitlePhase,
-        isCarouselPhase, // Wird nicht mehr verwendet
+        isCarouselPhase,
         isNewsletterPhase,
         currentPhaseDescription,
         timingInfo
@@ -103,7 +132,6 @@ const ParallaxContainerModular = React.memo(() => {
 
     // Newsletter Subscription Handler
     const handleSubscriptionChange = useCallback((subscribed, source = 'unknown') => {
-        // ✅ NUR DEVELOPMENT: Console-Log
         if (process.env.NODE_ENV === 'development') {
             console.log(`📧 Newsletter-Anmeldung: ${subscribed} (Quelle: ${source})`);
         }
@@ -329,7 +357,7 @@ const ParallaxContainerModular = React.memo(() => {
         }
     }, [resetCount]);
 
-    // ✅ NUR DEVELOPMENT: Snap-Config Debug
+    // Snap-Config Debug
     useEffect(() => {
         if (process.env.NODE_ENV === 'development') {
             const debugInfo = getSnapConfigDebugInfo();
@@ -344,6 +372,213 @@ const ParallaxContainerModular = React.memo(() => {
             }
         }
     }, []);
+
+    // Desktop Background Layers (unverändert)
+    const desktopBackgroundLayers = useMemo(() => {
+        if (isMobile) return null;
+
+        return (
+            <>
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <BackgroundLayer
+                            scrollProgress={scrollProgress}
+                            config={{
+                                ...config.background,
+                                imageSrc: config.imageSources?.background
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <StarfieldLayer scrollProgress={scrollProgress} />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <BergeLayer
+                            scrollProgress={scrollProgress}
+                            config={{
+                                ...config.berge,
+                                imageSrc: config.imageSources?.berge || config.berge?.imageSrc
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <TalLayer
+                            scrollProgress={scrollProgress}
+                            config={{
+                                ...config.tal,
+                                imageSrc: config.imageSources?.tal || config.tal?.imageSrc
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <WaldHintenLayer
+                            scrollProgress={scrollProgress}
+                            config={{
+                                ...config.waldHinten,
+                                imageSrc: config.imageSources?.waldHinten || config.waldHinten?.imageSrc
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <ForestLayer
+                            scrollProgress={scrollProgress}
+                            config={{
+                                ...config.forest,
+                                imageSrc: config.imageSources?.forest || config.forest?.imageSrc
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <RoadLayer
+                            scrollProgress={scrollProgress}
+                            config={{
+                                ...config.road,
+                                imageSrc: config.imageSources?.road || config.road?.imageSrc
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <DogLayer
+                            scrollProgress={scrollProgress}
+                            config={{
+                                ...config.dog,
+                                imageSrc: config.imageSources?.dog || config.dog?.imageSrc
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <MengeLayer
+                            scrollProgress={scrollProgress}
+                            config={{
+                                ...config.menge,
+                                imageSrc: config.imageSources?.menge || config.menge?.imageSrc
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <WolkenHintenLayer
+                            scrollProgress={scrollProgress}
+                            leftConfig={{
+                                ...config.leftCloudHinten,
+                                imageSrc: config.imageSources?.leftCloudHinten
+                            }}
+                            rightConfig={{
+                                ...config.rightCloudHinten,
+                                imageSrc: config.imageSources?.rightCloudHinten
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <MemoizedLayer>
+                        <CloudLayer
+                            scrollProgress={scrollProgress}
+                            leftConfig={{
+                                ...config.leftCloud,
+                                imageSrc: config.imageSources?.leftCloud
+                            }}
+                            rightConfig={{
+                                ...config.rightCloud,
+                                imageSrc: config.imageSources?.rightCloud
+                            }}
+                        />
+                    </MemoizedLayer>
+                </ErrorBoundary>
+            </>
+        );
+    }, [isMobile, scrollProgress, config]);
+
+    // Mobile Background Layer (nur für Mobile)
+    const mobileBackgroundLayer = useMemo(() => {
+        if (!isMobile) return null;
+
+        return (
+            <ErrorBoundary>
+                <MemoizedLayer>
+                    <MobileBackgroundLayer scrollProgress={scrollProgress} />
+                </MemoizedLayer>
+            </ErrorBoundary>
+        );
+    }, [isMobile, scrollProgress]);
+
+    // ✅ ALLE GEMEINSAMEN LAYER bleiben für Desktop UND Mobile
+    const logoLayer = useMemo(() => (
+        <LogoLayer
+            scrollProgress={scrollProgress}
+            config={{
+                ...config.logo,
+                imageSrc: config.imageSources?.logo
+            }}
+        />
+    ), [scrollProgress, config.logo, config.imageSources?.logo]);
+
+    const titleLayer = useMemo(() => (
+        <TitleLayer
+            scrollProgress={scrollProgress}
+            titles={config.titles}
+            currentTitleIndex={currentTitleIndex}
+            isScrollLocked={isScrollLocked}
+        />
+    ), [scrollProgress, config.titles, currentTitleIndex, isScrollLocked]);
+
+    const audioLayer = useMemo(() => (
+        <TitleAudioLayer
+            currentTitleIndex={currentTitleIndex}
+            isScrollLocked={isScrollLocked}
+            scrollProgress={scrollProgress}
+            scrollToTitleIndex={scrollToTitleIndex}
+        />
+    ), [currentTitleIndex, isScrollLocked, scrollProgress, scrollToTitleIndex]);
+
+    const carouselLayer = useMemo(() => (
+        <AniTuneCarousel
+            scrollProgress={scrollProgress}
+            currentTitleIndex={currentTitleIndex}
+            isScrollLocked={isScrollLocked}
+        />
+    ), [scrollProgress, currentTitleIndex, isScrollLocked]);
+
+    const phase6NewsletterLayer = useMemo(() => (
+        <Phase6NewsletterLayer
+            scrollProgress={scrollProgress}
+            currentTitleIndex={currentTitleIndex}
+            isScrollLocked={isScrollLocked}
+            hasSubscribed={hasSubscribed}
+            onSubscriptionChange={(subscribed) => handleSubscriptionChange(subscribed, 'phase6')}
+        />
+    ), [scrollProgress, currentTitleIndex, isScrollLocked, hasSubscribed, handleSubscriptionChange]);
+
+    const scrollIndicator = useMemo(() => (
+        <ScrollIndicator scrollProgress={scrollProgress} />
+    ), [scrollProgress]);
 
     // Memoize the fallback component to prevent unnecessary re-renders
     const errorFallback = useMemo(() => (
@@ -378,9 +613,34 @@ const ParallaxContainerModular = React.memo(() => {
         </div>
     ), [resetComponent]);
 
-    // ✅ NUR DEVELOPMENT: Debug-Anzeige
-    const debugIndicator = useMemo(() => {
-        if (process.env.NODE_ENV !== 'development') return null;
+    // ✅ MOBILE DEBUG: KOMPLETT ENTFERNT - Nur winziger Indikator
+    const mobileDebugDot = useMemo(() => {
+        if (process.env.NODE_ENV !== 'development' || !isMobile) return null;
+
+        return (
+            <div
+                style={{
+                    position: 'fixed',
+                    top: '5px',
+                    right: '5px',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: currentTitleIndex === 0 ? '#00ff00' :
+                        currentTitleIndex <= 4 ? '#ffffff' :
+                            currentTitleIndex === 5 ? '#a880ff' : '#ff6b6b',
+                    zIndex: 9999,
+                    pointerEvents: 'none',
+                    opacity: 0.7
+                }}
+                title={`Phase ${currentTitleIndex}/6`}
+            />
+        );
+    }, [isMobile, currentTitleIndex]);
+
+    // ✅ DESKTOP DEBUG PANEL (unverändert aber nur Desktop)
+    const desktopDebugIndicator = useMemo(() => {
+        if (process.env.NODE_ENV !== 'development' || isMobile) return null;
 
         const snapDebug = getSnapConfigDebugInfo();
         const snapWarnings = validateSnapConfig();
@@ -389,6 +649,14 @@ const ParallaxContainerModular = React.memo(() => {
             <div className="debug-indicator">
                 <div style={{ borderBottom: '1px solid #333', paddingBottom: '4px', marginBottom: '4px' }}>
                     Scroll: {formattedScrollProgress.absolute}% | Section: {activeSection + 1}/50
+                </div>
+
+                <div style={{ fontSize: '10px', marginTop: '2px' }}>
+                    Device: 🖥️ Desktop ({window.innerWidth}px)
+                </div>
+
+                <div style={{ fontSize: '9px', color: '#2196F3', marginTop: '1px' }}>
+                    🖥️ All Desktop Layers (10+ Layers)
                 </div>
 
                 <div style={{ fontSize: '10px', marginTop: '2px' }}>
@@ -434,6 +702,7 @@ const ParallaxContainerModular = React.memo(() => {
             </div>
         );
     }, [
+        isMobile,
         formattedScrollProgress.absolute,
         activeSection,
         resetComponent,
@@ -446,13 +715,12 @@ const ParallaxContainerModular = React.memo(() => {
         subscriptionSource
     ]);
 
-    // ✅ NUR DEVELOPMENT: Section-Indikatoren (Phase 0-6)
+    // Section-Indikatoren (nur Desktop)
     const sectionIndicators = useMemo(() => {
-        if (process.env.NODE_ENV !== 'development') return null;
+        if (process.env.NODE_ENV !== 'development' || isMobile) return null;
 
         return (
             <div className="section-indicators">
-                {/* Phase 0: Logo/Newsletter */}
                 <button
                     className={`section-indicator ${currentTitleIndex === 0 ? 'active logo-phase' : ''}`}
                     onClick={() => scrollToTitleIndex(0)}
@@ -463,7 +731,6 @@ const ParallaxContainerModular = React.memo(() => {
                     }}
                 />
 
-                {/* Phase 1-3: Bestehende Titel */}
                 {config.titles?.slice(0, 3).map((title, index) => (
                     <button
                         key={index}
@@ -477,7 +744,6 @@ const ParallaxContainerModular = React.memo(() => {
                     />
                 )) || []}
 
-                {/* Phase 4: Titel 4 (falls vorhanden) */}
                 {config.titles?.[3] && (
                     <button
                         className={`section-indicator ${currentTitleIndex === 4 ? 'active title-phase' : ''}`}
@@ -490,7 +756,6 @@ const ParallaxContainerModular = React.memo(() => {
                     />
                 )}
 
-                {/* Phase 5: AniTune Carousel */}
                 <button
                     className={`section-indicator ${currentTitleIndex === 5 ? 'active carousel-phase' : ''}`}
                     onClick={() => scrollToTitleIndex(5)}
@@ -501,7 +766,6 @@ const ParallaxContainerModular = React.memo(() => {
                     }}
                 />
 
-                {/* Phase 6: Newsletter CTA */}
                 <button
                     className={`section-indicator ${currentTitleIndex === 6 ? 'active newsletter-phase' : ''} ${hasSubscribed ? 'subscribed' : ''}`}
                     onClick={() => scrollToTitleIndex(6)}
@@ -516,228 +780,29 @@ const ParallaxContainerModular = React.memo(() => {
                 />
             </div>
         );
-    }, [currentTitleIndex, scrollToTitleIndex, config.titles, hasSubscribed]);
-
-    // Memoize the layers to prevent unnecessary re-renders
-    const backgroundLayer = useMemo(() => (
-        <BackgroundLayer
-            scrollProgress={scrollProgress}
-            config={{
-                ...config.background,
-                imageSrc: config.imageSources?.background
-            }}
-        />
-    ), [scrollProgress, config.background, config.imageSources?.background]);
-
-    const starfieldLayer = useMemo(() => (
-        <StarfieldLayer scrollProgress={scrollProgress} />
-    ), [scrollProgress]);
-
-    const forestLayer = useMemo(() => (
-        <ForestLayer
-            scrollProgress={scrollProgress}
-            config={{
-                ...config.forest,
-                imageSrc: config.imageSources?.forest || config.forest?.imageSrc
-            }}
-        />
-    ), [scrollProgress, config.forest, config.imageSources?.forest]);
-
-    const bergeLayer = useMemo(() => (
-        <BergeLayer
-            scrollProgress={scrollProgress}
-            config={{
-                ...config.berge,
-                imageSrc: config.imageSources?.berge || config.berge?.imageSrc
-            }}
-        />
-    ), [scrollProgress, config.berge, config.imageSources?.berge]);
-
-    const talLayer = useMemo(() => (
-        <TalLayer
-            scrollProgress={scrollProgress}
-            config={{
-                ...config.tal,
-                imageSrc: config.imageSources?.tal || config.tal?.imageSrc
-            }}
-        />
-    ), [scrollProgress, config.tal, config.imageSources?.tal]);
-
-    const waldHintenLayer = useMemo(() => (
-        <WaldHintenLayer
-            scrollProgress={scrollProgress}
-            config={{
-                ...config.waldHinten,
-                imageSrc: config.imageSources?.waldHinten || config.waldHinten?.imageSrc
-            }}
-        />
-    ), [scrollProgress, config.waldHinten, config.imageSources?.waldHinten]);
-
-    const roadLayer = useMemo(() => (
-        <RoadLayer
-            scrollProgress={scrollProgress}
-            config={{
-                ...config.road,
-                imageSrc: config.imageSources?.road || config.road?.imageSrc
-            }}
-        />
-    ), [scrollProgress, config.road, config.imageSources?.road]);
-
-    const dogLayer = useMemo(() => (
-        <DogLayer
-            scrollProgress={scrollProgress}
-            config={{
-                ...config.dog,
-                imageSrc: config.imageSources?.dog || config.dog?.imageSrc
-            }}
-        />
-    ), [scrollProgress, config.dog, config.imageSources?.dog]);
-
-    const mengeLayer = useMemo(() => (
-        <MengeLayer
-            scrollProgress={scrollProgress}
-            config={{
-                ...config.menge,
-                imageSrc: config.imageSources?.menge || config.menge?.imageSrc
-            }}
-        />
-    ), [scrollProgress, config.menge, config.imageSources?.menge]);
-
-    const wolkenHintenLayer = useMemo(() => (
-        <WolkenHintenLayer
-            scrollProgress={scrollProgress}
-            leftConfig={{
-                ...config.leftCloudHinten,
-                imageSrc: config.imageSources?.leftCloudHinten
-            }}
-            rightConfig={{
-                ...config.rightCloudHinten,
-                imageSrc: config.imageSources?.rightCloudHinten
-            }}
-        />
-    ), [scrollProgress, config.leftCloudHinten, config.rightCloudHinten, config.imageSources?.leftCloudHinten, config.imageSources?.rightCloudHinten]);
-
-    const logoLayer = useMemo(() => (
-        <LogoLayer
-            scrollProgress={scrollProgress}
-            config={{
-                ...config.logo,
-                imageSrc: config.imageSources?.logo
-            }}
-        />
-    ), [scrollProgress, config.logo, config.imageSources?.logo]);
-
-    const cloudLayer = useMemo(() => (
-        <CloudLayer
-            scrollProgress={scrollProgress}
-            leftConfig={{
-                ...config.leftCloud,
-                imageSrc: config.imageSources?.leftCloud
-            }}
-            rightConfig={{
-                ...config.rightCloud,
-                imageSrc: config.imageSources?.rightCloud
-            }}
-        />
-    ), [scrollProgress, config.leftCloud, config.rightCloud, config.imageSources?.leftCloud, config.imageSources?.rightCloud]);
-
-    const titleLayer = useMemo(() => (
-        <TitleLayer
-            scrollProgress={scrollProgress}
-            titles={config.titles}
-            currentTitleIndex={currentTitleIndex}
-            isScrollLocked={isScrollLocked}
-        />
-    ), [scrollProgress, config.titles, currentTitleIndex, isScrollLocked]);
-
-    const audioLayer = useMemo(() => (
-        <TitleAudioLayer
-            currentTitleIndex={currentTitleIndex}
-            isScrollLocked={isScrollLocked}
-            scrollProgress={scrollProgress}
-            scrollToTitleIndex={scrollToTitleIndex}
-        />
-    ), [currentTitleIndex, isScrollLocked, scrollProgress, scrollToTitleIndex]);
-
-    const carouselLayer = useMemo(() => (
-        <AniTuneCarousel
-            scrollProgress={scrollProgress}
-            currentTitleIndex={currentTitleIndex}
-            isScrollLocked={isScrollLocked}
-        />
-    ), [scrollProgress, currentTitleIndex, isScrollLocked]);
-
-    const phase6NewsletterLayer = useMemo(() => (
-        <Phase6NewsletterLayer
-            scrollProgress={scrollProgress}
-            currentTitleIndex={currentTitleIndex}
-            isScrollLocked={isScrollLocked}
-            hasSubscribed={hasSubscribed}
-            onSubscriptionChange={(subscribed) => handleSubscriptionChange(subscribed, 'phase6')}
-        />
-    ), [scrollProgress, currentTitleIndex, isScrollLocked, hasSubscribed, handleSubscriptionChange]);
-
-    const scrollIndicator = useMemo(() => (
-        <ScrollIndicator scrollProgress={scrollProgress} />
-    ), [scrollProgress]);
+    }, [currentTitleIndex, scrollToTitleIndex, config.titles, hasSubscribed, isMobile]);
 
     return (
         <ErrorBoundary fallback={errorFallback}>
             <div className="gsap-parallax-container" ref={containerRef} key={`container-${resetCount}`}>
-                {/* ✅ NUR DEVELOPMENT: Debug-Anzeige */}
-                {debugIndicator}
+                {/* ✅ RESPONSIVE DEBUG: Desktop = Full Panel, Mobile = Tiny Dot */}
+                {desktopDebugIndicator}
+                {mobileDebugDot}
 
-                {/* ✅ NUR DEVELOPMENT: Section-Indikatoren */}
+                {/* Section-Indikatoren (nur Desktop) */}
                 {sectionIndicators}
 
-                {/* Hintergrund-Layer (fixiert) */}
+                {/* Responsive Background Layers */}
                 <div className="fixed-layers">
-                    <ErrorBoundary>
-                        <MemoizedLayer>{backgroundLayer}</MemoizedLayer>
-                    </ErrorBoundary>
+                    {/* MOBILE: Nur Composite Background */}
+                    {mobileBackgroundLayer}
 
-                    <ErrorBoundary>
-                        <MemoizedLayer>{starfieldLayer}</MemoizedLayer>
-                    </ErrorBoundary>
+                    {/* DESKTOP: Alle einzelnen Background Layer */}
+                    {desktopBackgroundLayers}
 
-                    <ErrorBoundary>
-                        <MemoizedLayer>{bergeLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
-                    <ErrorBoundary>
-                        <MemoizedLayer>{talLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
-                    <ErrorBoundary>
-                        <MemoizedLayer>{waldHintenLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
-                    <ErrorBoundary>
-                        <MemoizedLayer>{forestLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
-                    <ErrorBoundary>
-                        <MemoizedLayer>{roadLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
-                    <ErrorBoundary>
-                        <MemoizedLayer>{dogLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
-                    <ErrorBoundary>
-                        <MemoizedLayer>{mengeLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
+                    {/* ✅ ALLE GEMEINSAMEN LAYER: Funktionieren auf Desktop UND Mobile */}
                     <ErrorBoundary>
                         <MemoizedLayer>{logoLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
-                    <ErrorBoundary>
-                        <MemoizedLayer>{cloudLayer}</MemoizedLayer>
-                    </ErrorBoundary>
-
-                    <ErrorBoundary>
-                        <MemoizedLayer>{wolkenHintenLayer}</MemoizedLayer>
                     </ErrorBoundary>
 
                     <ErrorBoundary>

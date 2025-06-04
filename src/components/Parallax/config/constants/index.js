@@ -108,7 +108,7 @@ export const assetPaths = {
         fallback: '/Parallax/fallback-Hund.png'
     },
     menge: {
-        default: '/Parallax/Menge.png',
+        default: '/Parallax/Menge.webp',
         fallback: '/Parallax/fallback-menge.png'
     },
     leftCloud: {
