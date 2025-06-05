@@ -1,31 +1,12 @@
-// src/pages/Home.jsx
-import React, { useState } from 'react';
-import ParallaxContainerModular from '../components/Parallax/ParallaxContainerModular';
-import LoadingScreen from '../components/Loading/LoadingScreen';
+// src/pages/Home.jsx - VEREINFACHT
+import React from 'react';
+import SimplePage from './SimplePage';
+// import LoadingScreen entfernt - nicht mehr nötig
 
 const Home = () => {
-    // 🛡️ FIX: Loading sollte initial TRUE sein
-    const [isLoading, setIsLoading] = useState(true);
-
-    const handleLoadingComplete = () => {
-        console.log('📸 Loading abgeschlossen, zeige Parallax');
-        setIsLoading(false);
-    };
-
     return (
         <div className="min-h-screen relative">
-            {/* 🛡️ LOADING SCREEN */}
-            {isLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
-
-            {/* 🛡️ PARALLAX: Nur anzeigen wenn NICHT loading */}
-            {!isLoading && (
-                <div style={{
-                    opacity: isLoading ? 0 : 1,
-                    transition: 'opacity 0.5s ease-in-out'
-                }}>
-                    <ParallaxContainerModular />
-                </div>
-            )}
+            <SimplePage />
         </div>
     );
 };

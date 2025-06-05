@@ -70,7 +70,7 @@ const AniTuneCarousel = ({ scrollProgress, currentTitleIndex, isScrollLocked }) 
         {
             id: 'meilensteine',
             title: 'Meilensteine',
-            icon: '/icons/meilensteine.png',
+            icon: '/icons/meilensteine.webp',
             color: '#8B5CF6'
         },
         {

@@ -1,0 +1,437 @@
+/* src/pages/SimplePage.css - VEREINFACHTE ANITUNE STYLES - DESKTOP COMPOSITE */
+
+/* ===== BASE STYLES ===== */
+.simple-page {
+    position: relative;
+    width: 100%;
+    min-height: 200vh;
+    /* Platz für 2 Sections */
+    overflow-x: hidden;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ===== STATIC BACKGROUND ===== */
+.background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1;
+    overflow: hidden;
+}
+
+/* MOBILE BACKGROUND */
+.mobile-background,
+.mobile-foreground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+
+.mobile-background {
+    z-index: 1;
+}
+
+.mobile-foreground {
+    z-index: 2;
+}
+
+/* DESKTOP BACKGROUND - SIMPLIFIED */
+.desktop-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    z-index: 1;
+}
+
+/* ===== CONTENT CONTAINER ===== */
+.content-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+}
+
+/* ===== SECTION 1: HERO (LOGO + NEWSLETTER) - 100VH ===== */
+.hero-section {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    /* Exakt eine Bildschirmhöhe */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Zentriert alles vertikal */
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+/* LOGO */
+.logo-container {
+    margin-bottom: 2rem;
+}
+
+.logo {
+    width: 150px;
+    /* Kleiner als Original (200px) */
+    height: 150px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0 auto;
+}
+
+/* TITEL */
+.title-container {
+    margin-bottom: 2rem;
+}
+
+.main-title {
+    font-family: 'Lobster', cursive, sans-serif;
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.8), 0 3px 6px rgba(0, 0, 0, 0.6);
+    letter-spacing: 0.3px;
+    margin: 0;
+    opacity: 0.95;
+}
+
+/* NEWSLETTER */
+.newsletter-container {
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 1rem;
+}
+
+.subscription-success {
+    text-align: center;
+    background: rgba(76, 175, 80, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    color: white;
+    backdrop-filter: blur(20px);
+}
+
+.subscription-success h3 {
+    margin: 0 0 10px 0;
+    font-family: 'Lobster', cursive;
+    font-size: 1.4rem;
+}
+
+.subscription-success p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* DATENSCHUTZ TEXT */
+.privacy-text {
+    max-width: 400px;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+}
+
+.privacy-text p {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+    letter-spacing: 0.2px;
+    margin: 0;
+    line-height: 1.3;
+    opacity: 0.8;
+}
+
+/* SCROLL HINWEIS */
+.scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    animation: bounceHint 2s infinite;
+}
+
+.scroll-arrow {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    animation: bounceArrow 2s infinite;
+}
+
+@keyframes bounceHint {
+
+    0%,
+    100% {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(-10px);
+    }
+}
+
+@keyframes bounceArrow {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* ===== SECTION 2: CAROUSEL - 100VH ===== */
+.carousel-section {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    /* Exakt eine Bildschirmhöhe */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: transparent;
+    /* Komplett transparent - kein Overlay */
+}
+
+.carousel-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    position: relative;
+}
+
+/* CAROUSEL POSITIONING OVERRIDE - Überschreibt das interne Positioning */
+.carousel-wrapper .anitune-carousel-container {
+    position: static !important;
+    /* Überschreibt position: fixed */
+    transform: none !important;
+    /* Entfernt transform: translateY */
+    opacity: 1 !important;
+    /* Immer sichtbar */
+    transition: none !important;
+    /* Keine Scroll-Animationen */
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* ALLE DEBUG ELEMENTE KOMPLETT VERSTECKEN */
+.carousel-wrapper *[style*="debug"],
+.carousel-wrapper *[style*="Debug"],
+.carousel-wrapper *[style*="DEBUG"],
+.carousel-wrapper *[style*="rgba(168, 128, 255"],
+.carousel-wrapper *[style*="position: absolute"][style*="bottom"],
+.carousel-wrapper *[style*="background: rgba"],
+.carousel-wrapper *[style*="backdrop-filter"],
+.carousel-wrapper *[style*="monospace"],
+.carousel-wrapper *[style*="z-index: 999"],
+.carousel-wrapper *[style*="pointer-events: all"][style*="position: absolute"],
+.carousel-wrapper div[style*="padding: 10px"][style*="border-radius: 6px"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+}
+
+/* PRODUCTION MODE OVERRIDE - Entfernt alle Development Debug */
+.carousel-wrapper * {
+    --debug-mode: none !important;
+}
+
+.carousel-wrapper *::before,
+.carousel-wrapper *::after {
+    content: none !important;
+}
+
+/* NUR CAROUSEL CONTENT SICHTBAR */
+.carousel-wrapper .carousel-title-section,
+.carousel-wrapper .carousel-navigation,
+.carousel-wrapper .cards-container {
+    position: relative !important;
+    z-index: 1 !important;
+    background: none !important;
+    border: none !important;
+}
+
+/* WRAPPER KOMPLETT BEREINIGEN */
+.carousel-wrapper {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* ===== RESPONSIVE: MOBILE ===== */
+@media screen and (max-width: 768px) {
+    .simple-page {
+        min-height: 200vh;
+    }
+
+    /* Hero Section Mobile - 100vh beibehalten */
+    .hero-section {
+        height: 100vh;
+        /* Bleibt 100vh auch auf Mobile */
+        padding: 1rem 0.5rem;
+    }
+
+    .logo-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .logo {
+        width: 120px;
+        height: 120px;
+    }
+
+    .main-title {
+        font-size: 1.8rem;
+        letter-spacing: 0.2px;
+    }
+
+    .newsletter-container {
+        max-width: 350px;
+    }
+
+    .privacy-text p {
+        font-size: 0.7rem;
+    }
+
+    /* Carousel Section Mobile - 100vh beibehalten */
+    .carousel-section {
+        height: 100vh;
+        /* Bleibt 100vh auch auf Mobile */
+        padding: 1rem 0.5rem;
+    }
+
+    /* Scroll Hint Mobile */
+    .scroll-hint {
+        bottom: 1rem;
+        font-size: 0.8rem;
+    }
+
+    .scroll-arrow {
+        font-size: 1.2rem;
+    }
+
+    /* Mobile Background Optimierungen */
+    .mobile-background,
+    .mobile-foreground {
+        background-attachment: scroll;
+        /* Bessere Performance auf Mobile */
+    }
+
+    /* Desktop Background auf Mobile verstecken */
+    .desktop-background {
+        display: none;
+    }
+}
+
+/* ===== RESPONSIVE: DESKTOP ===== */
+@media screen and (min-width: 769px) {
+
+    /* Mobile Background auf Desktop verstecken */
+    .mobile-background,
+    .mobile-foreground {
+        display: none;
+    }
+
+    /* Hero Section Desktop - 100vh beibehalten */
+    .hero-section {
+        height: 100vh;
+        /* Bleibt 100vh */
+        padding: 2rem;
+    }
+
+    .logo {
+        width: 180px;
+        height: 180px;
+    }
+
+    .main-title {
+        font-size: 2.5rem;
+    }
+
+    /* Carousel Section Desktop - 100vh beibehalten */
+    .carousel-section {
+        height: 100vh;
+        /* Bleibt 100vh */
+        padding: 2rem;
+    }
+}
+
+/* ===== RESPONSIVE: LARGE SCREENS ===== */
+@media screen and (min-width: 1440px) {
+    .logo {
+        width: 200px;
+        height: 200px;
+    }
+
+    .main-title {
+        font-size: 2.8rem;
+    }
+
+    /* Sections bleiben 100vh */
+    .hero-section,
+    .carousel-section {
+        height: 95vh;
+    }
+
+    .hero-section {
+        padding: 2rem;
+    }
+
+    .carousel-section {
+        padding: 2rem;
+    }
+}
+
+/* ===== PERFORMANCE OPTIMIERUNGEN ===== */
+.background-container * {
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+.logo {
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+/* ===== SCROLL BEHAVIOR ===== */
+.simple-page {
+    scroll-behavior: smooth;
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+    .simple-page {
+        scroll-behavior: auto;
+    }
+
+    .background-container *,
+    .logo {
+        will-change: auto;
+    }
+}

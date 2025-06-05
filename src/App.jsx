@@ -1,6 +1,6 @@
-// src/App.jsx
-import React from 'react';  // Diese Zeile hinzufügen!
-import Home from './pages/Home';
+// src/App.jsx - Ändere das sofort:
+import React from 'react';
+import Home from './pages/Home'; // ✅ Zurück zur ursprünglichen Seite
 import './App.css';
 
 function App() {
