@@ -1,12 +1,12 @@
-// src/App.jsx
+// src/App.jsx - GEÄNDERT: Lädt jetzt EnhancedSimplePage
 import React from 'react';
-import SimplePage from './pages/SimplePage'; // ✅ DIESE ZEILE
+import EnhancedSimplePage from './components/Enhanced/EnhancedSimplePage';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <SimplePage /> {/* ✅ UND DIESE ZEILE */}
+      <EnhancedSimplePage />
     </div>
   );
 }
