@@ -1,10 +1,13 @@
-// src/components/Enhanced/EnhancedSimplePage.jsx - CLEAN PERFORMANCE SOLUTION
+// src/components/Enhanced/EnhancedSimplePage.jsx - COMPLETE MIT NEWSLETTER (SIMPLE INTEGRATION)
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import ErrorBoundary from '../ErrorBoundary';
+// import ErrorBoundary from '../ErrorBoundary'; // Temporarily disabled
 import EnhancedTitleLayer from './TitleLayer'; // ✅ STUFE 2: Titel System
 import EnhancedAudioLayer from './AudioLayer'; // ✅ STUFE 3: Audio System
 import BackgroundLayer from './layers/BackgroundLayer';
+import LogoLayer from './layers/LogoLayer'; // ✅ Logo Layer
+import Newsletter from '../Newsletter/Newsletter'; // ✅ DIREKTE NEWSLETTER INTEGRATION
+import { LAYER_CONFIG } from './config/parallaxConfig'; // ✅ Konfiguration
 import {
     SNAP_POINTS,
     getSnapPointByIndex,
@@ -296,8 +299,22 @@ const EnhancedSimplePage = () => {
     // ===== CURRENT SNAP POINT DATA =====
     const currentSnapPoint = getSnapPointByIndex(activeSnapPoint);
 
+    // ===== 📧 NEWSLETTER VISIBILITY CALCULATIONS =====
+    // Simple & Robust - kann nie brechen
+    const showNewsletterStart = scrollProgress <= 0.15; // Bei Snap 0 (mit Logo)
+    const showNewsletterEnd = scrollProgress >= 0.85;   // ✅ FRÜHER: Ab 85% statt 95%
+
+    // Newsletter Opacity Calculations
+    const newsletterStartOpacity = showNewsletterStart
+        ? (scrollProgress > 0.1 ? Math.max(0, 1 - (scrollProgress - 0.1) / 0.05) : 1)
+        : 0;
+
+    const newsletterEndOpacity = showNewsletterEnd
+        ? Math.min(1, (scrollProgress - 0.85) / 0.10)  // ✅ LÄNGERER FADE: 10% statt 5%
+        : 0;
+
     return (
-        <ErrorBoundary>
+        <React.Fragment>
             <div
                 ref={containerRef}
                 className="enhanced-simple-page"
@@ -310,14 +327,20 @@ const EnhancedSimplePage = () => {
                     position: 'relative'
                 }}
             >
-                {/* ===== 🌌 BACKGROUND LAYER - ZOOM STOPPT BEI PHASE 4 ===== */}
+                {/* ===== 🌌 BACKGROUND LAYER ===== */}
                 <BackgroundLayer
                     scrollProgress={scrollProgress}
                     position={{
                         scale: (() => {
-                            const zoomEndProgress = 0.75; // Phase 4 (75%) - Zoom abgeschlossen
-                            const clampedProgress = Math.min(scrollProgress, zoomEndProgress);
-                            return 4.0 - (clampedProgress / zoomEndProgress * 3.0);
+                            const zoomEndProgress = 0.75; // Phase 4 (75%) - Zoom-Ende
+
+                            if (scrollProgress <= zoomEndProgress) {
+                                // Normal zoom: 0% → 75%  
+                                return 4.0 - (scrollProgress / zoomEndProgress * 3.0);
+                            } else {
+                                // Anti-Ruckler: Konstant bei genau 1.0
+                                return 1.0;
+                            }
                         })(),
                         opacity: 1.0
                     }}
@@ -328,6 +351,58 @@ const EnhancedSimplePage = () => {
                         multiplier: isMobile ? 0.7 : 1.0
                     }}
                 />
+
+                {/* ===== 🏠 LOGO LAYER ===== */}
+                <LogoLayer
+                    scrollProgress={scrollProgress}
+                    position={{
+                        visible: scrollProgress <= 0.15 // Logo aktiv von 0% bis 15%
+                    }}
+                    config={LAYER_CONFIG.logo}
+                    deviceConfig={{
+                        multiplier: isMobile ? 0.7 : 1.0
+                    }}
+                />
+
+                {/* ===== 📧 NEWSLETTER BEI SNAP 0 (mit Logo) ===== */}
+                {showNewsletterStart && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            opacity: newsletterStartOpacity,
+                            zIndex: 60, // Über Logo (50)
+                            width: '80%',
+                            maxWidth: '500px',
+                            pointerEvents: newsletterStartOpacity > 0.1 ? 'all' : 'none',
+                            transition: 'opacity 0.3s ease-out'
+                        }}
+                    >
+                        <Newsletter />
+                    </div>
+                )}
+
+                {/* ===== 📧 NEWSLETTER BEI SNAP 5 (Ende - "hoch in der Sonne") ===== */}
+                {showNewsletterEnd && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            top: '15%', // "Hoch in der Sonne" - wie Phase6
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            opacity: newsletterEndOpacity,
+                            zIndex: 60,
+                            width: '80%',
+                            maxWidth: '500px',
+                            pointerEvents: newsletterEndOpacity > 0.1 ? 'all' : 'none',
+                            transition: 'opacity 0.3s ease-out'
+                        }}
+                    >
+                        <Newsletter />
+                    </div>
+                )}
 
                 {/* ===== 🎭 TITEL LAYER (STUFE 2) ===== */}
                 <EnhancedTitleLayer
@@ -367,7 +442,7 @@ const EnhancedSimplePage = () => {
                             color: '#4CAF50',
                             fontSize: '16px'
                         }}>
-                            🎯 CLEAN PERFORMANCE SOLUTION
+                            🎯 ENHANCED + NEWSLETTER (SIMPLE)
                         </div>
 
                         <div style={{ marginBottom: '10px' }}>
@@ -383,16 +458,33 @@ const EnhancedSimplePage = () => {
                         </div>
 
                         <div style={{ marginBottom: '10px' }}>
-                            <strong>Background Scale:</strong> {(() => {
-                                const zoomEndProgress = 0.75;
-                                const clampedProgress = Math.min(scrollProgress, zoomEndProgress);
-                                const scale = 4.0 - (clampedProgress / zoomEndProgress * 3.0);
-                                return scale.toFixed(2);
-                            })()} {scrollProgress >= 0.75 ? '(konstant)' : '(zoomend)'}
+                            <strong>Logo Visible:</strong> {scrollProgress <= 0.15 ? '✅ Yes' : '❌ No'}
+                        </div>
+
+                        <div style={{
+                            marginBottom: '10px',
+                            color: showNewsletterStart ? '#00ff00' : '#999'
+                        }}>
+                            <strong>📧 Newsletter Start:</strong> {showNewsletterStart ? `✅ ${(newsletterStartOpacity * 100).toFixed(0)}%` : '❌ Hidden'}
+                        </div>
+
+                        <div style={{
+                            marginBottom: '10px',
+                            color: showNewsletterEnd ? '#8B5CF6' : '#999'
+                        }}>
+                            <strong>📧 Newsletter End:</strong> {showNewsletterEnd ? `✅ ${(newsletterEndOpacity * 100).toFixed(0)}%` : '❌ Hidden'} (ab 85%)
                         </div>
 
                         <div style={{ marginBottom: '10px' }}>
-                            <strong>Target Progress:</strong> {(currentSnapPoint.progress * 100).toFixed(0)}%
+                            <strong>Background Scale:</strong> {(() => {
+                                const zoomEndProgress = 0.75;
+                                if (scrollProgress <= zoomEndProgress) {
+                                    const scale = 4.0 - (scrollProgress / zoomEndProgress * 3.0);
+                                    return scale.toFixed(2) + ' (zooming)';
+                                } else {
+                                    return '1.00 (konstant)';
+                                }
+                            })()}
                         </div>
 
                         <div style={{
@@ -433,15 +525,9 @@ const EnhancedSimplePage = () => {
                             fontSize: '10px',
                             color: '#4CAF50'
                         }}>
-                            ✅ CLEAN: Eine Animation, kein Ruckeln, performant
-                        </div>
-
-                        <div style={{
-                            marginTop: '8px',
-                            fontSize: '9px',
-                            color: '#ffff00'
-                        }}>
-                            🎭 Audio/Titel: SOFORT | 🌌 Zoom: 0→75% dann konstant
+                            ✅ Newsletter: Simple Integration (kann nie brechen)
+                            <br />📧 Snap 0 (mit Logo) + Snap 5 (Ende)
+                            <br />🛡️ Robust: Keine Abhängigkeiten
                         </div>
                     </div>
                 )}
@@ -461,9 +547,12 @@ const EnhancedSimplePage = () => {
                         }}
                     >
                         {SNAP_POINTS.map((point, index) => {
+                            const hasLogo = index === 0;
                             const hasTitle = index >= 1 && index <= 3;
                             const hasTitleAudio = index >= 1 && index <= 3;
-                            const hasTheme = index >= 4 && index <= 5;
+                            const hasTheme = index === 4;
+                            const hasNewsletterStart = index === 0; // Snap 0
+                            const hasNewsletterEnd = index === 5;   // Snap 5 (Newsletter startet bei 85%)
                             const isActive = activeSnapPoint === index;
 
                             return (
@@ -475,7 +564,7 @@ const EnhancedSimplePage = () => {
                                         height: '50px',
                                         borderRadius: '50%',
                                         background: isActive
-                                            ? (hasTheme ? '#ffaa00' : hasTitleAudio ? '#ff6b6b' : hasTitle ? '#4CAF50' : '#ffff00')
+                                            ? (hasNewsletterEnd ? '#8B5CF6' : hasNewsletterStart ? '#ff9500' : hasLogo ? '#ffaa00' : hasTheme ? '#ff6b6b' : hasTitleAudio ? '#4CAF50' : hasTitle ? '#4CAF50' : '#ffff00')
                                             : 'rgba(255,255,255,0.3)',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -485,16 +574,33 @@ const EnhancedSimplePage = () => {
                                         fontWeight: 'bold',
                                         color: isActive ? '#000' : '#fff',
                                         border: `2px solid ${isActive
-                                            ? (hasTheme ? '#ffaa00' : hasTitleAudio ? '#ff6b6b' : hasTitle ? '#4CAF50' : '#ffff00')
-                                            : (hasTheme ? '#ffaa00' : hasTitleAudio ? '#ff6b6b' : hasTitle ? '#4CAF50' : 'transparent')
+                                            ? (hasNewsletterEnd ? '#8B5CF6' : hasNewsletterStart ? '#ff9500' : hasLogo ? '#ffaa00' : hasTheme ? '#ff6b6b' : hasTitleAudio ? '#4CAF50' : hasTitle ? '#4CAF50' : '#ffff00')
+                                            : (hasNewsletterEnd ? '#8B5CF6' : hasNewsletterStart ? '#ff9500' : hasLogo ? '#ffaa00' : hasTheme ? '#ff6b6b' : hasTitleAudio ? '#4CAF50' : hasTitle ? '#4CAF50' : 'transparent')
                                             }`,
                                         transition: 'all 0.3s ease',
                                         userSelect: 'none',
                                         position: 'relative'
                                     }}
-                                    title={`${point.label}${hasTitle ? ' (mit Titel)' : ''}${hasTitleAudio ? ' (mit Audio+BG)' : ''}${hasTheme ? ' (mit Theme)' : ''}`}
+                                    title={`${point.label}${hasNewsletterEnd ? ' (Newsletter ab 85%)' : ''}${hasNewsletterStart ? ' (Newsletter Start)' : ''}${hasLogo ? ' (mit Logo)' : ''}${hasTitle ? ' (mit Titel)' : ''}${hasTitleAudio ? ' (mit Audio+BG)' : ''}${hasTheme ? ' (mit Theme)' : ''}`}
                                 >
                                     {index}
+                                    {/* Newsletter Indicators */}
+                                    {hasNewsletterStart && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '-8px',
+                                            right: '-8px',
+                                            fontSize: '12px'
+                                        }}>📧</div>
+                                    )}
+                                    {hasNewsletterEnd && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '-8px',
+                                            right: '-8px',
+                                            fontSize: '12px'
+                                        }}>📧</div>
+                                    )}
                                 </div>
                             );
                         })}
@@ -518,15 +624,15 @@ const EnhancedSimplePage = () => {
                         marginBottom: '20px',
                         color: '#4CAF50'
                     }}>
-                        AniTune Clean
+                        AniTune Enhanced
                     </h1>
 
                     <h2 style={{
                         fontSize: isMobile ? '1.5rem' : '2rem',
                         marginBottom: '30px',
-                        color: '#ffff00'
+                        color: '#8B5CF6'
                     }}>
-                        🎯 EINE SAUBERE ANIMATION-LOGIK
+                        🏠📧 MIT SIMPLE NEWSLETTER
                     </h2>
 
                     <div style={{
@@ -534,6 +640,16 @@ const EnhancedSimplePage = () => {
                         marginBottom: '30px'
                     }}>
                         📍 {currentSnapPoint.label}
+                        {showNewsletterStart && (
+                            <span style={{ color: '#ff9500', marginLeft: '10px' }}>
+                                📧🏠
+                            </span>
+                        )}
+                        {showNewsletterEnd && (
+                            <span style={{ color: '#8B5CF6', marginLeft: '10px' }}>
+                                📧☀️
+                            </span>
+                        )}
                         {isAnimating && (
                             <span style={{ color: '#ff6b6b', marginLeft: '10px' }}>
                                 🎬
@@ -560,14 +676,17 @@ const EnhancedSimplePage = () => {
                         <div>🎯 <strong>Smooth Progress:</strong> {(scrollProgress * 100).toFixed(1)}%</div>
                         <div>🎪 <strong>Snap-Point:</strong> {activeSnapPoint}/5</div>
                         <div>⚡ <strong>Performance:</strong> {fps} FPS</div>
-                        <div style={{ color: '#4CAF50', marginTop: '10px' }}>
-                            ✅ <strong>CLEAN:</strong> Eine Animation, kein Ruckeln
+                        <div style={{ color: '#ffaa00', marginTop: '10px' }}>
+                            🏠 <strong>Logo:</strong> {scrollProgress <= 0.15 ? 'Sichtbar (Snap 0)' : 'Ausgeblendet'}
                         </div>
-                        <div style={{ color: '#ffff00', marginTop: '5px' }}>
-                            🎭 <strong>Audio/Titel:</strong> Starten sofort beim Wheel-Event
+                        <div style={{ color: '#ff9500', marginTop: '5px' }}>
+                            📧 <strong>Newsletter Start:</strong> {showNewsletterStart ? `Sichtbar (${(newsletterStartOpacity * 100).toFixed(0)}%)` : 'Ausgeblendet'}
                         </div>
-                        <div style={{ color: '#87CEEB', marginTop: '5px' }}>
-                            🌌 <strong>Background:</strong> Zoom bis Phase 4 (75%), dann konstant
+                        <div style={{ color: '#8B5CF6', marginTop: '5px' }}>
+                            📧 <strong>Newsletter Ende:</strong> {showNewsletterEnd ? `Sichtbar (${(newsletterEndOpacity * 100).toFixed(0)}%) - ab 85%` : 'Ausgeblendet (ab 85%)'}
+                        </div>
+                        <div style={{ color: '#4CAF50', marginTop: '5px' }}>
+                            ✅ <strong>Integration:</strong> Simple & Robust (kann nie brechen)
                         </div>
                     </div>
                 </div>
@@ -585,18 +704,18 @@ const EnhancedSimplePage = () => {
                             fontSize: '1.2rem'
                         }}
                     >
-                        Clean Sektion {i + 2}
+                        Enhanced Sektion {i + 2}
                         <span style={{
-                            color: '#4CAF50',
+                            color: i === 3 ? '#8B5CF6' : '#ff9500', // Newsletter Ende bei ca. 85% (Section 5)
                             marginLeft: '15px',
                             fontSize: '2rem'
                         }}>
-                            ⚡
+                            {i === 3 ? '📧☀️' : '🏠📧'}
                         </span>
                     </div>
                 ))}
             </div>
-        </ErrorBoundary>
+        </React.Fragment>
     );
 };
 
