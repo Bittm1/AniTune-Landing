@@ -1,20 +1,22 @@
-// src/components/Enhanced/config/parallaxConfig.js - ANPASSBARE BEWEGUNGEN
+// src/components/Enhanced/config/parallaxConfig.js 
+// 🎯 ANGEPASST FÜR 7 SNAP-POINTS: 0%-15%-30%-45%-60%-80%-95%
 
-// ===== SNAP-POINT MAPPING (0-5) =====
+// ===== NEUE 7-SNAP-POINT MAPPING =====
 export const SNAP_POINT_MAPPING = {
-    0: { progress: 0.00, label: 'Logo + Newsletter' },      // 0%
-    1: { progress: 0.15, label: 'Von Uns Heißt Für Uns' }, // 15%
-    2: { progress: 0.35, label: 'Der Weg Ist Das Ziel' },  // 35%
-    3: { progress: 0.55, label: 'Die Community Heißt' },   // 55%
-    4: { progress: 0.75, label: 'AniTune Carousel' },      // 75%
-    5: { progress: 0.95, label: 'Newsletter CTA' }         // 95%
+    0: { progress: 0.00, label: 'Logo + Newsletter' },        // 0%
+    1: { progress: 0.15, label: 'Von Uns Heißt Für Uns' },   // 15%
+    2: { progress: 0.30, label: 'Der Weg Ist Das Ziel' },    // 30% (NEU: war 35%)
+    3: { progress: 0.45, label: 'Die Community Heißt' },     // 45% (NEU: war 55%)
+    4: { progress: 0.60, label: 'Parallax Vollansicht' },    // 60% (NEU: war 75%)
+    5: { progress: 0.80, label: 'Carousel Phase' },          // 80% (NEU: Leer)
+    6: { progress: 0.95, label: 'Newsletter CTA' }           // 95% (VERSCHOBEN: war Index 5)
 };
 
-// ===== LAYER MOVEMENT KONFIGURATION =====
-// Hier kannst du alle Bewegungen anpassen!
+// ===== LAYER MOVEMENT KONFIGURATION (ANGEPASST) =====
+// Alle Scroll-Bereiche wurden entsprechend der neuen Snap-Points angepasst!
 
 export const LAYER_CONFIG = {
-    // ===== BACKGROUND LAYER =====
+    // ===== BACKGROUND LAYER (unverändert) =====
     background: {
         active: true,
         movement: {
@@ -26,7 +28,7 @@ export const LAYER_CONFIG = {
         zIndex: 1
     },
 
-    // ===== STARFIELD LAYER =====
+    // ===== STARFIELD LAYER (unverändert) =====
     starfield: {
         active: true,
         movement: {
@@ -38,11 +40,11 @@ export const LAYER_CONFIG = {
         zIndex: 2
     },
 
-    // ===== BERGE LAYER =====
+    // ===== BERGE LAYER (ANGEPASST: 60% statt 75%) =====
     berge: {
         active: true,
         movement: {
-            scrollStart: 0.75,  // Snap 4 (75%)
+            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
             scrollEnd: 1.0,     // Ende (100%)
             posStart: -55,
             posEnd: 0,
@@ -52,11 +54,11 @@ export const LAYER_CONFIG = {
         zIndex: 3
     },
 
-    // ===== TAL LAYER =====
+    // ===== TAL LAYER (ANGEPASST: 45% statt 55%) =====
     tal: {
         active: true,
         movement: {
-            scrollStart: 0.55,  // Snap 3 (55%)
+            scrollStart: 0.45,  // NEU: Snap 3 (45% statt 55%)
             scrollEnd: 1.0,
             posStart: -60,
             posEnd: 0,
@@ -66,11 +68,11 @@ export const LAYER_CONFIG = {
         zIndex: 4
     },
 
-    // ===== WALD HINTEN LAYER =====
+    // ===== WALD HINTEN LAYER (ANGEPASST: 45% statt 55%) =====
     waldHinten: {
         active: true,
         movement: {
-            scrollStart: 0.55,  // Snap 3 (55%)
+            scrollStart: 0.45,  // NEU: Snap 3 (45% statt 55%)
             scrollEnd: 1.0,
             posStart: -35,
             posEnd: 0,
@@ -80,11 +82,11 @@ export const LAYER_CONFIG = {
         zIndex: 5
     },
 
-    // ===== FOREST LAYER =====
+    // ===== FOREST LAYER (ANGEPASST: 30% statt 35%) =====
     forest: {
         active: true,
         movement: {
-            scrollStart: 0.35,  // Snap 2 (35%)
+            scrollStart: 0.30,  // NEU: Snap 2 (30% statt 35%)
             scrollEnd: 1.0,
             posStart: -55,
             posEnd: 0,
@@ -94,25 +96,25 @@ export const LAYER_CONFIG = {
         zIndex: 6
     },
 
-    // ===== ROAD LAYER =====
+    // ===== ROAD LAYER (unverändert bei 15%) =====
     road: {
         active: true,
         movement: {
-            scrollStart: 0.15,  // Snap 1 (15%)
-            scrollEnd: 1.0,
+            scrollStart: 0.15,  // Snap 1 (15% - bleibt gleich)
+            scrollEnd: 0.55,
             posStart: -45,
             posEnd: 0,
-            opacityStart: 0.0,
-            opacityEnd: 0.3
+            opacityStart: 1,
+            opacityEnd: 1
         },
         zIndex: 7
     },
 
-    // ===== DOG LAYER =====
+    // ===== DOG LAYER (unverändert bei 15%) =====
     dog: {
         active: true,
         movement: {
-            scrollStart: 0.15,  // Snap 1 (15%)
+            scrollStart: 0.15,  // Snap 1 (15% - bleibt gleich)
             scrollEnd: 1.0,
             posStart: -33,
             posEnd: 12,
@@ -130,7 +132,7 @@ export const LAYER_CONFIG = {
         zIndex: 8
     },
 
-    // ===== MENGE LAYER =====
+    // ===== MENGE LAYER (für Newsletter Phase) =====
     menge: {
         active: true,
         movement: {
@@ -152,12 +154,12 @@ export const LAYER_CONFIG = {
         zIndex: 9
     },
 
-    // ===== LOGO LAYER =====
+    // ===== LOGO LAYER (unverändert) =====
     logo: {
         active: true,
         movement: {
             scrollStart: 0.0,
-            scrollEnd: 0.15,    // Bis Snap 1
+            scrollEnd: 0.15,    // Bis Snap 1 (bleibt gleich)
             scaleStart: 1.0,
             scaleEnd: 0.8,
             opacityStart: 1.0,
@@ -166,11 +168,25 @@ export const LAYER_CONFIG = {
         zIndex: 20
     },
 
-    // ===== CLOUD LAYERS =====
+    // ===== 📧 NEWSLETTER LAYER (BLEIBT bei 95%, aber Index 6) =====
+    newsletter: {
+        active: true,
+        movement: {
+            scrollStart: 0.95,   // Snap 6 (95% - bleibt gleich!)
+            scrollEnd: 1.0,      // Ende (100%)
+            posStart: 100,       // Startet unten off-screen
+            posEnd: -40,         // "Hoch in der Sonne"
+            opacityStart: 0.0,   // Fade in
+            opacityEnd: 1.0      // Voll sichtbar
+        },
+        zIndex: 60  // Hoch über allem
+    },
+
+    // ===== CLOUD LAYERS (ANGEPASST: 60% statt 75%) =====
     leftCloud: {
         active: true,
         movement: {
-            scrollStart: 0.75,  // Snap 4 (75%)
+            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
             scrollEnd: 1.0,     // Ende (100%)
             posStart: -60,
             posEnd: 5,
@@ -188,7 +204,7 @@ export const LAYER_CONFIG = {
     rightCloud: {
         active: true,
         movement: {
-            scrollStart: 0.75,  // Snap 4 (75%)
+            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
             scrollEnd: 1.0,
             posStart: -40,
             posEnd: 5,
@@ -203,11 +219,11 @@ export const LAYER_CONFIG = {
         zIndex: 15
     },
 
-    // ===== WOLKEN HINTEN LAYERS =====
+    // ===== WOLKEN HINTEN LAYERS (ANGEPASST: 60% statt 75%) =====
     leftCloudHinten: {
         active: true,
         movement: {
-            scrollStart: 0.75,  // Snap 4 (75%)
+            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
             scrollEnd: 1.0,
             posStart: -140,
             posEnd: 0,
@@ -225,7 +241,7 @@ export const LAYER_CONFIG = {
     rightCloudHinten: {
         active: true,
         movement: {
-            scrollStart: 0.75,  // Snap 4 (75%)
+            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
             scrollEnd: 1.0,
             posStart: -140,
             posEnd: 10,
@@ -241,21 +257,19 @@ export const LAYER_CONFIG = {
     }
 };
 
-// ===== RESPONSIVE KONFIGURATION =====
+// ===== RESPONSIVE KONFIGURATION (unverändert) =====
 export const RESPONSIVE_CONFIG = {
     desktop: {
-        // Desktop-spezifische Anpassungen
         multiplier: 1.0,
         titleFontSize: '2.5rem'
     },
     mobile: {
-        // Mobile-spezifische Anpassungen
         multiplier: 0.7,
         titleFontSize: '1.8rem'
     }
 };
 
-// ===== ANIMATION SPRINGS =====
+// ===== ANIMATION SPRINGS (unverändert) =====
 export const ANIMATION_SPRINGS = {
     smooth: {
         mass: 0.8,
@@ -283,17 +297,18 @@ export const ANIMATION_SPRINGS = {
     }
 };
 
-// ===== LAYER AKTIVIERUNG PRO SNAP-POINT =====
+// ===== LAYER AKTIVIERUNG PRO SNAP-POINT (ERWEITERT AUF 7) =====
 export const SNAP_POINT_LAYERS = {
     0: ['background', 'starfield', 'logo'],                           // Logo + Newsletter
     1: ['background', 'starfield', 'road', 'dog'],                   // Von Uns Heißt Für Uns
     2: ['background', 'starfield', 'road', 'dog', 'forest'],        // Der Weg Ist Das Ziel  
     3: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten'], // Die Community Heißt
-    4: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'berge', 'leftCloud', 'rightCloud', 'leftCloudHinten', 'rightCloudHinten'], // AniTune Carousel
-    5: ['background', 'starfield', 'menge']                          // Newsletter CTA
+    4: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'berge', 'leftCloud', 'rightCloud', 'leftCloudHinten', 'rightCloudHinten'], // Parallax Vollansicht
+    5: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'berge', 'leftCloud', 'rightCloud', 'leftCloudHinten', 'rightCloudHinten'], // Carousel Phase (gleiche Layer wie 4)
+    6: ['background', 'starfield', 'menge', 'newsletter']            // Newsletter CTA + menge
 };
 
-// ===== HELPER FUNCTIONS =====
+// ===== HELPER FUNCTIONS (erweitert für 7 Snap-Points) =====
 
 /**
  * Berechnet Position basierend auf scrollProgress und Layer-Config
@@ -335,7 +350,7 @@ function interpolate(start, end, progress) {
 }
 
 /**
- * Gibt aktive Layer für einen Snap-Point zurück
+ * Gibt aktive Layer für einen Snap-Point zurück (jetzt 0-6)
  */
 export function getActiveLayersForSnapPoint(snapPoint) {
     return SNAP_POINT_LAYERS[snapPoint] || [];
@@ -347,4 +362,65 @@ export function getActiveLayersForSnapPoint(snapPoint) {
 export function isLayerActiveAtSnapPoint(layerName, snapPoint) {
     const activeLayers = getActiveLayersForSnapPoint(snapPoint);
     return activeLayers.includes(layerName);
+}
+
+/**
+ * Validiert alle Layer-Konfigurationen für 7 Snap-Points
+ */
+export function validateAllConfigs() {
+    const errors = [];
+
+    // Prüfe SNAP_POINT_MAPPING
+    for (let i = 0; i <= 6; i++) {
+        if (!SNAP_POINT_MAPPING[i]) {
+            errors.push(`Missing SNAP_POINT_MAPPING for index ${i}`);
+        }
+    }
+
+    // Prüfe SNAP_POINT_LAYERS
+    for (let i = 0; i <= 6; i++) {
+        if (!SNAP_POINT_LAYERS[i]) {
+            errors.push(`Missing SNAP_POINT_LAYERS for index ${i}`);
+        }
+    }
+
+    if (errors.length > 0) {
+        console.error('🚨 CONFIG VALIDATION ERRORS:', errors);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Device-spezifische Konfiguration ermitteln
+ */
+export function getDeviceConfig() {
+    if (typeof window === 'undefined') return RESPONSIVE_CONFIG.desktop;
+
+    const isMobile = window.innerWidth < 768 && 'ontouchstart' in window;
+    return isMobile ? RESPONSIVE_CONFIG.mobile : RESPONSIVE_CONFIG.desktop;
+}
+
+// ===== DEBUG CONFIG (erweitert) =====
+export const DEBUG_CONFIG = {
+    enabled: process.env.NODE_ENV === 'development',
+    logLayerUpdates: true,
+    showLayerInfo: true,
+    logSnapPointChanges: true,
+    logScrollProgress: false
+};
+
+// ===== DEVELOPMENT DEBUG =====
+if (DEBUG_CONFIG.enabled) {
+    console.log('🎯 7-SNAP-POINT PARALLAX CONFIG GELADEN:');
+    console.log('📊 Snap-Point Mapping:', SNAP_POINT_MAPPING);
+    console.log('🌟 Layer Config Keys:', Object.keys(LAYER_CONFIG));
+    console.log('✅ Config Valid:', validateAllConfigs());
+
+    // Zeige Layer-Verteilung pro Snap-Point
+    console.log('🎬 LAYER AKTIVIERUNG PRO SNAP-POINT:');
+    for (let i = 0; i <= 6; i++) {
+        console.log(`  Snap ${i} (${(SNAP_POINT_MAPPING[i]?.progress * 100).toFixed(0)}%): ${getActiveLayersForSnapPoint(i).length} Layer`);
+    }
 }

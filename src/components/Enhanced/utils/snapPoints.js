@@ -1,14 +1,16 @@
 // src/components/Enhanced/utils/snapPoints.js
-// 🎯 SNAP-POINT KONFIGURATION für Enhanced SimplePage
+// 🎯 NEUE 7-SNAP-POINT KONFIGURATION für Enhanced SimplePage
+// ✅ GLEICHMÄSSIGE VERTEILUNG: 0%-15%-30%-45%-60%-80%-95%
 
 /**
- * 6 SNAP-POINTS für Enhanced SimplePage
+ * 7 SNAP-POINTS für Enhanced SimplePage
+ * Gleichmäßige Verteilung für bessere User Experience
  * Jeder Punkt hat: Index, Progress (0-1), Label, Snap-Verhalten
  */
 export const SNAP_POINTS = [
     {
         index: 0,
-        progress: 0.00,
+        progress: 0.00,  // 0%
         label: 'Logo + Newsletter',
         description: 'Startbildschirm mit Logo und Newsletter-Anmeldung',
         snapDuration: 1.2,
@@ -16,41 +18,49 @@ export const SNAP_POINTS = [
     },
     {
         index: 1,
-        progress: 0.15,
+        progress: 0.15,  // 15%
         label: 'Von Uns Heißt Für Uns',
-        description: 'Erster Titel mit Audio',
+        description: 'Erster Titel mit Audio - Parallax Bewegung beginnt',
         snapDuration: 1.0,
         snapEase: 'power2.out'
     },
     {
         index: 2,
-        progress: 0.35,
+        progress: 0.30,  // 30% (NEU: war 35%)
         label: 'Der Weg Ist Das Ziel',
-        description: 'Zweiter Titel mit Audio',
+        description: 'Zweiter Titel mit Audio - Wald Layer kommen dazu',
         snapDuration: 1.0,
         snapEase: 'power2.out'
     },
     {
         index: 3,
-        progress: 0.55,
+        progress: 0.45,  // 45% (NEU: war 55%)
         label: 'Die Community Heißt',
-        description: 'Dritter Titel mit Audio',
+        description: 'Dritter Titel mit Audio - Tal und Wald Hinten Layer',
         snapDuration: 1.0,
         snapEase: 'power2.out'
     },
     {
         index: 4,
-        progress: 0.75,
-        label: 'AniTune Carousel',
-        description: 'Carousel mit AniTune Features',
+        progress: 0.60,  // 60% (NEU: war 75%)
+        label: 'Parallax Vollansicht',
+        description: 'Alle Parallax Layer voll sichtbar - Berge, Wolken, komplette Szene',
         snapDuration: 1.2,
         snapEase: 'power2.inOut'
     },
     {
         index: 5,
-        progress: 0.95,
+        progress: 0.80,  // 80% (NEU: Leer für Carousel)
+        label: 'Carousel Phase',
+        description: 'Leere Phase - hier kommt später das AniTune Carousel rein',
+        snapDuration: 1.2,
+        snapEase: 'power2.inOut'
+    },
+    {
+        index: 6,
+        progress: 0.95,  // 95% (VERSCHOBEN: war Index 5)
         label: 'Newsletter CTA',
-        description: 'Abschließender Newsletter Call-to-Action',
+        description: 'Abschließender Newsletter Call-to-Action hoch in der Sonne',
         snapDuration: 1.2,
         snapEase: 'power2.inOut'
     }
@@ -58,6 +68,7 @@ export const SNAP_POINTS = [
 
 /**
  * 🎯 SNAP-POINT UTILITIES
+ * Alle Funktionen funktionieren weiterhin mit 7 Snap-Points
  */
 
 // Finde Snap-Point by Index
@@ -93,12 +104,12 @@ export const getPrevSnapPoint = (currentIndex) => {
     return getSnapPointByIndex(prevIndex);
 };
 
-// Alle Snap-Point Indices
+// Alle Snap-Point Indices (jetzt 0-6 statt 0-5)
 export const getAllSnapIndices = () => {
     return SNAP_POINTS.map(point => point.index);
 };
 
-// Validierung
+// Validierung (jetzt für 7 Snap-Points)
 export const isValidSnapIndex = (index) => {
     return index >= 0 && index < SNAP_POINTS.length;
 };
@@ -109,9 +120,68 @@ export const getSnapPointDebugInfo = () => {
         index: point.index,
         progress: point.progress,
         percentage: (point.progress * 100).toFixed(0) + '%',
-        label: point.label
+        label: point.label,
+        description: point.description
     }));
 };
+
+// ===== NEUE HELPER FUNCTIONS FÜR 7-SNAP-SYSTEM =====
+
+/**
+ * Gibt gleichmäßige Abstände zwischen Snap-Points zurück
+ */
+export const getSnapPointIntervals = () => {
+    const intervals = [];
+    for (let i = 0; i < SNAP_POINTS.length - 1; i++) {
+        const current = SNAP_POINTS[i];
+        const next = SNAP_POINTS[i + 1];
+        intervals.push({
+            from: current.index,
+            to: next.index,
+            distance: next.progress - current.progress,
+            percentage: ((next.progress - current.progress) * 100).toFixed(0) + '%'
+        });
+    }
+    return intervals;
+};
+
+/**
+ * Prüft ob Index in Audio-Bereich (1-3) liegt
+ */
+export const isAudioSnapPoint = (index) => {
+    return index >= 1 && index <= 3;
+};
+
+/**
+ * Prüft ob Index in Parallax-Bereich (1-4) liegt  
+ */
+export const isParallaxSnapPoint = (index) => {
+    return index >= 1 && index <= 4;
+};
+
+/**
+ * Prüft ob Index Newsletter-Snap-Point (6) ist
+ */
+export const isNewsletterSnapPoint = (index) => {
+    return index === 6;
+};
+
+/**
+ * Prüft ob Index leere Carousel-Phase (5) ist
+ */
+export const isCarouselSnapPoint = (index) => {
+    return index === 5;
+};
+
+// ===== DEVELOPMENT DEBUG =====
+if (process.env.NODE_ENV === 'development') {
+    console.log('🎯 NEUE 7-SNAP-POINT STRUKTUR GELADEN:');
+    console.table(getSnapPointDebugInfo());
+    console.log('📊 SNAP-POINT ABSTÄNDE:');
+    console.table(getSnapPointIntervals());
+    console.log('🎵 Audio Snap-Points:', getAllSnapIndices().filter(isAudioSnapPoint));
+    console.log('🌟 Parallax Snap-Points:', getAllSnapIndices().filter(isParallaxSnapPoint));
+}
 
 export default {
     SNAP_POINTS,
@@ -121,5 +191,10 @@ export default {
     getPrevSnapPoint,
     getAllSnapIndices,
     isValidSnapIndex,
-    getSnapPointDebugInfo
-  };
+    getSnapPointDebugInfo,
+    getSnapPointIntervals,
+    isAudioSnapPoint,
+    isParallaxSnapPoint,
+    isNewsletterSnapPoint,
+    isCarouselSnapPoint
+};

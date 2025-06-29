@@ -1,11 +1,12 @@
-// src/components/Enhanced/AudioLayer.jsx - STUFE 3: AUDIO SYSTEM
+// src/components/Enhanced/AudioLayer.jsx - REPARIERT FÜR 7 SNAP-POINTS
+// 🎯 TITEL-AUDIO: Snap 1-3 | HINTERGRUNDMUSIK: Snap 1-3 | THEME: Snap 4-5 | SNAP 6: Newsletter
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import gsap from 'gsap';
 import ErrorBoundary from '../ErrorBoundary';
 
-// ===== AUDIO KONFIGURATION =====
+// ===== AUDIO KONFIGURATION (UNVERÄNDERT) =====
 const AUDIO_CONFIG = [
     {
         id: 'audio-1',
@@ -52,10 +53,10 @@ const EnhancedAudioLayer = ({
     // ===== REFS =====
     const audioRefs = useRef([]);
     const backgroundMusicRef = useRef(null);
-    const themeMusicRef = useRef(null); // ✅ NEU: Theme Music Ref
+    const themeMusicRef = useRef(null);
     const currentAudioRef = useRef(null);
     const backgroundTweenRef = useRef(null);
-    const themeTweenRef = useRef(null); // ✅ NEU: Theme Tween Ref
+    const themeTweenRef = useRef(null);
     const lastTriggeredSnapPointRef = useRef(0);
     const snapPointDebounceRef = useRef(null);
     const stableSnapPointRef = useRef(0);
@@ -65,8 +66,8 @@ const EnhancedAudioLayer = ({
     const [backgroundMusicEnabled, setBackgroundMusicEnabled] = useState(true);
     const [backgroundMusicPlaying, setBackgroundMusicPlaying] = useState(false);
     const [backgroundMusicVolume, setBackgroundMusicVolume] = useState(0);
-    const [themeMusicPlaying, setThemeMusicPlaying] = useState(false); // ✅ NEU: Theme State
-    const [themeMusicVolume, setThemeMusicVolume] = useState(0); // ✅ NEU: Theme Volume
+    const [themeMusicPlaying, setThemeMusicPlaying] = useState(false);
+    const [themeMusicVolume, setThemeMusicVolume] = useState(0);
     const [buttonPortal, setButtonPortal] = useState(null);
 
     // ===== SCROLL TRACKING =====
@@ -123,7 +124,6 @@ const EnhancedAudioLayer = ({
             backgroundTweenRef.current.kill();
         }
 
-        // ✅ IMMER VON NEUEM STARTEN
         backgroundMusicRef.current.currentTime = 0;
         backgroundMusicRef.current.volume = 0;
         setBackgroundMusicVolume(0);
@@ -202,7 +202,6 @@ const EnhancedAudioLayer = ({
             themeTweenRef.current.kill();
         }
 
-        // ✅ IMMER VON NEUEM STARTEN
         themeMusicRef.current.currentTime = 0;
         themeMusicRef.current.volume = 0;
         setThemeMusicVolume(0);
@@ -226,7 +225,7 @@ const EnhancedAudioLayer = ({
         }
 
         themeTweenRef.current = gsap.to(themeMusicRef.current, {
-            volume: 0.5, // ✅ LAUTER: 0.3 → 0.5
+            volume: 0.5,
             duration: duration,
             ease: 'power2.out',
             onUpdate: () => {
@@ -268,15 +267,16 @@ const EnhancedAudioLayer = ({
         });
     }, []);
 
-    // ===== HINTERGRUNDMUSIK + THEME LOGIK =====
+    // ===== HINTERGRUNDMUSIK + THEME LOGIK (ANGEPASST FÜR 7 SNAP-POINTS) =====
     useEffect(() => {
         if (!backgroundMusicEnabled) return;
 
         const scrollDirection = detectScrollDirection(scrollProgress);
         const isFirstScrollDown = scrollDirection === 'down' && !backgroundMusicStartedRef.current;
         const isInSnapPoints1to3 = activeSnapPoint >= 1 && activeSnapPoint <= 3;
-        const isInSnapPoints4to5 = activeSnapPoint >= 4 && activeSnapPoint <= 5;
+        const isInSnapPoints4to5 = activeSnapPoint >= 4 && activeSnapPoint <= 5; // ✅ BLEIBT 4-5
         const isInSnapPoint0 = activeSnapPoint === 0;
+        const isInSnapPoint6 = activeSnapPoint === 6; // ✅ NEU: Newsletter Snap
 
         // ===== ERSTES SCROLLEN =====
         if (isFirstScrollDown && scrollProgress > 0.05) {
@@ -293,12 +293,10 @@ const EnhancedAudioLayer = ({
 
         // ===== SNAP 1-3: HINTERGRUNDMUSIK =====
         if (isInSnapPoints1to3) {
-            // Theme stoppen, Hintergrundmusik starten
             if (themeMusicPlaying) {
                 if (process.env.NODE_ENV === 'development') {
                     console.log(`🔄 SNAP 1-3: Theme → Hintergrundmusik (SAUBERE ÜBERBLENDUNG)`);
                 }
-                // ✅ SAUBERE ÜBERBLENDUNG: Beide Audio parallel
                 fadeThemeMusicOut(0.3);
                 fadeBackgroundMusicIn(0.3);
             } else if (!backgroundMusicPlaying && backgroundMusicStartedRef.current) {
@@ -311,12 +309,10 @@ const EnhancedAudioLayer = ({
 
         // ===== SNAP 4-5: THEME MUSIC =====
         if (isInSnapPoints4to5) {
-            // Hintergrundmusik stoppen, Theme starten
             if (backgroundMusicPlaying) {
                 if (process.env.NODE_ENV === 'development') {
                     console.log(`🔄 SNAP 4-5: Hintergrundmusik → Theme (SAUBERE ÜBERBLENDUNG)`);
                 }
-                // ✅ SAUBERE ÜBERBLENDUNG: Beide Audio parallel
                 fadeBackgroundMusicOut(0.3);
                 fadeThemeMusicIn(0.3);
             } else if (!themeMusicPlaying && backgroundMusicStartedRef.current) {
@@ -327,17 +323,17 @@ const EnhancedAudioLayer = ({
             }
         }
 
-        // ===== SNAP 0: ALLES STOPPEN =====
-        if (isInSnapPoint0) {
+        // ===== SNAP 0 & 6: ALLES STOPPEN ===== ✅ ERWEITERT für Snap 6
+        if (isInSnapPoint0 || isInSnapPoint6) {
             if (backgroundMusicPlaying) {
                 if (process.env.NODE_ENV === 'development') {
-                    console.log(`🛑 SNAP 0: Stoppe Hintergrundmusik`);
+                    console.log(`🛑 SNAP ${activeSnapPoint}: Stoppe Hintergrundmusik`);
                 }
                 fadeBackgroundMusicOut(2.0);
             }
             if (themeMusicPlaying) {
                 if (process.env.NODE_ENV === 'development') {
-                    console.log(`🛑 SNAP 0: Stoppe Theme`);
+                    console.log(`🛑 SNAP ${activeSnapPoint}: Stoppe Theme`);
                 }
                 fadeThemeMusicOut(2.0);
             }
@@ -375,7 +371,7 @@ const EnhancedAudioLayer = ({
 
         if (process.env.NODE_ENV === 'development') {
             console.log(`🎵 PLAY-VERSUCH:`);
-            console.log(`   🎯 Snap-Point: ${snapPoint}`);
+            console.log(`   🎯 Snap-Point: ${snapPoint}/6`); // ✅ ANGEPASST /6
             console.log(`   🎭 Titel: "${audioConfig ? audioConfig.title : 'NICHT GEFUNDEN'}"`);
             console.log(`   📁 Datei: ${audioConfig ? audioConfig.fileName : 'NICHT GEFUNDEN'}`);
             console.log(`   ❓ Reason: ${reason}`);
@@ -396,7 +392,6 @@ const EnhancedAudioLayer = ({
             return;
         }
 
-        // Stoppe vorheriges Audio nur wenn notwendig
         if (currentAudioRef.current && currentAudioRef.current !== audio) {
             if (process.env.NODE_ENV === 'development') {
                 console.log(`🛑 Stoppe vorheriges Audio`);
@@ -440,13 +435,13 @@ const EnhancedAudioLayer = ({
         snapPointDebounceRef.current = setTimeout(() => {
             if (stableSnapPointRef.current !== newSnapPoint) {
                 if (process.env.NODE_ENV === 'development') {
-                    console.log(`🎯 STABLE SNAP-POINT: ${stableSnapPointRef.current} → ${newSnapPoint}`);
+                    console.log(`🎯 STABLE SNAP-POINT: ${stableSnapPointRef.current} → ${newSnapPoint}/6`); // ✅ /6
                 }
 
                 stableSnapPointRef.current = newSnapPoint;
 
-                // Snap-Points 1-4 haben Audio
-                if (newSnapPoint >= 1 && newSnapPoint <= 4 && newSnapPoint !== lastTriggeredSnapPointRef.current) {
+                // Snap-Points 1-3 haben Audio (UNVERÄNDERT)
+                if (newSnapPoint >= 1 && newSnapPoint <= 3 && newSnapPoint !== lastTriggeredSnapPointRef.current) {
                     if (process.env.NODE_ENV === 'development') {
                         console.log(`🎵 STABLE SNAP-POINT-WECHSEL: → Snap ${newSnapPoint} - Starte Audio`);
                     }
@@ -462,8 +457,8 @@ const EnhancedAudioLayer = ({
                     lastTriggeredSnapPointRef.current = newSnapPoint;
                 }
 
-                // Snap-Points 0 und 5 haben kein Audio
-                if ((newSnapPoint === 0 || newSnapPoint === 5) && lastTriggeredSnapPointRef.current !== newSnapPoint) {
+                // ✅ ERWEITERT: Snap-Points 0, 4, 5, 6 haben kein Titel-Audio
+                if ((newSnapPoint === 0 || newSnapPoint >= 4) && lastTriggeredSnapPointRef.current !== newSnapPoint) {
                     if (process.env.NODE_ENV === 'development') {
                         console.log(`🛑 STABLE SNAP-EXIT: Verlasse Audio-Bereiche (Snap ${newSnapPoint})`);
                     }
@@ -471,18 +466,18 @@ const EnhancedAudioLayer = ({
                     lastTriggeredSnapPointRef.current = newSnapPoint;
                 }
             }
-        }, 300); // 300ms Debounce
+        }, 300);
     }, [playAudio, stopAllAudio]);
 
-    // ===== SNAP-POINT CHANGE HANDLING =====
+    // ===== SNAP-POINT CHANGE HANDLING (ANGEPASST FÜR 7 SNAP-POINTS) =====
     useEffect(() => {
         if (!isAudioEnabled) return;
 
         if (process.env.NODE_ENV === 'development') {
-            console.log(`📊 SNAP-POINT TRIGGER: Active=${activeSnapPoint}, LastTriggered=${lastTriggeredSnapPointRef.current}, Scroll=${(scrollProgress * 100).toFixed(1)}%`);
+            console.log(`📊 SNAP-POINT TRIGGER: Active=${activeSnapPoint}/6, LastTriggered=${lastTriggeredSnapPointRef.current}, Scroll=${(scrollProgress * 100).toFixed(1)}%`); // ✅ /6
         }
 
-        // Sofortiger Trigger für Snap-Point Änderungen
+        // Sofortiger Trigger für Snap-Point Änderungen (UNVERÄNDERT: 1-3)
         if (activeSnapPoint >= 1 && activeSnapPoint <= 3 && activeSnapPoint !== lastTriggeredSnapPointRef.current) {
             if (process.env.NODE_ENV === 'development') {
                 console.log(`🎵 SOFORTIGER SNAP-POINT-WECHSEL: → Snap ${activeSnapPoint} - Starte Titel-Audio SOFORT`);
@@ -496,16 +491,16 @@ const EnhancedAudioLayer = ({
             lastTriggeredSnapPointRef.current = activeSnapPoint;
         }
 
-        // Snap-Points 4-5: Nur Theme, kein Titel-Audio
-        if ((activeSnapPoint === 4 || activeSnapPoint === 5) && lastTriggeredSnapPointRef.current !== activeSnapPoint) {
+        // ✅ ERWEITERT: Snap-Points 4-6: Nur Theme/kein Audio, kein Titel-Audio
+        if ((activeSnapPoint >= 4 && activeSnapPoint <= 6) && lastTriggeredSnapPointRef.current !== activeSnapPoint) {
             if (process.env.NODE_ENV === 'development') {
-                console.log(`🎸 SNAP ${activeSnapPoint}: Nur Theme, stoppe Titel-Audio`);
+                console.log(`🎸 SNAP ${activeSnapPoint}: Nur Theme/Silent, stoppe Titel-Audio`);
             }
             stopAllAudio();
             lastTriggeredSnapPointRef.current = activeSnapPoint;
         }
 
-        // Snap-Points ohne Audio
+        // Snap-Point 0 ohne Audio (UNVERÄNDERT)
         if (activeSnapPoint === 0 && lastTriggeredSnapPointRef.current !== activeSnapPoint) {
             if (process.env.NODE_ENV === 'development') {
                 console.log(`🛑 SNAP-EXIT: Verlasse Audio-Bereiche (Snap ${activeSnapPoint})`);
@@ -514,7 +509,6 @@ const EnhancedAudioLayer = ({
             lastTriggeredSnapPointRef.current = activeSnapPoint;
         }
 
-        // Zusätzlich: Debounced Update für Stabilität
         updateStableSnapPoint(activeSnapPoint);
 
     }, [activeSnapPoint, isAudioEnabled, playAudio, stopAllAudio, scrollProgress, updateStableSnapPoint]);
@@ -554,7 +548,7 @@ const EnhancedAudioLayer = ({
     const manualPlayCurrentSnapPoint = useCallback(() => {
         if (process.env.NODE_ENV === 'development') {
             console.log(`👆 MANUAL PLAY:`);
-            console.log(`   Active Snap-Point: ${activeSnapPoint}`);
+            console.log(`   Active Snap-Point: ${activeSnapPoint}/6`); // ✅ /6
             console.log(`   Scroll Progress: ${(scrollProgress * 100).toFixed(1)}%`);
         }
 
@@ -572,10 +566,14 @@ const EnhancedAudioLayer = ({
                 lastTriggeredSnapPointRef.current = activeSnapPoint;
                 stableSnapPointRef.current = activeSnapPoint;
             }, 50);
-        } else if (activeSnapPoint >= 4 && activeSnapPoint <= 5) {
+        } else if (activeSnapPoint >= 4 && activeSnapPoint <= 6) { // ✅ ERWEITERT auf 6
             if (process.env.NODE_ENV === 'development') {
-                console.log(`   → Snap ${activeSnapPoint}: Nur Theme läuft (kein Titel-Audio)`);
-                console.log(`   → Theme: ${THEME_MUSIC.title}`);
+                console.log(`   → Snap ${activeSnapPoint}: Nur Theme/Silent läuft (kein Titel-Audio)`);
+                if (activeSnapPoint <= 5) {
+                    console.log(`   → Theme: ${THEME_MUSIC.title}`);
+                } else {
+                    console.log(`   → Newsletter: Silent`);
+                }
             }
         } else {
             if (process.env.NODE_ENV === 'development') {
@@ -709,7 +707,7 @@ const EnhancedAudioLayer = ({
                 ▶️
             </button>
 
-            {/* ===== DEBUG PANEL (NUR DEVELOPMENT) ===== */}
+            {/* ===== DEBUG PANEL (ANGEPASST FÜR 7 SNAP-POINTS) ===== */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
@@ -730,10 +728,10 @@ const EnhancedAudioLayer = ({
                     }}
                 >
                     <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#ff6b6b' }}>
-                        🎵 ENHANCED AUDIO SYSTEM - STUFE 3
+                        🎵 AUDIO SYSTEM - 7 SNAP-POINTS REPARIERT
                     </div>
 
-                    <div>📍 Active Snap-Point: {activeSnapPoint}/5</div>
+                    <div>📍 Active Snap-Point: {activeSnapPoint}/6</div> {/* ✅ /6 */}
                     <div>📊 Scroll Progress: {(scrollProgress * 100).toFixed(1)}%</div>
                     <div>🎯 Stable Snap-Point: {stableSnapPointRef.current}</div>
                     <div>🎯 Last Triggered: {lastTriggeredSnapPointRef.current}</div>
@@ -746,7 +744,7 @@ const EnhancedAudioLayer = ({
 
                     <div style={{ marginTop: '8px', borderTop: '1px solid #333', paddingTop: '8px' }}>
                         <div style={{ fontSize: '10px', color: '#ffff00' }}>
-                            🎵 AUDIO MAPPING (NEU):
+                            🎵 AUDIO MAPPING (7 SNAP-POINTS): {/* ✅ Hinweis */}
                         </div>
                         {AUDIO_CONFIG.map((config) => (
                             <div key={config.id} style={{
@@ -761,6 +759,12 @@ const EnhancedAudioLayer = ({
                             color: (activeSnapPoint === 4 || activeSnapPoint === 5) ? '#ff6b6b' : '#ccc'
                         }}>
                             Snap 4-5: "{THEME_MUSIC.title}" (ersetzt Hintergrundmusik)
+                        </div>
+                        <div style={{
+                            fontSize: '9px',
+                            color: activeSnapPoint === 6 ? '#ffaa00' : '#ccc'
+                        }}>
+                            Snap 6: Newsletter (Silent)
                         </div>
                     </div>
 
@@ -799,8 +803,8 @@ const EnhancedAudioLayer = ({
 
                         <button
                             onClick={() => {
-                                console.log('🎵 ENHANCED AUDIO DEBUG (NEU):');
-                                console.log('Active Snap-Point:', activeSnapPoint);
+                                console.log('🎵 AUDIO DEBUG (7 SNAP-POINTS):');
+                                console.log('Active Snap-Point:', activeSnapPoint + '/6');
                                 console.log('Titel-Audio Config:', AUDIO_CONFIG);
                                 console.log('Background Music:', BACKGROUND_MUSIC);
                                 console.log('Theme Music:', THEME_MUSIC);
@@ -812,10 +816,11 @@ const EnhancedAudioLayer = ({
                                     themeMusicPlaying,
                                     themeMusicVolume
                                 });
-                                console.log('Audio-System:', {
+                                console.log('Audio-System (7 Snap-Points):', {
+                                    'Snap 0': 'Kein Audio',
                                     'Snap 1-3': 'Titel-Audio + Hintergrundmusik',
                                     'Snap 4-5': 'Theme (ersetzt Hintergrundmusik)',
-                                    'Snap 0': 'Kein Audio'
+                                    'Snap 6': 'Newsletter (Silent)'
                                 });
                             }}
                             style={{
@@ -833,11 +838,12 @@ const EnhancedAudioLayer = ({
                     </div>
 
                     <div style={{ marginTop: '6px', fontSize: '9px', opacity: 0.7 }}>
-                        ✅ STUFE 3: Audio System (ANTI-STOTTER FIX)
-                        <br />🎼 Hintergrundmusik: Snap 1-3 (immer von vorne)
-                        <br />🎸 Theme: Snap 4-5 (immer von vorne)
+                        ✅ AUDIO SYSTEM REPARIERT FÜR 7 SNAP-POINTS
+                        <br />🎼 Hintergrundmusik: Snap 1-3
+                        <br />🎸 Theme: Snap 4-5
                         <br />🎵 Titel-Audio: Nur Snap 1-3
-                        <br />⏱️ 0.2s Fades + 100ms Delay (kein Stottern)
+                        <br />📧 Newsletter: Snap 6 (Silent)
+                        <br />⏱️ Smooth Fades + Debounce
                     </div>
                 </div>
             )}
@@ -902,7 +908,7 @@ const EnhancedAudioLayer = ({
                     />
                 </audio>
 
-                {/* ✅ NEU: Theme Music */}
+                {/* Theme Music */}
                 <audio
                     ref={themeMusicRef}
                     preload="auto"
