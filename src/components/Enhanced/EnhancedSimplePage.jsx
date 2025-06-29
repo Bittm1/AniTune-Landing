@@ -1,8 +1,11 @@
-// src/components/Enhanced/EnhancedSimplePage.jsx - 7 SNAP-POINTS AUF BASIS FUNKTIONIERENDEM CODE
+// src/components/Enhanced/EnhancedSimplePage.jsx - MIT ZENTRALEM DEBUG-PANEL
+// ✅ 7 SNAP-POINTS + LOCK-SCROLL SYSTEM + Aufgeräumtes Debug
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import EnhancedTitleLayer from './TitleLayer';
+import EnhancedTitleLayer from './TitleLayer'; // ✅ Jetzt verwendet den neuen TitleLayer mit Callbacks
 import EnhancedAudioLayer from './AudioLayer';
+import LockScrollLayer from './LockScrollLayer';
+import CentralDebugPanel from './CentralDebugPanel'; // ✅ NEU: Zentrales Debug
 import BackgroundLayer from './layers/BackgroundLayer';
 import RoadLayer from './layers/RoadLayer';
 import LogoLayer from './layers/LogoLayer';
@@ -17,13 +20,31 @@ import {
 } from './utils/snapPoints';
 
 const EnhancedSimplePage = () => {
-    // ===== STATES =====
+    // ===== EXISTING STATES =====
     const [scrollProgress, setScrollProgress] = useState(0);
     const [activeSnapPoint, setActiveSnapPoint] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
     const [fps, setFps] = useState(60);
 
-    // ===== REFS =====
+    // ===== NEW STATES FÜR ERWEITERTE LOCK-LOGIK =====
+    const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+    const [audioPlayingSnapPoint, setAudioPlayingSnapPoint] = useState(null);
+    const [isTitleAnimating, setIsTitleAnimating] = useState(false); // ✅ NEU: Titel-Animation Status
+    const [titleAnimatingSnapPoint, setTitleAnimatingSnapPoint] = useState(null); // ✅ NEU
+
+    // ===== ADDITIONAL STATES FÜR DEBUG =====
+    const [backgroundMusicPlaying, setBackgroundMusicPlaying] = useState(false);
+    const [backgroundMusicVolume, setBackgroundMusicVolume] = useState(0);
+    const [themeMusicPlaying, setThemeMusicPlaying] = useState(false);
+    const [themeMusicVolume, setThemeMusicVolume] = useState(0);
+    const [isLocked, setIsLocked] = useState(false);
+    const [shouldShowScrollIndicator, setShouldShowScrollIndicator] = useState(false); // ✅ UMBENANNT
+    const [currentlyPlayingAudio, setCurrentlyPlayingAudio] = useState(null);
+
+    // ===== DEBUG PORTAL =====
+    const [debugPortal, setDebugPortal] = useState(null);
+
+    // ===== EXISTING REFS =====
     const containerRef = useRef(null);
     const scrollTimeoutRef = useRef(null);
     const frameCountRef = useRef(0);
@@ -35,7 +56,32 @@ const EnhancedSimplePage = () => {
         return window.innerWidth < 768 && 'ontouchstart' in window;
     });
 
-    // ===== SCROLL CALCULATIONS =====
+    // ===== DEBUG PORTAL SETUP =====
+    useEffect(() => {
+        if (process.env.NODE_ENV === 'development') {
+            const container = document.createElement('div');
+            container.id = 'central-debug-portal';
+            container.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 999999;
+            `;
+            document.body.appendChild(container);
+            setDebugPortal(container);
+
+            return () => {
+                if (document.body.contains(container)) {
+                    document.body.removeChild(container);
+                }
+            };
+        }
+    }, []);
+
+    // ===== SCROLL CALCULATIONS (UNVERÄNDERT) =====
     const calculateScrollProgress = useCallback(() => {
         if (typeof window === 'undefined') return 0;
 
@@ -53,9 +99,8 @@ const EnhancedSimplePage = () => {
         return snapPoint.index;
     }, []);
 
-    // ===== ANIMATION =====
+    // ===== ANIMATION (UNVERÄNDERT) =====
     const animateToSnapPoint = useCallback((targetIndex) => {
-        // ✅ ERWEITERT: 0-6 statt 0-5
         if (isAnimating || targetIndex < 0 || targetIndex >= SNAP_POINTS.length) return;
         if (targetIndex === activeSnapPoint) return;
 
@@ -97,7 +142,85 @@ const EnhancedSimplePage = () => {
         requestAnimationFrame(animate);
     }, [isAnimating, activeSnapPoint, scrollProgress, isMobile]);
 
-    // ===== SCROLL UPDATE =====
+    // ===== NEW FUNCTIONS FÜR ERWEITERTE LOCK-SCROLL SYSTEM =====
+    const audioLayerRef = useRef(null);
+    const titleLayerRef = useRef(null); // ✅ NEU: Ref für Titel-Layer
+
+    const skipAudio = useCallback(() => {
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`⏭️ SKIP AUDIO + TITEL: User überspringt bei Snap ${activeSnapPoint}`);
+        }
+
+        // ✅ Audio stoppen
+        if (audioLayerRef.current && audioLayerRef.current.handleSkipAudio) {
+            audioLayerRef.current.handleSkipAudio();
+        }
+
+        // ✅ Titel-Animation sofort beenden (falls möglich)
+        if (titleLayerRef.current && titleLayerRef.current.handleSkipAnimation) {
+            titleLayerRef.current.handleSkipAnimation();
+        }
+
+        // Optional: Zum nächsten Snap-Point springen
+        if (activeSnapPoint >= 1 && activeSnapPoint < 3) {
+            const nextPoint = getNextSnapPoint(activeSnapPoint);
+            setTimeout(() => {
+                animateToSnapPoint(nextPoint.index);
+            }, 200);
+        }
+    }, [activeSnapPoint, animateToSnapPoint]);
+
+    const goToTop = useCallback(() => {
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`⬆️ GO TO TOP: User springt zurück zum Start`);
+        }
+        animateToSnapPoint(0);
+    }, [animateToSnapPoint]);
+
+    // ===== TITLE ANIMATION STATUS HANDLER =====
+    const handleTitleAnimationChange = useCallback((animating, snapPoint = null) => {
+        setIsTitleAnimating(animating);
+        setTitleAnimatingSnapPoint(animating ? snapPoint : null);
+
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`🎭 TITLE ANIMATION STATUS: ${animating ? 'Playing' : 'Finished'} - Snap ${snapPoint || 'N/A'}`);
+        }
+    }, []);
+
+    // ===== AUDIO STATUS HANDLER =====
+    const handleAudioPlayingChange = useCallback((playing, snapPoint = null) => {
+        setIsAudioPlaying(playing);
+        setAudioPlayingSnapPoint(playing ? snapPoint : null);
+
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`🎵 AUDIO STATUS CHANGE: ${playing ? 'Playing' : 'Stopped'} - Snap ${snapPoint || 'N/A'}`);
+        }
+    }, []);
+
+    // ===== CURRENT AUDIO HANDLER =====
+    const handleCurrentAudioChange = useCallback((audioTitle) => {
+        setCurrentlyPlayingAudio(audioTitle);
+    }, []);
+
+    // ===== BACKGROUND MUSIC STATUS HANDLER =====
+    const handleBackgroundMusicChange = useCallback((playing, volume = 0) => {
+        setBackgroundMusicPlaying(playing);
+        setBackgroundMusicVolume(volume);
+    }, []);
+
+    // ===== THEME MUSIC STATUS HANDLER =====
+    const handleThemeMusicChange = useCallback((playing, volume = 0) => {
+        setThemeMusicPlaying(playing);
+        setThemeMusicVolume(volume);
+    }, []);
+
+    // ===== LOCK STATUS HANDLER =====
+    const handleLockStatusChange = useCallback((locked, showIndicator = false) => {
+        setIsLocked(locked);
+        setShouldShowScrollIndicator(showIndicator);
+    }, []);
+
+    // ===== SCROLL UPDATE (UNVERÄNDERT) =====
     const updateScrollProgress = useCallback(() => {
         if (isAnimating) return;
 
@@ -119,7 +242,7 @@ const EnhancedSimplePage = () => {
         }
     }, [calculateScrollProgress, findActiveSnapPoint, activeSnapPoint, isAnimating]);
 
-    // ===== NAVIGATION =====
+    // ===== NAVIGATION (UNVERÄNDERT) =====
     const goNext = useCallback(() => {
         const nextPoint = getNextSnapPoint(activeSnapPoint);
         animateToSnapPoint(nextPoint.index);
@@ -130,12 +253,28 @@ const EnhancedSimplePage = () => {
         animateToSnapPoint(prevPoint.index);
     }, [activeSnapPoint, animateToSnapPoint]);
 
-    // ===== EVENT LISTENERS =====
+    // ===== EVENT LISTENERS (FIX: Nur wenn NICHT gelocked) =====
     useEffect(() => {
         const handleWheel = (e) => {
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎡 NAVIGATION WHEEL EVENT: isLocked=${isLocked}, isAnimating=${isAnimating}`);
+            }
+
+            // ✅ FIX: Wenn gelocked, komplett ignorieren - KEIN preventDefault!
+            if (isLocked) {
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`🚫 NAVIGATION BLOCKIERT: System ist gelocked`);
+                }
+                return; // Lässt Lock-System das Event handhaben
+            }
+
             e.preventDefault();
             e.stopPropagation();
             if (isAnimating) return;
+
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎡 NAVIGATION AUSFÜHREN: ${e.deltaY > 0 ? 'goNext()' : 'goPrev()'}`);
+            }
 
             if (e.deltaY > 0) {
                 goNext();
@@ -145,8 +284,18 @@ const EnhancedSimplePage = () => {
         };
 
         window.addEventListener('wheel', handleWheel, { passive: false, capture: true });
-        return () => window.removeEventListener('wheel', handleWheel, { capture: true });
-    }, [goNext, goPrev, isAnimating]);
+
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`🎡 NAVIGATION EVENT-LISTENER REGISTRIERT: isLocked=${isLocked}`);
+        }
+
+        return () => {
+            window.removeEventListener('wheel', handleWheel, { capture: true });
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`🎡 NAVIGATION EVENT-LISTENER ENTFERNT`);
+            }
+        };
+    }, [goNext, goPrev, isAnimating, isLocked]); // ✅ isLocked als Dependency
 
     useEffect(() => {
         const handleScroll = () => {
@@ -167,16 +316,16 @@ const EnhancedSimplePage = () => {
         };
     }, [updateScrollProgress]);
 
-    // ===== NEWSLETTER VISIBILITY (ANGEPASST FÜR 7 SNAP-POINTS) =====
-    const showNewsletterStart = scrollProgress <= 0.15; // Bleibt gleich
-    const showNewsletterEnd = scrollProgress >= 0.90; // ✅ ANGEPASST: 0.85 → 0.90 (für Snap 6 bei 95%)
+    // ===== NEWSLETTER VISIBILITY (UNVERÄNDERT) =====
+    const showNewsletterStart = scrollProgress <= 0.15;
+    const showNewsletterEnd = scrollProgress >= 0.90;
 
     const newsletterStartOpacity = showNewsletterStart
         ? (scrollProgress > 0.1 ? Math.max(0, 1 - (scrollProgress - 0.1) / 0.05) : 1)
         : 0;
 
     const newsletterEndOpacity = showNewsletterEnd
-        ? Math.min(1, (scrollProgress - 0.90) / 0.05) // ✅ ANGEPASST: schnellere Einblendung ab 90%
+        ? Math.min(1, (scrollProgress - 0.90) / 0.05)
         : 0;
 
     return (
@@ -189,7 +338,7 @@ const EnhancedSimplePage = () => {
                 position: 'relative'
             }}
         >
-            {/* ===== BACKGROUND (ORIGINAL LOGIK BEIBEHALTEN) ===== */}
+            {/* ===== BACKGROUND ===== */}
             <BackgroundLayer
                 scrollProgress={scrollProgress}
                 position={{
@@ -203,7 +352,7 @@ const EnhancedSimplePage = () => {
             />
 
             {/* ===== ROAD LAYER ===== */}
-            {scrollProgress >= 0.30 && ( // ✅ ANGEPASST: 0.30 statt 0.30 (war 0.35, jetzt bei Snap 2)
+            {scrollProgress >= 0.30 && (
                 <RoadLayer
                     scrollProgress={scrollProgress}
                     config={LAYER_CONFIG.road}
@@ -235,7 +384,7 @@ const EnhancedSimplePage = () => {
                 </div>
             )}
 
-            {/* ===== NEWSLETTER END (ANGEPASST FÜR SNAP 6) ===== */}
+            {/* ===== NEWSLETTER END ===== */}
             {showNewsletterEnd && (
                 <div style={{
                     position: 'fixed',
@@ -252,54 +401,66 @@ const EnhancedSimplePage = () => {
                 </div>
             )}
 
-            {/* ===== TITLES ===== */}
+            {/* ===== TITLES (ERWEITERT MIT CALLBACK + REF) ===== */}
             <EnhancedTitleLayer
+                ref={titleLayerRef}
                 activeSnapPoint={activeSnapPoint}
                 scrollProgress={scrollProgress}
                 isSnapping={isAnimating}
+                onTitleAnimationChange={handleTitleAnimationChange}
             />
 
-            {/* ===== AUDIO ===== */}
+            {/* ===== AUDIO (ERWEITERT MIT CALLBACKS) ===== */}
             <EnhancedAudioLayer
+                ref={audioLayerRef}
                 activeSnapPoint={activeSnapPoint}
                 scrollProgress={scrollProgress}
                 isSnapping={isAnimating}
+                onAudioPlayingChange={handleAudioPlayingChange}
+                onCurrentAudioChange={handleCurrentAudioChange}
+                onBackgroundMusicChange={handleBackgroundMusicChange}
+                onThemeMusicChange={handleThemeMusicChange}
+            />
+
+            {/* ===== 🔒 LOCK-SCROLL LAYER ===== */}
+            <LockScrollLayer
+                activeSnapPoint={activeSnapPoint}
+                isAudioPlaying={isAudioPlaying}
+                audioPlayingSnapPoint={audioPlayingSnapPoint}
+                onSkip={skipAudio}
+                onGoToTop={goToTop}
+                onLockStatusChange={handleLockStatusChange}
+            />
+
+            {/* ===== 🔍 ZENTRALES DEBUG-PANEL (ERSETZT ALLE ANDEREN) ===== */}
+            <CentralDebugPanel
+                // Navigation & Scroll
+                activeSnapPoint={activeSnapPoint}
+                scrollProgress={scrollProgress}
+                isAnimating={isAnimating}
+                fps={fps}
+
+                // Audio System
+                isAudioPlaying={isAudioPlaying}
+                audioPlayingSnapPoint={audioPlayingSnapPoint}
+                currentlyPlayingAudio={currentlyPlayingAudio}
+                isTitleAnimating={isTitleAnimating}
+                titleAnimatingSnapPoint={titleAnimatingSnapPoint}
+                backgroundMusicPlaying={backgroundMusicPlaying}
+                backgroundMusicVolume={backgroundMusicVolume}
+                themeMusicPlaying={themeMusicPlaying}
+                themeMusicVolume={themeMusicVolume}
+
+                // Lock-Scroll System
+                isLocked={isLocked}
+                showScrollIndicator={shouldShowScrollIndicator}
+
+                // Portal Container
+                portalContainer={debugPortal}
             />
 
             {/* ===== SCROLL SPACER ===== */}
             <div style={{ height: '500vh', opacity: 0, pointerEvents: 'none' }} />
-
-            {/* ===== DEBUG (ERWEITERT FÜR 7 SNAP-POINTS) ===== */}
-            {process.env.NODE_ENV === 'development' && (
-                <div style={{
-                    position: 'fixed',
-                    bottom: '20px',
-                    right: '20px',
-                    background: 'rgba(0, 0, 0, 0.7)',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    fontSize: '10px',
-                    fontFamily: 'monospace',
-                    color: 'white',
-                    zIndex: 1000
-                }}>
-                    <div>Snap: {activeSnapPoint}/6</div> {/* ✅ ANGEPASST: /6 statt /5 */}
-                    <div>Progress: {(scrollProgress * 100).toFixed(0)}%</div>
-                    <div>FPS: {fps}</div>
-                    <div>🛣️ Road: {scrollProgress >= 0.30 ? 'ON' : 'OFF'}</div>
-                    <div>📧 Newsletter Start: {showNewsletterStart ? 'ON' : 'OFF'}</div>
-                    <div>📧 Newsletter End: {showNewsletterEnd ? 'ON' : 'OFF'}</div>
-                    {/* ✅ NEU: Snap-Point Info */}
-                    <div style={{ marginTop: '5px', fontSize: '9px', color: '#ffff00' }}>
-                        {getSnapPointByIndex(activeSnapPoint).label}
-                    </div>
-                    {activeSnapPoint === 5 && (
-                        <div style={{ fontSize: '8px', color: '#ff6b6b' }}>
-                            🎠 Carousel Ready
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 };
