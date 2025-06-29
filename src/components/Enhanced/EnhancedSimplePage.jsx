@@ -1,11 +1,13 @@
-// src/components/Enhanced/EnhancedSimplePage.jsx - MIT ZENTRALEM DEBUG-PANEL
+// src/components/Enhanced/EnhancedSimplePage.jsx - MIT ERWEITERTEN LOCK-SCROLL PROPS
 // ✅ 7 SNAP-POINTS + LOCK-SCROLL SYSTEM + Aufgeräumtes Debug
 
+// ÄNDERUNG: LockScrollLayer bekommt jetzt auch isTitleAnimating + titleAnimatingSnapPoint Props
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import EnhancedTitleLayer from './TitleLayer'; // ✅ Jetzt verwendet den neuen TitleLayer mit Callbacks
+import EnhancedTitleLayer from './TitleLayer';
 import EnhancedAudioLayer from './AudioLayer';
 import LockScrollLayer from './LockScrollLayer';
-import CentralDebugPanel from './CentralDebugPanel'; // ✅ NEU: Zentrales Debug
+import CentralDebugPanel from './CentralDebugPanel';
 import BackgroundLayer from './layers/BackgroundLayer';
 import RoadLayer from './layers/RoadLayer';
 import LogoLayer from './layers/LogoLayer';
@@ -29,8 +31,8 @@ const EnhancedSimplePage = () => {
     // ===== NEW STATES FÜR ERWEITERTE LOCK-LOGIK =====
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [audioPlayingSnapPoint, setAudioPlayingSnapPoint] = useState(null);
-    const [isTitleAnimating, setIsTitleAnimating] = useState(false); // ✅ NEU: Titel-Animation Status
-    const [titleAnimatingSnapPoint, setTitleAnimatingSnapPoint] = useState(null); // ✅ NEU
+    const [isTitleAnimating, setIsTitleAnimating] = useState(false);
+    const [titleAnimatingSnapPoint, setTitleAnimatingSnapPoint] = useState(null);
 
     // ===== ADDITIONAL STATES FÜR DEBUG =====
     const [backgroundMusicPlaying, setBackgroundMusicPlaying] = useState(false);
@@ -38,7 +40,7 @@ const EnhancedSimplePage = () => {
     const [themeMusicPlaying, setThemeMusicPlaying] = useState(false);
     const [themeMusicVolume, setThemeMusicVolume] = useState(0);
     const [isLocked, setIsLocked] = useState(false);
-    const [shouldShowScrollIndicator, setShouldShowScrollIndicator] = useState(false); // ✅ UMBENANNT
+    const [shouldShowScrollIndicator, setShouldShowScrollIndicator] = useState(false);
     const [currentlyPlayingAudio, setCurrentlyPlayingAudio] = useState(null);
 
     // ===== DEBUG PORTAL =====
@@ -144,7 +146,7 @@ const EnhancedSimplePage = () => {
 
     // ===== NEW FUNCTIONS FÜR ERWEITERTE LOCK-SCROLL SYSTEM =====
     const audioLayerRef = useRef(null);
-    const titleLayerRef = useRef(null); // ✅ NEU: Ref für Titel-Layer
+    const titleLayerRef = useRef(null);
 
     const skipAudio = useCallback(() => {
         if (process.env.NODE_ENV === 'development') {
@@ -295,7 +297,7 @@ const EnhancedSimplePage = () => {
                 console.log(`🎡 NAVIGATION EVENT-LISTENER ENTFERNT`);
             }
         };
-    }, [goNext, goPrev, isAnimating, isLocked]); // ✅ isLocked als Dependency
+    }, [goNext, goPrev, isAnimating, isLocked]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -422,11 +424,13 @@ const EnhancedSimplePage = () => {
                 onThemeMusicChange={handleThemeMusicChange}
             />
 
-            {/* ===== 🔒 LOCK-SCROLL LAYER ===== */}
+            {/* ===== 🔒 LOCK-SCROLL LAYER (ERWEITERTE PROPS) ===== */}
             <LockScrollLayer
                 activeSnapPoint={activeSnapPoint}
                 isAudioPlaying={isAudioPlaying}
                 audioPlayingSnapPoint={audioPlayingSnapPoint}
+                isTitleAnimating={isTitleAnimating}
+                titleAnimatingSnapPoint={titleAnimatingSnapPoint}
                 onSkip={skipAudio}
                 onGoToTop={goToTop}
                 onLockStatusChange={handleLockStatusChange}

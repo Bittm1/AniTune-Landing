@@ -1,7 +1,6 @@
-// src/components/Enhanced/LockScrollLayer.jsx - BEREINIGT OHNE DEBUG-PANEL
-// 🔒 LOCK-SCROLL SYSTEM für Snap-Points 1-3 mit Audio
-// ✅ Guided Experience: Scroll → Lock → Audio vollständig → Unlock → Repeat
-// ✅ Debug-Panel entfernt - nutzt jetzt CentralDebugPanel
+// src/components/Enhanced/LockScrollLayer.jsx - MINIMAL ERWEITERT
+// 🔒 LOCK-SCROLL SYSTEM für Snap-Points 1-3 mit Audio UND Titel-Animation
+// ✅ NUR erweiterte Lock-Logik, KEINE neuen UI-Elemente
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -10,9 +9,11 @@ import ErrorBoundary from '../ErrorBoundary';
 const LockScrollLayer = ({
     activeSnapPoint = 0,
     isAudioPlaying = false,
+    isTitleAnimating = false,
+    titleAnimatingSnapPoint = null,
     onSkip,
     onGoToTop,
-    onLockStatusChange // ✅ NEU: Callback für Status-Updates an Parent
+    onLockStatusChange
 }) => {
     // ===== STATES =====
     const [isLocked, setIsLocked] = useState(false);
@@ -26,56 +27,54 @@ const LockScrollLayer = ({
     const isInNavigationZone = activeSnapPoint >= 4 && activeSnapPoint <= 6;
     const isInStartZone = activeSnapPoint === 0;
 
-    // ✅ VEREINFACHT: Indicator nur zeigen wenn in relevanter Zone UND nicht gelocked
+    // ✅ Indicator nur zeigen wenn in relevanter Zone UND nicht gelocked
     const shouldShowScrollIndicator = (isInAudioZone || isInStartZone) && !isLocked;
 
-    // ===== ✅ STATUS UPDATES AN PARENT WEITERLEITEN =====
+    // ===== STATUS UPDATES AN PARENT WEITERLEITEN =====
     useEffect(() => {
         if (onLockStatusChange) {
             onLockStatusChange(isLocked, shouldShowScrollIndicator);
         }
     }, [isLocked, shouldShowScrollIndicator, onLockStatusChange]);
 
-    // ===== LOCK LOGIC (VEREINFACHT) =====
+    // ===== ✅ ERWEITERTE LOCK LOGIC: Audio ODER Titel-Animation =====
     useEffect(() => {
-        if (isInAudioZone && isAudioPlaying) {
-            // Audio spielt → LOCK aktivieren
+        if (isInAudioZone && (isAudioPlaying || isTitleAnimating)) {
+            // Audio ODER Titel spielt → LOCK aktivieren
             setIsLocked(true);
 
             if (process.env.NODE_ENV === 'development') {
-                console.log(`🔒 LOCK AKTIVIERT: Snap ${activeSnapPoint} - Audio spielt`);
+                console.log(`🔒 LOCK AKTIVIERT: Snap ${activeSnapPoint} - Audio: ${isAudioPlaying}, Titel: ${isTitleAnimating}`);
             }
         } else {
-            // Audio fertig oder außerhalb Audio-Zone → UNLOCK
+            // Beides fertig oder außerhalb Audio-Zone → UNLOCK
             setIsLocked(false);
 
             if (process.env.NODE_ENV === 'development' && isLocked) {
-                console.log(`🔓 LOCK DEAKTIVIERT: Snap ${activeSnapPoint} - Audio fertig oder Zone verlassen`);
+                console.log(`🔓 LOCK DEAKTIVIERT: Snap ${activeSnapPoint} - Audio: ${isAudioPlaying}, Titel: ${isTitleAnimating}`);
             }
         }
-    }, [isInAudioZone, isAudioPlaying, activeSnapPoint, isLocked]);
+    }, [isInAudioZone, isAudioPlaying, isTitleAnimating, activeSnapPoint, isLocked]);
 
-    // ===== SCROLL-BLOCKIERUNG (VERSTÄRKT) =====
+    // ===== SCROLL-BLOCKIERUNG (UNVERÄNDERT) =====
     useEffect(() => {
         if (!isLocked) return;
 
         const handleWheel = (e) => {
-            // ✅ VERSTÄRKT: Sofort stoppen, bevor andere Listener greifen
             e.preventDefault();
             e.stopPropagation();
-            e.stopImmediatePropagation(); // ✅ NEU: Stoppt auch andere Listener
+            e.stopImmediatePropagation();
 
             if (process.env.NODE_ENV === 'development') {
-                console.log(`🚫 SCROLL BLOCKIERT: Snap ${activeSnapPoint} - Audio läuft noch`);
+                console.log(`🚫 SCROLL BLOCKIERT: Snap ${activeSnapPoint} - Audio: ${isAudioPlaying}, Titel: ${isTitleAnimating}`);
             }
         };
 
         const handleKeydown = (e) => {
-            // Blockiere auch Keyboard-Navigation während Lock
             if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space'].includes(e.code)) {
                 e.preventDefault();
                 e.stopPropagation();
-                e.stopImmediatePropagation(); // ✅ NEU: Auch hier verstärkt
+                e.stopImmediatePropagation();
 
                 if (process.env.NODE_ENV === 'development') {
                     console.log(`⌨️ KEYBOARD BLOCKIERT: ${e.code} während Lock`);
@@ -86,14 +85,13 @@ const LockScrollLayer = ({
         const handleTouchMove = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            e.stopImmediatePropagation(); // ✅ NEU: Touch auch verstärkt
+            e.stopImmediatePropagation();
 
             if (process.env.NODE_ENV === 'development') {
-                console.log(`📱 TOUCH BLOCKIERT: Snap ${activeSnapPoint} - Audio läuft noch`);
+                console.log(`📱 TOUCH BLOCKIERT: Snap ${activeSnapPoint} - Audio: ${isAudioPlaying}, Titel: ${isTitleAnimating}`);
             }
         };
 
-        // ✅ WICHTIG: capture: true + höchste Priorität
         window.addEventListener('wheel', handleWheel, { passive: false, capture: true });
         window.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
         window.addEventListener('keydown', handleKeydown, { passive: false, capture: true });
@@ -111,7 +109,7 @@ const LockScrollLayer = ({
                 console.log(`🔓 LOCK EVENT-LISTENERS ENTFERNT: Snap ${activeSnapPoint}`);
             }
         };
-    }, [isLocked, activeSnapPoint]);
+    }, [isLocked, activeSnapPoint, isAudioPlaying, isTitleAnimating]);
 
     // ===== PORTAL SETUP =====
     useEffect(() => {
@@ -140,7 +138,7 @@ const LockScrollLayer = ({
     const handleSkip = useCallback(() => {
         if (onSkip) {
             if (process.env.NODE_ENV === 'development') {
-                console.log(`⏭️ SKIP: User überspringt Audio bei Snap ${activeSnapPoint}`);
+                console.log(`⏭️ SKIP: User überspringt Audio+Titel bei Snap ${activeSnapPoint}`);
             }
             onSkip();
         }
@@ -162,7 +160,7 @@ const LockScrollLayer = ({
         <ErrorBoundary>
             <div className="lock-scroll-layer" data-testid="lock-scroll-layer">
 
-                {/* ===== SCROLL INDICATOR - SAUBER & SIMPEL ===== */}
+                {/* ===== SCROLL INDICATOR - UNVERÄNDERT ===== */}
                 {shouldShowScrollIndicator && (
                     <div
                         className="scroll-indicator"
@@ -183,7 +181,7 @@ const LockScrollLayer = ({
                             backdropFilter: 'blur(10px)',
                             border: '1px solid rgba(255, 255, 255, 0.2)',
                             boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-                            opacity: 1 // ✅ Konstante Opacity, kein Blinken
+                            opacity: 1
                         }}
                         data-testid="scroll-indicator"
                     >
@@ -194,9 +192,7 @@ const LockScrollLayer = ({
                     </div>
                 )}
 
-                {/* ===== WÄHREND LOCK: KOMPLETT LEER - EINFACH NICHTS ZEIGEN ===== */}
-
-                {/* ===== SKIP BUTTON - OBEN RECHTS WÄHREND LOCK ===== */}
+                {/* ===== SKIP BUTTON - UNVERÄNDERT ===== */}
                 {isLocked && (
                     <button
                         onClick={handleSkip}
@@ -204,7 +200,7 @@ const LockScrollLayer = ({
                         style={{
                             position: 'fixed',
                             top: '20px',
-                            right: '20px',
+                            left: '20px',
                             background: 'rgba(100, 100, 100, 0.9)',
                             color: 'white',
                             border: 'none',
@@ -228,14 +224,14 @@ const LockScrollLayer = ({
                             e.target.style.background = 'rgba(100, 100, 100, 0.9)';
                             e.target.style.transform = 'scale(1)';
                         }}
-                        title="Skip current audio"
+                        title="Skip current audio & title"
                         data-testid="skip-button"
                     >
                         ⏭️ Skip
                     </button>
                 )}
 
-                {/* ===== NACH OBEN BUTTON - BEI SNAP 4-6 ===== */}
+                {/* ===== NACH OBEN BUTTON - UNVERÄNDERT ===== */}
                 {isInNavigationZone && (
                     <button
                         onClick={handleGoToTop}
@@ -243,7 +239,7 @@ const LockScrollLayer = ({
                         style={{
                             position: 'fixed',
                             top: '20px',
-                            right: '20px',
+                            left: '20px',
                             background: 'rgba(50, 150, 250, 0.9)',
                             color: 'white',
                             border: 'none',
@@ -274,7 +270,7 @@ const LockScrollLayer = ({
                     </button>
                 )}
 
-                {/* ===== CSS ANIMATIONS (NUR BUTTON HOVER) ===== */}
+                {/* ===== CSS ANIMATIONS ===== */}
                 <style jsx>{`
                     .skip-button:active {
                         transform: scale(0.95) !important;
