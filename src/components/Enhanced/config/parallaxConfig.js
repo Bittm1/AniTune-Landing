@@ -87,7 +87,7 @@ export const LAYER_CONFIG = {
         active: true,
         movement: {
             scrollStart: 0.30,  // NEU: Snap 2 (30% statt 35%)
-            scrollEnd: 1.0,
+            scrollEnd: 0.6,
             posStart: -55,
             posEnd: 0,
             opacityStart: 1.0,
@@ -101,8 +101,8 @@ export const LAYER_CONFIG = {
         active: true,
         movement: {
             scrollStart: 0.15,  // Snap 1 (15% - bleibt gleich)
-            scrollEnd: 0.55,
-            posStart: -45,
+            scrollEnd: 0.6,
+            posStart: -100,
             posEnd: 0,
             opacityStart: 1,
             opacityEnd: 1
@@ -115,9 +115,9 @@ export const LAYER_CONFIG = {
         active: true,
         movement: {
             scrollStart: 0.15,  // Snap 1 (15% - bleibt gleich)
-            scrollEnd: 1.0,
-            posStart: -33,
-            posEnd: 12,
+            scrollEnd: 0.6,
+            posStart: -100,
+            posEnd: 0,
             opacityStart: 1.0,
             opacityEnd: 1.0
         },

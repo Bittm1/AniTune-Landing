@@ -1,23 +1,30 @@
-// src/components/Enhanced/layers/RoadLayer.jsx
-// 🛣️ ROAD LAYER - Clean und einfach
+// src/components/Enhanced/layers/DogLayer.jsx
+// 🐕 DOG LAYER - Clean und einfach
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
 
-const RoadLayer = ({ scrollProgress, config }) => {
+const DogLayer = ({ scrollProgress, config }) => {
     // ===== BERECHNUNGEN =====
     const layerData = useMemo(() => {
         // Fallback Config falls nicht vorhanden
         const defaultConfig = {
             active: true,
             movement: {
-                scrollStart: 0.0,
+                scrollStart: 0.15,
                 scrollEnd: 1.0,
-                posStart: -45,
-                posEnd: 0,
-                opacityStart: 0.0,
-                opacityEnd: 0.3
+                posStart: -33,
+                posEnd: 12,
+                opacityStart: 1.0,
+                opacityEnd: 1.0
+            },
+            position: {
+                left: '50.8%'
+            },
+            size: {
+                width: '5vw',
+                maxWidth: '250px'
             }
         };
 
@@ -46,13 +53,16 @@ const RoadLayer = ({ scrollProgress, config }) => {
         return {
             opacity: Math.max(0, Math.min(1, opacity)),
             translateY,
-            visible: true
+            visible: true,
+            left: activeConfig.position?.left || '50.8%',
+            width: activeConfig.size?.width || '5vw',
+            maxWidth: activeConfig.size?.maxWidth || '250px'
         };
     }, [scrollProgress, config]);
 
     // Debug Log
     if (process.env.NODE_ENV === 'development') {
-        console.log('🛣️ RoadLayer:', {
+        console.log('🐕 DogLayer:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
@@ -71,8 +81,8 @@ const RoadLayer = ({ scrollProgress, config }) => {
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
-                        position: 'fixed',  // ✅ FIXED statt absolute!
-                        top: '20px',
+                        position: 'fixed',
+                        top: '70px',
                         left: '20px',
                         background: 'rgba(139, 69, 19, 0.9)',
                         color: 'white',
@@ -80,42 +90,44 @@ const RoadLayer = ({ scrollProgress, config }) => {
                         borderRadius: '4px',
                         fontSize: '10px',
                         fontFamily: 'monospace',
-                        zIndex: 9999,  // ✅ Hinzugefügt
+                        zIndex: 9999,
                         pointerEvents: 'none'
                     }}
                 >
-                    🛣️ ROAD: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    🐕 DOG: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
                 </div>
             )}
 
             <div
                 style={{
                     position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    width: '100%',
-                    zIndex: config?.zIndex || 7,
+                    bottom: '20%',
+                    left: layerData.left,
+                    width: layerData.width,
+                    maxWidth: layerData.maxWidth,
+                    height: 'auto',
+                    zIndex: config?.zIndex || 8,
                     pointerEvents: 'none',
-                    transform: `translate(0, ${-layerData.translateY}vh)`,
+                    transform: `translate(-50%, ${-layerData.translateY}vh)`,
                     opacity: layerData.opacity,
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden'
                 }}
             >
                 <SafeImage
-                    src="/Parallax/Weg.png"
+                    src="/Parallax/Hund.png"
                     fallbackSrc="/Parallax/Logo.png"
-                    alt="Weg zum AniTune Event"
+                    alt="Hund auf dem Weg zum AniTune Event"
                     style={{
                         width: '100%',
                         height: 'auto',
                         display: 'block'
                     }}
-                    onError={() => console.warn('❌ Road image failed to load: /Parallax/Weg.png')}
+                    onError={() => console.warn('❌ Dog image failed to load: /Parallax/Hund.png')}
                 />
             </div>
         </ErrorBoundary>
     );
 };
 
-export default React.memo(RoadLayer);
+export default React.memo(DogLayer);

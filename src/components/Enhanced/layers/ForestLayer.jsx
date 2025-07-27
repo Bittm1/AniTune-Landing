@@ -1,23 +1,23 @@
-// src/components/Enhanced/layers/RoadLayer.jsx
-// 🛣️ ROAD LAYER - Clean und einfach
+// src/components/Enhanced/layers/ForestLayer.jsx
+// 🌲 FOREST LAYER - Clean und einfach (nach RoadLayer Pattern)
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
 
-const RoadLayer = ({ scrollProgress, config }) => {
+const ForestLayer = ({ scrollProgress, config }) => {
     // ===== BERECHNUNGEN =====
     const layerData = useMemo(() => {
         // Fallback Config falls nicht vorhanden
         const defaultConfig = {
             active: true,
             movement: {
-                scrollStart: 0.0,
+                scrollStart: 0.30,
                 scrollEnd: 1.0,
-                posStart: -45,
+                posStart: -55,
                 posEnd: 0,
-                opacityStart: 0.0,
-                opacityEnd: 0.3
+                opacityStart: 1.0,
+                opacityEnd: 1.0
             }
         };
 
@@ -50,9 +50,9 @@ const RoadLayer = ({ scrollProgress, config }) => {
         };
     }, [scrollProgress, config]);
 
-    // Debug Log
+    // Debug Log (wie RoadLayer)
     if (process.env.NODE_ENV === 'development') {
-        console.log('🛣️ RoadLayer:', {
+        console.log('🌲 ForestLayer:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
@@ -67,24 +67,23 @@ const RoadLayer = ({ scrollProgress, config }) => {
 
     return (
         <ErrorBoundary>
-            {/* Debug Anzeige (FIXED POSITION - außerhalb des beweglichen Containers) */}
+            {/* Debug Anzeige (FIXED POSITION) */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
                         position: 'fixed',  // ✅ FIXED statt absolute!
-                        top: '20px',
+                        top: '120px',
                         left: '20px',
-                        background: 'rgba(139, 69, 19, 0.9)',
+                        background: 'rgba(34, 139, 34, 0.9)',
                         color: 'white',
                         padding: '8px',
                         borderRadius: '4px',
                         fontSize: '10px',
                         fontFamily: 'monospace',
-                        zIndex: 9999,  // ✅ Hinzugefügt
-                        pointerEvents: 'none'
+                        zIndex: 9999  // ✅ Hinzugefügt
                     }}
                 >
-                    🛣️ ROAD: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    🌲 FOREST: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
                 </div>
             )}
 
@@ -94,7 +93,7 @@ const RoadLayer = ({ scrollProgress, config }) => {
                     bottom: 0,
                     left: 0,
                     width: '100%',
-                    zIndex: config?.zIndex || 7,
+                    zIndex: config?.zIndex || 6,
                     pointerEvents: 'none',
                     transform: `translate(0, ${-layerData.translateY}vh)`,
                     opacity: layerData.opacity,
@@ -103,19 +102,19 @@ const RoadLayer = ({ scrollProgress, config }) => {
                 }}
             >
                 <SafeImage
-                    src="/Parallax/Weg.png"
+                    src="/Parallax/Erster_Hintergrund.webp"
                     fallbackSrc="/Parallax/Logo.png"
-                    alt="Weg zum AniTune Event"
+                    alt="Wald zum AniTune Event"
                     style={{
                         width: '100%',
                         height: 'auto',
                         display: 'block'
                     }}
-                    onError={() => console.warn('❌ Road image failed to load: /Parallax/Weg.png')}
+                    onError={() => console.warn('❌ Forest image failed to load: /Parallax/Erster_Hintergrund.webp')}
                 />
             </div>
         </ErrorBoundary>
     );
 };
 
-export default React.memo(RoadLayer);
+export default React.memo(ForestLayer);

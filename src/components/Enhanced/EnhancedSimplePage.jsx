@@ -10,6 +10,8 @@ import LockScrollLayer from './LockScrollLayer';
 import CentralDebugPanel from './CentralDebugPanel';
 import BackgroundLayer from './layers/BackgroundLayer';
 import RoadLayer from './layers/RoadLayer';
+import DogLayer from './layers/DogLayer';
+import ForestLayer from './layers/ForestLayer';
 import LogoLayer from './layers/LogoLayer';
 import Newsletter from '../Newsletter/Newsletter';
 import { LAYER_CONFIG } from './config/parallaxConfig';
@@ -358,6 +360,22 @@ const EnhancedSimplePage = () => {
                 <RoadLayer
                     scrollProgress={scrollProgress}
                     config={LAYER_CONFIG.road}
+                />
+            )}
+
+            {/* ===== 🐕 DOG LAYER (NEU HINZUFÜGEN) ===== */}
+            {scrollProgress >= 0.15 && (
+                <DogLayer
+                    scrollProgress={scrollProgress}
+                    config={LAYER_CONFIG.dog}
+                />
+            )}
+
+            {/* ===== 🌲 FOREST LAYER (NEU) ===== */}
+            {scrollProgress >= 0.30 && (
+                <ForestLayer
+                    scrollProgress={scrollProgress}
+                    config={LAYER_CONFIG.forest}
                 />
             )}
 
