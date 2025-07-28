@@ -44,9 +44,9 @@ export const LAYER_CONFIG = {
     berge: {
         active: true,
         movement: {
-            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
-            scrollEnd: 1.0,     // Ende (100%)
-            posStart: -55,
+            scrollStart: 0.00,  // NEU: Snap 4 (60% statt 75%)
+            scrollEnd: 0.6,     // Ende (100%)
+            posStart: -100,
             posEnd: 0,
             opacityStart: 1.0,
             opacityEnd: 1.0
@@ -58,8 +58,8 @@ export const LAYER_CONFIG = {
     tal: {
         active: true,
         movement: {
-            scrollStart: 0.45,  // NEU: Snap 3 (45% statt 55%)
-            scrollEnd: 1.0,
+            scrollStart: 0.15,  // NEU: Snap 3 (45% statt 55%)
+            scrollEnd: 0.6,
             posStart: -60,
             posEnd: 0,
             opacityStart: 1.0,
@@ -86,7 +86,7 @@ export const LAYER_CONFIG = {
     forest: {
         active: true,
         movement: {
-            scrollStart: 0.30,  // NEU: Snap 2 (30% statt 35%)
+            scrollStart: 0.15,  // NEU: Snap 2 (30% statt 35%)
             scrollEnd: 0.6,
             posStart: -55,
             posEnd: 0,
@@ -102,7 +102,7 @@ export const LAYER_CONFIG = {
         movement: {
             scrollStart: 0.15,  // Snap 1 (15% - bleibt gleich)
             scrollEnd: 0.6,
-            posStart: -100,
+            posStart: -25,
             posEnd: 0,
             opacityStart: 1,
             opacityEnd: 1
@@ -116,7 +116,7 @@ export const LAYER_CONFIG = {
         movement: {
             scrollStart: 0.15,  // Snap 1 (15% - bleibt gleich)
             scrollEnd: 0.6,
-            posStart: -100,
+            posStart: -40,
             posEnd: 0,
             opacityStart: 1.0,
             opacityEnd: 1.0

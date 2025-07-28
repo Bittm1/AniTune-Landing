@@ -1,24 +1,33 @@
-// src/components/Enhanced/layers/DogLayer.jsx
-// 🐕 DOG LAYER - Clean und einfach
+// src/components/Enhanced/layers/TalLayer.jsx
+// 🏔️ TAL LAYER - Clean und einfach (nach RoadLayer Pattern)
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
 
-const DogLayer = ({ scrollProgress, config }) => {
-    // ===== STRICT ERROR HANDLING =====
-    if (!config || !config.movement) {
-        console.error('DogLayer: Missing config! Check parallaxConfig.js');
-        return null;
-    }
-
+const TalLayer = ({ scrollProgress, config }) => {
     // ===== BERECHNUNGEN =====
     const layerData = useMemo(() => {
-        if (!config.active || !config.movement) {
+        // Fallback Config falls nicht vorhanden
+        const defaultConfig = {
+            active: true,
+            movement: {
+                scrollStart: 0.45,
+                scrollEnd: 1.0,
+                posStart: -60,
+                posEnd: 0,
+                opacityStart: 1.0,
+                opacityEnd: 1.0
+            }
+        };
+
+        const activeConfig = config || defaultConfig;
+
+        if (!activeConfig.active || !activeConfig.movement) {
             return { opacity: 0, translateY: 0, visible: false };
         }
 
-        const { scrollStart, scrollEnd, posStart, posEnd, opacityStart, opacityEnd } = config.movement;
+        const { scrollStart, scrollEnd, posStart, posEnd, opacityStart, opacityEnd } = activeConfig.movement;
 
         // Sichtbarkeits-Check
         const visible = scrollProgress >= scrollStart && scrollProgress <= scrollEnd;
@@ -37,16 +46,13 @@ const DogLayer = ({ scrollProgress, config }) => {
         return {
             opacity: Math.max(0, Math.min(1, opacity)),
             translateY,
-            visible: true,
-            left: config.position?.left || '50.8%',
-            width: config.size?.width || '5vw',
-            maxWidth: config.size?.maxWidth || '250px'
+            visible: true
         };
     }, [scrollProgress, config]);
 
-    // Debug Log
+    // Debug Log (wie RoadLayer)
     if (process.env.NODE_ENV === 'development') {
-        console.log('🐕 DogLayer:', {
+        console.log('🏔️ TalLayer:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
@@ -61,14 +67,14 @@ const DogLayer = ({ scrollProgress, config }) => {
 
     return (
         <ErrorBoundary>
-            {/* Debug Anzeige (FIXED POSITION - außerhalb des beweglichen Containers) */}
+            {/* Debug Anzeige (FIXED POSITION) */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
                         position: 'fixed',
-                        top: '70px',
+                        top: '170px',  // ✅ Unter Forest (120px + 50px)
                         left: '20px',
-                        background: 'rgba(139, 69, 19, 0.9)',
+                        background: 'rgba(165, 42, 42, 0.9)',  // ✅ Braun-Rot für Tal
                         color: 'white',
                         padding: '8px',
                         borderRadius: '4px',
@@ -78,40 +84,38 @@ const DogLayer = ({ scrollProgress, config }) => {
                         pointerEvents: 'none'
                     }}
                 >
-                    🐕 DOG: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    🏔️ TAL: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
                 </div>
             )}
 
             <div
                 style={{
                     position: 'fixed',
-                    bottom: '20%',
-                    left: layerData.left,
-                    width: layerData.width,
-                    maxWidth: layerData.maxWidth,
-                    height: 'auto',
-                    zIndex: config?.zIndex || 8,
+                    bottom: 0,
+                    left: 0,
+                    width: '100%',
+                    zIndex: config?.zIndex || 4,
                     pointerEvents: 'none',
-                    transform: `translate(-50%, ${-layerData.translateY}vh)`,
+                    transform: `translate(0, ${-layerData.translateY}vh)`,
                     opacity: layerData.opacity,
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden'
                 }}
             >
                 <SafeImage
-                    src="/Parallax/Hund.png"
+                    src="/Parallax/Dritter_Hintergrund.png"
                     fallbackSrc="/Parallax/Logo.png"
-                    alt="Hund auf dem Weg zum AniTune Event"
+                    alt="Tal zum AniTune Event"
                     style={{
                         width: '100%',
                         height: 'auto',
                         display: 'block'
                     }}
-                    onError={() => console.warn('❌ Dog image failed to load: /Parallax/Hund.png')}
+                    onError={() => console.warn('❌ Tal image failed to load: /Parallax/Dritter_Hintergrund.png')}
                 />
             </div>
         </ErrorBoundary>
     );
 };
 
-export default React.memo(DogLayer);
+export default React.memo(TalLayer);
