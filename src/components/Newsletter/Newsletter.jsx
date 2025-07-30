@@ -22,7 +22,7 @@ const Newsletter = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'api-key': 'REMOVED', // <-- Trage hier deinen echten API-Key lokal ein
+                    'api-key': import.meta.env.VITE_BREVO_API_KEY, // ✅ holt den Key aus .env
                 },
                 body: JSON.stringify({
                     email,
