@@ -18,22 +18,17 @@ const Newsletter = () => {
         setMessage('');
 
         try {
-            const response = await fetch('https://api.brevo.com/v3/contacts', {
+            const response = await fetch('https://newsletter-api.cryptomacki.workers.dev/', { // Cloudflare Worker URL
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'api-key': import.meta.env.VITE_BREVO_API_KEY, // ✅ holt den Key aus .env
                 },
-                body: JSON.stringify({
-                    email,
-                    listIds: [3],
-                    updateEnabled: false,
-                    doubleOptIn: true,
-                }),
+                body: JSON.stringify({ email }),
             });
 
-            if (response.status === 204 || response.status === 201) {
-                setMessage('📧 Bitte bestätige deine Anmeldung in der E-Mail.');
+            if (response.ok) {
+                const result = await response.json();
+                setMessage(result.message || '📧 Bitte bestätige deine Anmeldung in der E-Mail.');
                 setEmail('');
             } else {
                 const result = await response.json();
