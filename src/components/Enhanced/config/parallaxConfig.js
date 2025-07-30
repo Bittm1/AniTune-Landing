@@ -102,7 +102,7 @@ export const LAYER_CONFIG = {
         movement: {
             scrollStart: 0.15,  // Snap 1 (15% - bleibt gleich)
             scrollEnd: 0.6,
-            posStart: -25,
+            posStart: -40,
             posEnd: 0,
             opacityStart: 1,
             opacityEnd: 1

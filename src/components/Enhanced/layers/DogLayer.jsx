@@ -85,7 +85,7 @@ const DogLayer = ({ scrollProgress, config }) => {
             <div
                 style={{
                     position: 'fixed',
-                    bottom: '20%',
+                    bottom: '12%',
                     left: layerData.left,
                     width: layerData.width,
                     maxWidth: layerData.maxWidth,
