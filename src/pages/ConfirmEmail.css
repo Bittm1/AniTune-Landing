@@ -1,4 +1,7 @@
-/* src/pages/ConfirmEmail.css - EINFACHE STYLES */
+/* src/pages/ConfirmEmail.css - MIT LOBSTER FONT */
+
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Roboto:wght@400;600&display=swap');
 
 .confirm-email-page {
     min-height: 100vh;
@@ -6,12 +9,12 @@
     align-items: center;
     justify-content: center;
     background: #000;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Roboto', sans-serif;
     position: relative;
     overflow: hidden;
 }
 
-/* AniTune Hintergrund */
+/* AniTune Hintergrund - KORRIGIERTER PFAD */
 .confirm-email-page::before {
     content: '';
     position: absolute;
@@ -19,7 +22,7 @@
     left: 0;
     width: 100%;
     height: 118%;
-    background-image: url('./Parallax/Hintergrund_komplett.png');
+    background-image: url('/Parallax/Hintergrund_komplett.png');
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
@@ -92,15 +95,19 @@
     }
 }
 
-/* Typography */
-h1 {
-    color: #333;
-    font-size: 2rem;
-    margin-bottom: 20px;
-    font-weight: 600;
+/* Typography - MIT LOBSTER FÜR ÜBERSCHRIFT - HÖHERE SPEZIFITÄT */
+.confirm-container h1 {
+    font-family: 'Lobster', cursive, serif !important;
+    color: #b729e0 !important;
+    font-size: 3rem !important;
+    margin-bottom: 30px !important;
+    font-weight: normal !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    line-height: 1.1 !important;
 }
 
 p {
+    font-family: 'Roboto', sans-serif;
     color: #666;
     font-size: 1.1rem;
     line-height: 1.5;
@@ -108,33 +115,15 @@ p {
 }
 
 .email-info {
-    background: rgba(76, 175, 80, 0.15);
+    background: rgba(183, 41, 224, 0.15);
     backdrop-filter: blur(5px);
     padding: 15px;
     border-radius: 10px;
-    color: #2E7D32;
+    color: #8e1fa3;
     font-weight: 500;
     margin-bottom: 25px;
-    border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-/* Button */
-.btn-primary {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 25px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin: 20px 0;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    border: 1px solid rgba(183, 41, 224, 0.3);
+    font-family: 'Roboto', sans-serif;
 }
 
 /* Close Info */
@@ -147,6 +136,7 @@ p {
     color: #333;
     font-size: 0.9rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
+    font-family: 'Roboto', sans-serif;
 }
 
 /* Mobile */
@@ -157,11 +147,6 @@ p {
     }
 
     h1 {
-        font-size: 1.5rem;
-    }
-
-    .btn-primary {
-        width: 100%;
-        max-width: 300px;
+        font-size: 3rem;
     }
 }

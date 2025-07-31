@@ -1,18 +1,13 @@
-// src/pages/ConfirmEmail.jsx - EINFACHE BESTÄTIGUNGSSEITE
+// src/pages/ConfirmEmail.jsx - AKTUALISIERT OHNE BUTTON
 import React from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import './ConfirmEmail.css';
 
 const ConfirmEmail = () => {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     // Parameter aus URL lesen
     const email = searchParams.get('email');
-
-    const handleGoHome = () => {
-        navigate('/');
-    };
 
     return (
         <div className="confirm-email-page">
@@ -25,16 +20,6 @@ const ConfirmEmail = () => {
                         <strong>{email}</strong> wurde erfolgreich bestätigt.
                     </p>
                 )}
-
-                <p>Du erhältst ab sofort unsere Newsletter mit Updates zu AniTune.</p>
-
-                {/* Button */}
-                <button
-                    onClick={handleGoHome}
-                    className="btn-primary"
-                >
-                    Zurück zu AniTune
-                </button>
 
                 {/* Info */}
                 <div className="close-info">
