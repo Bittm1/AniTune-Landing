@@ -14,6 +14,11 @@ import ForestLayer from './layers/ForestLayer';
 import TalLayer from './layers/TalLayer';
 import BergeLayer from './layers/BergeLayer';
 import LogoLayer from './layers/LogoLayer';
+import StarfieldLayer from './layers/StarfieldLayer';
+import WaldHintenLayer from './layers/WaldHintenLayer';
+import CloudLayer from './layers/CloudLayer';
+import WolkenHintenLayer from './layers/WolkenHintenLayer';
+import MengeLayer from './layers/MengeLayer';
 import Newsletter from '../Newsletter/Newsletter';
 import { LAYER_CONFIG } from './config/parallaxConfig';
 import {
@@ -394,12 +399,19 @@ const EnhancedSimplePage = () => {
             <BackgroundLayer
                 scrollProgress={scrollProgress}
                 position={{
-                    scale: scrollProgress <= 0.75
-                        ? 4.0 - (scrollProgress / 0.75 * 3.0)
+                    scale: scrollProgress <= 0.60
+                        ? 4.0 - (scrollProgress / 0.60 * 3.0)
                         : 1.0,
                     opacity: 1.0
                 }}
                 config={{ zIndex: 1 }}
+                deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
+            />
+
+            {/* ===== 🌟 STARFIELD LAYER (NEU) ===== */}
+            <StarfieldLayer
+                scrollProgress={scrollProgress}
+                config={LAYER_CONFIG.starfield}
                 deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
             />
 
@@ -427,6 +439,15 @@ const EnhancedSimplePage = () => {
                 />
             )}
 
+            {/* ===== 🌲 WALD HINTEN LAYER (NEU) ===== */}
+            {scrollProgress >= 0.15 && (
+                <WaldHintenLayer
+                    scrollProgress={scrollProgress}
+                    config={LAYER_CONFIG.waldHinten}
+                    deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
+                />
+            )}
+
             {/* ===== 🏔️ TAL LAYER ===== */}
             {scrollProgress >= 0.15 && (
                 <TalLayer
@@ -442,6 +463,33 @@ const EnhancedSimplePage = () => {
                     config={LAYER_CONFIG.berge}
                 />
             )}
+
+            {/* ===== ☁️ WOLKEN HINTEN LAYER (NEU) ===== */}
+            {scrollProgress >= 0.15 && (
+                <WolkenHintenLayer
+                    scrollProgress={scrollProgress}
+                    leftConfig={LAYER_CONFIG.leftCloudHinten}
+                    rightConfig={LAYER_CONFIG.rightCloudHinten}
+                    deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
+                />
+            )}
+
+            {/* ===== ☁️ CLOUD LAYER (NEU) ===== */}
+            {scrollProgress >= 0.15 && (
+                <CloudLayer
+                    scrollProgress={scrollProgress}
+                    leftConfig={LAYER_CONFIG.leftCloud}
+                    rightConfig={LAYER_CONFIG.rightCloud}
+                    deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
+                />
+            )}
+
+            {/* ===== 👥 MENGE LAYER (NEU) ===== */}
+            <MengeLayer
+                scrollProgress={scrollProgress}
+                config={LAYER_CONFIG.menge}
+                deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
+            />
 
             {/* ===== LOGO ===== */}
             <LogoLayer

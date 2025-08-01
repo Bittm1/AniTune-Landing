@@ -1,62 +1,56 @@
 // src/components/Enhanced/layers/RoadLayer.jsx
-// 🛣️ ROAD LAYER - Clean und einfach
+// 🛣️ ROAD LAYER - Mit zentraler calculateLayerPosition
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
+import { calculateLayerPosition } from '../config/parallaxConfig';
 
 const RoadLayer = ({ scrollProgress, config }) => {
-    // ===== BERECHNUNGEN =====
+    // ===== ZENTRALE BERECHNUNG =====
     const layerData = useMemo(() => {
         // Fallback Config falls nicht vorhanden
         const defaultConfig = {
             active: true,
             movement: {
-                scrollStart: 0.0,
-                scrollEnd: 1.0,
-                posStart: -45,
+                scrollStart: 0.15,
+                scrollEnd: 0.6,
+                posStart: -40,
                 posEnd: 0,
-                opacityStart: 0.0,
-                opacityEnd: 0.3
+                opacityStart: 1.0,
+                opacityEnd: 1.0
             }
         };
 
         const activeConfig = config || defaultConfig;
 
         if (!activeConfig.active || !activeConfig.movement) {
-            return { opacity: 0, translateY: 0, visible: false };
+            return { visible: false };
         }
 
-        const { scrollStart, scrollEnd, posStart, posEnd, opacityStart, opacityEnd } = activeConfig.movement;
+        // ✅ Nutzt zentrale Funktion
+        const position = calculateLayerPosition(scrollProgress, activeConfig);
 
         // Sichtbarkeits-Check
+        const { scrollStart, scrollEnd } = activeConfig.movement;
         const visible = scrollProgress >= scrollStart && scrollProgress <= scrollEnd;
-        if (!visible) {
-            return { opacity: 0, translateY: 0, visible: false };
-        }
-
-        // Progress berechnen
-        const localProgress = (scrollProgress - scrollStart) / (scrollEnd - scrollStart);
-        const clampedProgress = Math.max(0, Math.min(1, localProgress));
-
-        // Werte interpolieren
-        const opacity = opacityStart + (opacityEnd - opacityStart) * clampedProgress;
-        const translateY = posStart + (posEnd - posStart) * clampedProgress;
 
         return {
-            opacity: Math.max(0, Math.min(1, opacity)),
-            translateY,
-            visible: true
+            opacity: position.opacity,
+            translateY: position.position, // position = translateY
+            scale: position.scale,
+            visible
         };
     }, [scrollProgress, config]);
 
     // Debug Log
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && layerData.visible) {
         console.log('🛣️ RoadLayer:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
-            translateY: layerData.translateY.toFixed(1) + 'vh'
+            translateY: layerData.translateY.toFixed(1) + 'vh',
+            source: 'calculateLayerPosition()'
         });
     }
 
@@ -71,7 +65,7 @@ const RoadLayer = ({ scrollProgress, config }) => {
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
-                        position: 'fixed',  // ✅ FIXED statt absolute!
+                        position: 'fixed',
                         top: '20px',
                         left: '20px',
                         background: 'rgba(139, 69, 19, 0.9)',
@@ -80,11 +74,11 @@ const RoadLayer = ({ scrollProgress, config }) => {
                         borderRadius: '4px',
                         fontSize: '10px',
                         fontFamily: 'monospace',
-                        zIndex: 9999,  // ✅ Hinzugefügt
+                        zIndex: 9999,
                         pointerEvents: 'none'
                     }}
                 >
-                    🛣️ ROAD: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    🛣️ ROAD ✅ ZENTRAL: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
                 </div>
             )}
 
@@ -96,7 +90,7 @@ const RoadLayer = ({ scrollProgress, config }) => {
                     width: '100%',
                     zIndex: config?.zIndex || 7,
                     pointerEvents: 'none',
-                    transform: `translate(0, ${-layerData.translateY}vh)`,
+                    transform: `translate(0, ${-layerData.translateY}vh) scale(${layerData.scale})`,
                     opacity: layerData.opacity,
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden'

@@ -1,9 +1,10 @@
 // src/components/Enhanced/layers/DogLayer.jsx
-// 🐕 DOG LAYER - Clean und einfach
+// 🐕 DOG LAYER - Mit zentraler calculateLayerPosition
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
+import { calculateLayerPosition } from '../config/parallaxConfig';
 
 const DogLayer = ({ scrollProgress, config }) => {
     // ===== STRICT ERROR HANDLING =====
@@ -12,32 +13,24 @@ const DogLayer = ({ scrollProgress, config }) => {
         return null;
     }
 
-    // ===== BERECHNUNGEN =====
+    // ===== ZENTRALE BERECHNUNG =====
     const layerData = useMemo(() => {
         if (!config.active || !config.movement) {
-            return { opacity: 0, translateY: 0, visible: false };
+            return { visible: false };
         }
 
-        const { scrollStart, scrollEnd, posStart, posEnd, opacityStart, opacityEnd } = config.movement;
+        // ✅ Nutzt zentrale Funktion
+        const position = calculateLayerPosition(scrollProgress, config);
 
         // Sichtbarkeits-Check
+        const { scrollStart, scrollEnd } = config.movement;
         const visible = scrollProgress >= scrollStart && scrollProgress <= scrollEnd;
-        if (!visible) {
-            return { opacity: 0, translateY: 0, visible: false };
-        }
-
-        // Progress berechnen
-        const localProgress = (scrollProgress - scrollStart) / (scrollEnd - scrollStart);
-        const clampedProgress = Math.max(0, Math.min(1, localProgress));
-
-        // Werte interpolieren
-        const opacity = opacityStart + (opacityEnd - opacityStart) * clampedProgress;
-        const translateY = posStart + (posEnd - posStart) * clampedProgress;
 
         return {
-            opacity: Math.max(0, Math.min(1, opacity)),
-            translateY,
-            visible: true,
+            opacity: position.opacity,
+            translateY: position.position, // position = translateY
+            scale: position.scale,
+            visible,
             left: config.position?.left || '50.8%',
             width: config.size?.width || '5vw',
             maxWidth: config.size?.maxWidth || '250px'
@@ -45,12 +38,13 @@ const DogLayer = ({ scrollProgress, config }) => {
     }, [scrollProgress, config]);
 
     // Debug Log
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && layerData.visible) {
         console.log('🐕 DogLayer:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
-            translateY: layerData.translateY.toFixed(1) + 'vh'
+            translateY: layerData.translateY.toFixed(1) + 'vh',
+            source: 'calculateLayerPosition()'
         });
     }
 
@@ -78,7 +72,7 @@ const DogLayer = ({ scrollProgress, config }) => {
                         pointerEvents: 'none'
                     }}
                 >
-                    🐕 DOG: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    🐕 DOG ✅ ZENTRAL: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
                 </div>
             )}
 
@@ -92,7 +86,7 @@ const DogLayer = ({ scrollProgress, config }) => {
                     height: 'auto',
                     zIndex: config?.zIndex || 8,
                     pointerEvents: 'none',
-                    transform: `translate(-50%, ${-layerData.translateY}vh)`,
+                    transform: `translate(-50%, ${-layerData.translateY}vh) scale(${layerData.scale})`,
                     opacity: layerData.opacity,
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden'

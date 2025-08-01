@@ -72,9 +72,9 @@ export const LAYER_CONFIG = {
     waldHinten: {
         active: true,
         movement: {
-            scrollStart: 0.45,  // NEU: Snap 3 (45% statt 55%)
-            scrollEnd: 1.0,
-            posStart: -35,
+            scrollStart: 0.15,  // NEU: Snap 3 (45% statt 55%)
+            scrollEnd: 0.6,
+            posStart: -95,
             posEnd: 0,
             opacityStart: 1.0,
             opacityEnd: 1.0
@@ -136,12 +136,12 @@ export const LAYER_CONFIG = {
     menge: {
         active: true,
         movement: {
-            scrollStart: 0.0,
-            scrollEnd: 1.0,
+            scrollStart: 0.30,
+            scrollEnd: 0.6,
             posStart: -170,
             posEnd: -20,
-            opacityStart: 0.0,
-            opacityEnd: 0.8
+            opacityStart: 1.0,
+            opacityEnd: 1.0,
         },
         position: {
             left: '55%'
@@ -186,11 +186,11 @@ export const LAYER_CONFIG = {
     leftCloud: {
         active: true,
         movement: {
-            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
-            scrollEnd: 1.0,     // Ende (100%)
+            scrollStart: 0.45,  // NEU: Snap 4 (60% statt 75%)
+            scrollEnd: 0.6,     // Ende (100%)
             posStart: -60,
             posEnd: 5,
-            opacityStart: 0.9,
+            opacityStart: 1.0,
             opacityEnd: 1.0,
             scaleStart: 1.7,
             scaleEnd: 1.7
@@ -198,17 +198,17 @@ export const LAYER_CONFIG = {
         position: {
             bottom: '43%'
         },
-        zIndex: 15
+        zIndex: 12
     },
 
     rightCloud: {
         active: true,
         movement: {
-            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
-            scrollEnd: 1.0,
+            scrollStart: 0.45,  // NEU: Snap 4 (60% statt 75%)
+            scrollEnd: 0.6,
             posStart: -40,
             posEnd: 5,
-            opacityStart: 0.9,
+            opacityStart: 1.0,
             opacityEnd: 1.0,
             scaleStart: 1.5,
             scaleEnd: 1.5
@@ -223,8 +223,8 @@ export const LAYER_CONFIG = {
     leftCloudHinten: {
         active: true,
         movement: {
-            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
-            scrollEnd: 1.0,
+            scrollStart: 0.45,  // NEU: Snap 4 (60% statt 75%)
+            scrollEnd: 0.6,
             posStart: -140,
             posEnd: 0,
             opacityStart: 1.0,
@@ -235,14 +235,14 @@ export const LAYER_CONFIG = {
         position: {
             bottom: '65%'
         },
-        zIndex: 12
+        zIndex: 15
     },
 
     rightCloudHinten: {
         active: true,
         movement: {
-            scrollStart: 0.60,  // NEU: Snap 4 (60% statt 75%)
-            scrollEnd: 1.0,
+            scrollStart: 0.45,  // NEU: Snap 4 (60% statt 75%)
+            scrollEnd: 0.6,
             posStart: -140,
             posEnd: 10,
             opacityStart: 1.0,
