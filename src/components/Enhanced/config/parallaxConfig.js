@@ -298,14 +298,16 @@ export const ANIMATION_SPRINGS = {
 };
 
 // ===== LAYER AKTIVIERUNG PRO SNAP-POINT (ERWEITERT AUF 7) =====
+// ✅ FIXED: Menge kommt ab Snap-Point 2 (30%) statt erst bei Snap-Point 6 (95%)
+
 export const SNAP_POINT_LAYERS = {
     0: ['background', 'starfield', 'logo'],                           // Logo + Newsletter
     1: ['background', 'starfield', 'road', 'dog'],                   // Von Uns Heißt Für Uns
-    2: ['background', 'starfield', 'road', 'dog', 'forest'],        // Der Weg Ist Das Ziel  
-    3: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten'], // Die Community Heißt
-    4: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'berge', 'leftCloud', 'rightCloud', 'leftCloudHinten', 'rightCloudHinten'], // Parallax Vollansicht
-    5: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'berge', 'leftCloud', 'rightCloud', 'leftCloudHinten', 'rightCloudHinten'], // Carousel Phase (gleiche Layer wie 4)
-    6: ['background', 'starfield', 'menge', 'newsletter']            // Newsletter CTA + menge
+    2: ['background', 'starfield', 'road', 'dog', 'forest', 'menge'], // ✅ MENGE HINZUGEFÜGT: Der Weg Ist Das Ziel + Menge
+    3: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'menge'], // ✅ MENGE BEIBEHALTEN: Die Community Heißt
+    4: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'berge', 'leftCloud', 'rightCloud', 'leftCloudHinten', 'rightCloudHinten', 'menge'], // ✅ MENGE BEIBEHALTEN: Parallax Vollansicht
+    5: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'berge', 'leftCloud', 'rightCloud', 'leftCloudHinten', 'rightCloudHinten', 'menge'], // ✅ MENGE BEIBEHALTEN: Carousel Phase
+    6: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'berge', 'leftCloud', 'rightCloud', 'leftCloudHinten', 'rightCloudHinten', 'menge', 'newsletter'] // ✅ MENGE + Newsletter CTA
 };
 
 // ===== HELPER FUNCTIONS (erweitert für 7 Snap-Points) =====

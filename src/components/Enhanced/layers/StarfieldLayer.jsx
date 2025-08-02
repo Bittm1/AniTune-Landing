@@ -1,5 +1,6 @@
 // src/components/Enhanced/layers/StarfieldLayer.jsx
-// 🌟 STARFIELD LAYER - Animierte 3D Sterne + gelegentliche Sternschnuppen
+// 🌟 STARFIELD LAYER - FIXED: Bleibt an Endposition sichtbar
+// ✅ Animierte 3D Sterne + Sternschnuppen + FIXED visibility logic
 
 import React, { useMemo, useEffect, useRef, useCallback } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
@@ -14,7 +15,7 @@ const StarfieldLayer = React.memo(({ scrollProgress, config, deviceConfig }) => 
     const shootingStarsRef = useRef([]);
     const timeOfLastStarRef = useRef(0);
 
-    // ===== LAYER DATA BERECHNUNG =====
+    // ===== LAYER DATA BERECHNUNG (FIXED) =====
     const layerData = useMemo(() => {
         if (!config?.active || !config?.movement) {
             if (process.env.NODE_ENV === 'development') {
@@ -24,23 +25,37 @@ const StarfieldLayer = React.memo(({ scrollProgress, config, deviceConfig }) => 
         }
 
         const { scrollStart, scrollEnd, opacity, speed } = config.movement;
-        const visible = scrollProgress >= scrollStart && scrollProgress <= scrollEnd;
+
+        // ===== 🔧 FIXED SICHTBARKEITS-CHECK =====
+        // ✅ VORHER: scrollProgress >= scrollStart && scrollProgress <= scrollEnd
+        // ✅ NACHHER: Nur scrollStart prüfen - Layer bleibt IMMER sichtbar ab scrollStart
+        const visible = scrollProgress >= scrollStart;
 
         if (!visible) return { visible: false };
 
-        // Berechne lokalen Progress
-        const localProgress = scrollEnd > scrollStart
-            ? Math.max(0, Math.min(1, (scrollProgress - scrollStart) / (scrollEnd - scrollStart)))
-            : 0;
+        // ===== STARFIELD EIGENSCHAFTEN BERECHNUNG (MIT END-FREEZE) =====
+        let localProgress, finalOpacity, animationSpeed;
 
-        // Starfield-Intensität ändert sich mit Scroll
-        const finalOpacity = opacity * (0.3 + 0.7 * Math.sin(localProgress * Math.PI * 0.5));
-        const animationSpeed = speed * (0.5 + localProgress * 0.5);
+        if (scrollProgress <= scrollEnd) {
+            // Normal animation zwischen scrollStart und scrollEnd
+            localProgress = scrollEnd > scrollStart
+                ? Math.max(0, Math.min(1, (scrollProgress - scrollStart) / (scrollEnd - scrollStart)))
+                : 0;
+
+            // Starfield-Intensität ändert sich mit Scroll
+            finalOpacity = opacity * (0.3 + 0.7 * Math.sin(localProgress * Math.PI * 0.5));
+            animationSpeed = speed * (0.5 + localProgress * 0.5);
+        } else {
+            // ✅ NACH scrollEnd: An Endwerten "einfrieren"
+            finalOpacity = opacity * (0.3 + 0.7 * Math.sin(1 * Math.PI * 0.5)); // localProgress = 1
+            animationSpeed = speed * (0.5 + 1 * 0.5); // localProgress = 1
+        }
 
         return {
             opacity: Math.max(0, Math.min(1, finalOpacity)),
             speed: animationSpeed,
-            visible: true
+            visible: true,
+            atEndPosition: scrollProgress > scrollEnd
         };
     }, [scrollProgress, config]);
 
@@ -85,7 +100,7 @@ const StarfieldLayer = React.memo(({ scrollProgress, config, deviceConfig }) => 
         starsRef.current = stars;
 
         if (process.env.NODE_ENV === 'development') {
-            console.log('🌟 StarfieldLayer: Initialized', {
+            console.log('🌟 StarfieldLayer FIXED: Initialized', {
                 numStars,
                 canvasSize: `${canvas.width}x${canvas.height}`,
                 isMobile
@@ -279,15 +294,17 @@ const StarfieldLayer = React.memo(({ scrollProgress, config, deviceConfig }) => 
         };
     }, [layerData.visible, animate]);
 
-    // Performance Debug (Development only)
+    // Performance Debug (ERWEITERT)
     if (process.env.NODE_ENV === 'development' && layerData.visible) {
-        console.log('🌟 StarfieldLayer Active:', {
+        console.log('🌟 StarfieldLayer FIXED:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             opacity: layerData.opacity.toFixed(2),
             speed: layerData.speed.toFixed(2),
             numStars: starsRef.current.length,
             shootingStars: shootingStarsRef.current.length,
-            multiplier
+            multiplier,
+            atEndPosition: layerData.atEndPosition,
+            source: 'FIXED visibility logic'
         });
     }
 
@@ -310,7 +327,8 @@ const StarfieldLayer = React.memo(({ scrollProgress, config, deviceConfig }) => 
                     pointerEvents: 'none',
                     opacity: layerData.opacity
                 }}
-                data-layer="starfield"
+                data-layer="starfield-fixed"
+                data-at-end={layerData.atEndPosition}
                 data-scroll-progress={(scrollProgress * 100).toFixed(1)}
                 data-opacity={layerData.opacity.toFixed(2)}
             >
@@ -323,7 +341,7 @@ const StarfieldLayer = React.memo(({ scrollProgress, config, deviceConfig }) => 
                     }}
                 />
 
-                {/* ===== DEVELOPMENT DEBUG INFO ===== */}
+                {/* ===== DEVELOPMENT DEBUG INFO (FIXED VERSION) ===== */}
                 {process.env.NODE_ENV === 'development' && layerData.opacity > 0.3 && (
                     <div
                         style={{
@@ -338,21 +356,22 @@ const StarfieldLayer = React.memo(({ scrollProgress, config, deviceConfig }) => 
                             fontFamily: 'monospace',
                             lineHeight: '1.3',
                             zIndex: 1,
-                            border: '1px solid #4169e1',
+                            border: '2px solid #FFD700', // ✅ Goldener Rahmen für "Fixed"
                             maxWidth: '200px'
                         }}
                     >
                         <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                            🌟 STARFIELD LAYER
+                            🌟 STARFIELD ✅ FIXED
                         </div>
                         <div>3D Stars: {starsRef.current.length}</div>
                         <div>Shooting Stars: {shootingStarsRef.current.length}/{shootingStarConfig.maxStars}</div>
                         <div>Opacity: {layerData.opacity.toFixed(2)}</div>
                         <div>Speed: {layerData.speed.toFixed(2)}</div>
+                        <div>Status: {layerData.atEndPosition ? '🔒 AT END' : '🎬 ANIMATING'}</div>
                         <div>Device: {isMobile ? '📱' : '🖥️'}</div>
                         <div style={{ fontSize: '9px', opacity: 0.8, marginTop: '4px' }}>
                             3D starfield + shooting stars<br />
-                            Responsive • Performance optimized
+                            FIXED visibility • Performance optimized
                         </div>
                     </div>
                 )}

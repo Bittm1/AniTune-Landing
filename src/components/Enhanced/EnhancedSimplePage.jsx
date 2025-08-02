@@ -1,6 +1,6 @@
-// src/components/Enhanced/EnhancedSimplePage.jsx - MIT DEVELOPMENT MODE TOGGLE
-// ✅ 7 SNAP-POINTS + LOCK-SCROLL SYSTEM + Development Mode für Layer-Positionierung
-// 🔧 Dev Mode: Freies Scrollen ohne Snap & Lock | Normal Mode: Snap-Navigation + Lock-System
+// src/components/Enhanced/EnhancedSimplePage.jsx - FIXED LAYER SYSTEM
+// ✅ 7 SNAP-POINTS + LAYER BLEIBEN SICHTBAR + LOCK-SCROLL SYSTEM
+// 🔧 Development Mode + Snap-Point basierte Layer-Logik
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import EnhancedTitleLayer from './TitleLayer';
@@ -20,7 +20,7 @@ import CloudLayer from './layers/CloudLayer';
 import WolkenHintenLayer from './layers/WolkenHintenLayer';
 import MengeLayer from './layers/MengeLayer';
 import Newsletter from '../Newsletter/Newsletter';
-import { LAYER_CONFIG } from './config/parallaxConfig';
+import { LAYER_CONFIG, isLayerActiveAtSnapPoint } from './config/parallaxConfig'; // ✅ WICHTIGER IMPORT
 import {
     SNAP_POINTS,
     getSnapPointByIndex,
@@ -408,39 +408,41 @@ const EnhancedSimplePage = () => {
                 deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
             />
 
-            {/* ===== 🌟 STARFIELD LAYER (NEU) ===== */}
-            <StarfieldLayer
-                scrollProgress={scrollProgress}
-                config={LAYER_CONFIG.starfield}
-                deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
-            />
+            {/* ===== 🌟 STARFIELD LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {isLayerActiveAtSnapPoint('starfield', activeSnapPoint) && (
+                <StarfieldLayer
+                    scrollProgress={scrollProgress}
+                    config={LAYER_CONFIG.starfield}
+                    deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
+                />
+            )}
 
-            {/* ===== ROAD LAYER ===== */}
-            {scrollProgress >= 0.15 && (
+            {/* ===== ROAD LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {isLayerActiveAtSnapPoint('road', activeSnapPoint) && (
                 <RoadLayer
                     scrollProgress={scrollProgress}
                     config={LAYER_CONFIG.road}
                 />
             )}
 
-            {/* ===== 🐕 DOG LAYER ===== */}
-            {scrollProgress >= 0.15 && (
+            {/* ===== 🐕 DOG LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {isLayerActiveAtSnapPoint('dog', activeSnapPoint) && (
                 <DogLayer
                     scrollProgress={scrollProgress}
                     config={LAYER_CONFIG.dog}
                 />
             )}
 
-            {/* ===== 🌲 FOREST LAYER ===== */}
-            {scrollProgress >= 0.15 && (
+            {/* ===== 🌲 FOREST LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {isLayerActiveAtSnapPoint('forest', activeSnapPoint) && (
                 <ForestLayer
                     scrollProgress={scrollProgress}
                     config={LAYER_CONFIG.forest}
                 />
             )}
 
-            {/* ===== 🌲 WALD HINTEN LAYER (NEU) ===== */}
-            {scrollProgress >= 0.15 && (
+            {/* ===== 🌲 WALD HINTEN LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {isLayerActiveAtSnapPoint('waldHinten', activeSnapPoint) && (
                 <WaldHintenLayer
                     scrollProgress={scrollProgress}
                     config={LAYER_CONFIG.waldHinten}
@@ -448,24 +450,24 @@ const EnhancedSimplePage = () => {
                 />
             )}
 
-            {/* ===== 🏔️ TAL LAYER ===== */}
-            {scrollProgress >= 0.15 && (
+            {/* ===== 🏔️ TAL LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {isLayerActiveAtSnapPoint('tal', activeSnapPoint) && (
                 <TalLayer
                     scrollProgress={scrollProgress}
                     config={LAYER_CONFIG.tal}
                 />
             )}
 
-            {/* ===== ⛰️ BERGE LAYER ===== */}
-            {scrollProgress >= 0.15 && (
+            {/* ===== ⛰️ BERGE LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {isLayerActiveAtSnapPoint('berge', activeSnapPoint) && (
                 <BergeLayer
                     scrollProgress={scrollProgress}
                     config={LAYER_CONFIG.berge}
                 />
             )}
 
-            {/* ===== ☁️ WOLKEN HINTEN LAYER (NEU) ===== */}
-            {scrollProgress >= 0.15 && (
+            {/* ===== ☁️ WOLKEN HINTEN LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {(isLayerActiveAtSnapPoint('leftCloudHinten', activeSnapPoint) || isLayerActiveAtSnapPoint('rightCloudHinten', activeSnapPoint)) && (
                 <WolkenHintenLayer
                     scrollProgress={scrollProgress}
                     leftConfig={LAYER_CONFIG.leftCloudHinten}
@@ -474,8 +476,8 @@ const EnhancedSimplePage = () => {
                 />
             )}
 
-            {/* ===== ☁️ CLOUD LAYER (NEU) ===== */}
-            {scrollProgress >= 0.15 && (
+            {/* ===== ☁️ CLOUD LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {(isLayerActiveAtSnapPoint('leftCloud', activeSnapPoint) || isLayerActiveAtSnapPoint('rightCloud', activeSnapPoint)) && (
                 <CloudLayer
                     scrollProgress={scrollProgress}
                     leftConfig={LAYER_CONFIG.leftCloud}
@@ -484,20 +486,24 @@ const EnhancedSimplePage = () => {
                 />
             )}
 
-            {/* ===== 👥 MENGE LAYER (NEU) ===== */}
-            <MengeLayer
-                scrollProgress={scrollProgress}
-                config={LAYER_CONFIG.menge}
-                deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
-            />
+            {/* ===== 👥 MENGE LAYER - BASIEREND AUF SNAP-POINTS ===== */}
+            {isLayerActiveAtSnapPoint('menge', activeSnapPoint) && (
+                <MengeLayer
+                    scrollProgress={scrollProgress}
+                    config={LAYER_CONFIG.menge}
+                    deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
+                />
+            )}
 
-            {/* ===== LOGO ===== */}
-            <LogoLayer
-                scrollProgress={scrollProgress}
-                position={{ visible: scrollProgress <= 0.15 }}
-                config={LAYER_CONFIG.logo}
-                deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
-            />
+            {/* ===== LOGO - BASIEREND AUF SNAP-POINTS ===== */}
+            {isLayerActiveAtSnapPoint('logo', activeSnapPoint) && (
+                <LogoLayer
+                    scrollProgress={scrollProgress}
+                    position={{ visible: scrollProgress <= 0.15 }}
+                    config={LAYER_CONFIG.logo}
+                    deviceConfig={{ multiplier: isMobile ? 0.7 : 1.0 }}
+                />
+            )}
 
             {/* ===== NEWSLETTER START ===== */}
             {showNewsletterStart && (

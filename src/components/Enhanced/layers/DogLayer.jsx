@@ -1,5 +1,6 @@
 // src/components/Enhanced/layers/DogLayer.jsx
-// 🐕 DOG LAYER - Mit zentraler calculateLayerPosition
+// 🐕 DOG LAYER - FIXED: Bleibt an Endposition sichtbar
+// ✅ Layer verschwindet NICHT mehr nach scrollEnd
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
@@ -13,7 +14,7 @@ const DogLayer = ({ scrollProgress, config }) => {
         return null;
     }
 
-    // ===== ZENTRALE BERECHNUNG =====
+    // ===== ZENTRALE BERECHNUNG (FIXED) =====
     const layerData = useMemo(() => {
         if (!config.active || !config.movement) {
             return { visible: false };
@@ -22,9 +23,11 @@ const DogLayer = ({ scrollProgress, config }) => {
         // ✅ Nutzt zentrale Funktion
         const position = calculateLayerPosition(scrollProgress, config);
 
-        // Sichtbarkeits-Check
-        const { scrollStart, scrollEnd } = config.movement;
-        const visible = scrollProgress >= scrollStart && scrollProgress <= scrollEnd;
+        // ===== 🔧 FIXED SICHTBARKEITS-CHECK =====
+        const { scrollStart } = config.movement;
+        // ✅ VORHER: scrollProgress >= scrollStart && scrollProgress <= scrollEnd
+        // ✅ NACHHER: Nur scrollStart prüfen - Layer bleibt IMMER sichtbar ab scrollStart
+        const visible = scrollProgress >= scrollStart;
 
         return {
             opacity: position.opacity,
@@ -37,14 +40,15 @@ const DogLayer = ({ scrollProgress, config }) => {
         };
     }, [scrollProgress, config]);
 
-    // Debug Log
+    // Debug Log (ERWEITERT)
     if (process.env.NODE_ENV === 'development' && layerData.visible) {
-        console.log('🐕 DogLayer:', {
+        console.log('🐕 DogLayer FIXED:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
             translateY: layerData.translateY.toFixed(1) + 'vh',
-            source: 'calculateLayerPosition()'
+            atEndPosition: scrollProgress > config.movement.scrollEnd,
+            source: 'calculateLayerPosition() + FIXED visibility'
         });
     }
 
@@ -55,7 +59,7 @@ const DogLayer = ({ scrollProgress, config }) => {
 
     return (
         <ErrorBoundary>
-            {/* Debug Anzeige (FIXED POSITION - außerhalb des beweglichen Containers) */}
+            {/* Debug Anzeige (ERWEITERT MIT FIX-INFO) */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
@@ -69,10 +73,13 @@ const DogLayer = ({ scrollProgress, config }) => {
                         fontSize: '10px',
                         fontFamily: 'monospace',
                         zIndex: 9999,
-                        pointerEvents: 'none'
+                        pointerEvents: 'none',
+                        border: '2px solid #FFD700' // ✅ Goldener Rahmen für "Fixed"
                     }}
                 >
-                    🐕 DOG ✅ ZENTRAL: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    🐕 DOG ✅ FIXED VISIBILITY: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    <br />
+                    {scrollProgress > config.movement.scrollEnd ? '🔒 AT END POSITION' : '🎬 ANIMATING'}
                 </div>
             )}
 
@@ -91,6 +98,9 @@ const DogLayer = ({ scrollProgress, config }) => {
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden'
                 }}
+                data-dog-layer="fixed"
+                data-at-end={scrollProgress > config.movement.scrollEnd}
+                data-scroll-progress={(scrollProgress * 100).toFixed(1)}
             >
                 <SafeImage
                     src="/Parallax/Hund.png"

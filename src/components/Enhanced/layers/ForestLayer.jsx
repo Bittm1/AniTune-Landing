@@ -1,12 +1,13 @@
 // src/components/Enhanced/layers/ForestLayer.jsx
-// 🌲 FOREST LAYER - Clean und einfach (nach RoadLayer Pattern)
+// 🌲 FOREST LAYER - FIXED: Bleibt an Endposition sichtbar
+// ✅ Layer verschwindet NICHT mehr nach scrollEnd
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
 
 const ForestLayer = ({ scrollProgress, config }) => {
-    // ===== BERECHNUNGEN =====
+    // ===== BERECHNUNGEN (FIXED) =====
     const layerData = useMemo(() => {
         // Fallback Config falls nicht vorhanden
         const defaultConfig = {
@@ -29,34 +30,48 @@ const ForestLayer = ({ scrollProgress, config }) => {
 
         const { scrollStart, scrollEnd, posStart, posEnd, opacityStart, opacityEnd } = activeConfig.movement;
 
-        // Sichtbarkeits-Check
-        const visible = scrollProgress >= scrollStart && scrollProgress <= scrollEnd;
+        // ===== 🔧 FIXED SICHTBARKEITS-CHECK =====
+        // ✅ VORHER: scrollProgress >= scrollStart && scrollProgress <= scrollEnd
+        // ✅ NACHHER: Nur scrollStart prüfen - Layer bleibt IMMER sichtbar ab scrollStart
+        const visible = scrollProgress >= scrollStart;
+
         if (!visible) {
             return { opacity: 0, translateY: 0, visible: false };
         }
 
-        // Progress berechnen
-        const localProgress = (scrollProgress - scrollStart) / (scrollEnd - scrollStart);
-        const clampedProgress = Math.max(0, Math.min(1, localProgress));
+        // ===== POSITION BERECHNUNG (MIT END-POSITION FREEZE) =====
+        let localProgress, opacity, translateY;
 
-        // Werte interpolieren
-        const opacity = opacityStart + (opacityEnd - opacityStart) * clampedProgress;
-        const translateY = posStart + (posEnd - posStart) * clampedProgress;
+        if (scrollProgress <= scrollEnd) {
+            // Normal animation zwischen scrollStart und scrollEnd
+            localProgress = (scrollProgress - scrollStart) / (scrollEnd - scrollStart);
+            const clampedProgress = Math.max(0, Math.min(1, localProgress));
+
+            opacity = opacityStart + (opacityEnd - opacityStart) * clampedProgress;
+            translateY = posStart + (posEnd - posStart) * clampedProgress;
+        } else {
+            // ✅ NACH scrollEnd: An Endposition "einfrieren"
+            opacity = opacityEnd;
+            translateY = posEnd;
+        }
 
         return {
             opacity: Math.max(0, Math.min(1, opacity)),
             translateY,
-            visible: true
+            visible: true,
+            atEndPosition: scrollProgress > scrollEnd
         };
     }, [scrollProgress, config]);
 
-    // Debug Log (wie RoadLayer)
-    if (process.env.NODE_ENV === 'development') {
-        console.log('🌲 ForestLayer:', {
+    // Debug Log (ERWEITERT)
+    if (process.env.NODE_ENV === 'development' && layerData.visible) {
+        console.log('🌲 ForestLayer FIXED:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
-            translateY: layerData.translateY.toFixed(1) + 'vh'
+            translateY: layerData.translateY.toFixed(1) + 'vh',
+            atEndPosition: layerData.atEndPosition,
+            source: 'FIXED visibility logic'
         });
     }
 
@@ -67,11 +82,11 @@ const ForestLayer = ({ scrollProgress, config }) => {
 
     return (
         <ErrorBoundary>
-            {/* Debug Anzeige (FIXED POSITION) */}
+            {/* Debug Anzeige (ERWEITERT MIT FIX-INFO) */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
-                        position: 'fixed',  // ✅ FIXED statt absolute!
+                        position: 'fixed',
                         top: '120px',
                         left: '20px',
                         background: 'rgba(34, 139, 34, 0.9)',
@@ -80,10 +95,14 @@ const ForestLayer = ({ scrollProgress, config }) => {
                         borderRadius: '4px',
                         fontSize: '10px',
                         fontFamily: 'monospace',
-                        zIndex: 9999  // ✅ Hinzugefügt
+                        zIndex: 9999,
+                        border: '2px solid #FFD700', // ✅ Goldener Rahmen für "Fixed"
+                        pointerEvents: 'none'
                     }}
                 >
-                    🌲 FOREST: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    🌲 FOREST ✅ FIXED: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    <br />
+                    {layerData.atEndPosition ? '🔒 AT END POSITION' : '🎬 ANIMATING'}
                 </div>
             )}
 
@@ -100,6 +119,9 @@ const ForestLayer = ({ scrollProgress, config }) => {
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden'
                 }}
+                data-forest-layer="fixed"
+                data-at-end={layerData.atEndPosition}
+                data-scroll-progress={(scrollProgress * 100).toFixed(1)}
             >
                 <SafeImage
                     src="/Parallax/Erster_Hintergrund.webp"

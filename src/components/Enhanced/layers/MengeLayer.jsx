@@ -1,5 +1,6 @@
 // src/components/Enhanced/layers/MengeLayer.jsx
-// 👥 MENGE LAYER - Mit zentraler calculateLayerPosition
+// 👥 MENGE LAYER - FIXED: Bleibt an Endposition sichtbar
+// ✅ calculateLayerPosition + FIXED visibility logic
 
 import React, { useMemo } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
@@ -7,7 +8,7 @@ import SafeImage from '../../Parallax/Elements/SafeImage';
 import { calculateLayerPosition } from '../config/parallaxConfig';
 
 const MengeLayer = React.memo(({ scrollProgress, config, deviceConfig }) => {
-    // ===== ZENTRALE BERECHNUNG =====
+    // ===== ZENTRALE BERECHNUNG (FIXED) =====
     const layerData = useMemo(() => {
         if (!config?.active || !config?.movement) {
             if (process.env.NODE_ENV === 'development') {
@@ -19,30 +20,34 @@ const MengeLayer = React.memo(({ scrollProgress, config, deviceConfig }) => {
         // ✅ Nutzt zentrale Funktion
         const position = calculateLayerPosition(scrollProgress, config);
 
-        // Sichtbarkeits-Check
-        const { scrollStart, scrollEnd } = config.movement;
-        const visible = scrollProgress >= scrollStart && scrollProgress <= scrollEnd;
+        // ===== 🔧 FIXED SICHTBARKEITS-CHECK =====
+        const { scrollStart } = config.movement;
+        // ✅ VORHER: scrollProgress >= scrollStart && scrollProgress <= scrollEnd
+        // ✅ NACHHER: Nur scrollStart prüfen - Layer bleibt IMMER sichtbar ab scrollStart
+        const visible = scrollProgress >= scrollStart;
 
         return {
             opacity: position.opacity,
             translateY: position.position, // position = translateY
             visible: visible && position.opacity > 0.01, // Nur zeigen wenn tatsächlich sichtbar
-            scale: position.scale
+            scale: position.scale,
+            atEndPosition: scrollProgress > config.movement.scrollEnd
         };
     }, [scrollProgress, config]);
 
     // ===== RESPONSIVE MULTIPLIER =====
     const multiplier = deviceConfig?.multiplier || 1.0;
 
-    // Performance Debug (Development only)
+    // Performance Debug (ERWEITERT)
     if (process.env.NODE_ENV === 'development' && layerData.visible) {
-        console.log('👥 MengeLayer Active:', {
+        console.log('👥 MengeLayer FIXED:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             opacity: layerData.opacity.toFixed(2),
             translateY: layerData.translateY.toFixed(1),
+            scale: layerData.scale.toFixed(2),
             multiplier,
-            visibleThreshold: 'opacity > 0.01',
-            source: 'calculateLayerPosition()'
+            atEndPosition: layerData.atEndPosition,
+            source: 'calculateLayerPosition() + FIXED visibility'
         });
     }
 
@@ -75,10 +80,10 @@ const MengeLayer = React.memo(({ scrollProgress, config, deviceConfig }) => {
                     transformStyle: 'preserve-3d',
                     pointerEvents: 'none'
                 }}
-                data-layer="menge"
+                data-layer="menge-fixed"
+                data-at-end={layerData.atEndPosition}
                 data-scroll-progress={(scrollProgress * 100).toFixed(1)}
                 data-opacity={layerData.opacity.toFixed(2)}
-                data-translate-y={layerData.translateY.toFixed(1)}
             >
                 <SafeImage
                     src="/Parallax/Menge.png"
@@ -101,8 +106,8 @@ const MengeLayer = React.memo(({ scrollProgress, config, deviceConfig }) => {
                     }}
                 />
 
-                {/* ===== DEVELOPMENT DEBUG INFO ===== */}
-                {process.env.NODE_ENV === 'development' && layerData.opacity > 0.5 && (
+                {/* ===== DEVELOPMENT DEBUG INFO (FIXED VERSION) ===== */}
+                {process.env.NODE_ENV === 'development' && layerData.opacity > 0.3 && (
                     <div
                         style={{
                             position: 'absolute',
@@ -116,19 +121,19 @@ const MengeLayer = React.memo(({ scrollProgress, config, deviceConfig }) => {
                             fontFamily: 'monospace',
                             lineHeight: '1.3',
                             zIndex: 1,
-                            border: '1px solid #ff8c00',
+                            border: '2px solid #FFD700', // ✅ Goldener Rahmen für "Fixed"
                             maxWidth: '200px'
                         }}
                     >
                         <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                            👥 MENGE LAYER ✅ ZENTRAL
+                            👥 MENGE ✅ FIXED
                         </div>
                         <div>Opacity: {layerData.opacity.toFixed(2)}</div>
                         <div>TranslateY: {layerData.translateY.toFixed(1)}vh</div>
-                        <div>Scroll: {(scrollProgress * 100).toFixed(1)}%</div>
+                        <div>Status: {layerData.atEndPosition ? '🔒 AT END' : '🎬 ANIMATING'}</div>
                         <div style={{ fontSize: '9px', opacity: 0.8, marginTop: '4px' }}>
                             calculateLayerPosition()<br />
-                            Zentrale Berechnungen
+                            FIXED visibility logic
                         </div>
                     </div>
                 )}

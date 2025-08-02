@@ -1,12 +1,13 @@
 // src/components/Enhanced/layers/TalLayer.jsx
-// 🏔️ TAL LAYER - Clean und einfach (nach RoadLayer Pattern)
+// 🏔️ TAL LAYER - FIXED: Bleibt an Endposition sichtbar
+// ✅ Layer verschwindet NICHT mehr nach scrollEnd
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
 
 const TalLayer = ({ scrollProgress, config }) => {
-    // ===== BERECHNUNGEN =====
+    // ===== BERECHNUNGEN (FIXED) =====
     const layerData = useMemo(() => {
         // Fallback Config falls nicht vorhanden
         const defaultConfig = {
@@ -29,34 +30,48 @@ const TalLayer = ({ scrollProgress, config }) => {
 
         const { scrollStart, scrollEnd, posStart, posEnd, opacityStart, opacityEnd } = activeConfig.movement;
 
-        // Sichtbarkeits-Check
-        const visible = scrollProgress >= scrollStart && scrollProgress <= scrollEnd;
+        // ===== 🔧 FIXED SICHTBARKEITS-CHECK =====
+        // ✅ VORHER: scrollProgress >= scrollStart && scrollProgress <= scrollEnd
+        // ✅ NACHHER: Nur scrollStart prüfen - Layer bleibt IMMER sichtbar ab scrollStart
+        const visible = scrollProgress >= scrollStart;
+
         if (!visible) {
             return { opacity: 0, translateY: 0, visible: false };
         }
 
-        // Progress berechnen
-        const localProgress = (scrollProgress - scrollStart) / (scrollEnd - scrollStart);
-        const clampedProgress = Math.max(0, Math.min(1, localProgress));
+        // ===== POSITION BERECHNUNG (MIT END-POSITION FREEZE) =====
+        let localProgress, opacity, translateY;
 
-        // Werte interpolieren
-        const opacity = opacityStart + (opacityEnd - opacityStart) * clampedProgress;
-        const translateY = posStart + (posEnd - posStart) * clampedProgress;
+        if (scrollProgress <= scrollEnd) {
+            // Normal animation zwischen scrollStart und scrollEnd
+            localProgress = (scrollProgress - scrollStart) / (scrollEnd - scrollStart);
+            const clampedProgress = Math.max(0, Math.min(1, localProgress));
+
+            opacity = opacityStart + (opacityEnd - opacityStart) * clampedProgress;
+            translateY = posStart + (posEnd - posStart) * clampedProgress;
+        } else {
+            // ✅ NACH scrollEnd: An Endposition "einfrieren"
+            opacity = opacityEnd;
+            translateY = posEnd;
+        }
 
         return {
             opacity: Math.max(0, Math.min(1, opacity)),
             translateY,
-            visible: true
+            visible: true,
+            atEndPosition: scrollProgress > scrollEnd
         };
     }, [scrollProgress, config]);
 
-    // Debug Log (wie RoadLayer)
-    if (process.env.NODE_ENV === 'development') {
-        console.log('🏔️ TalLayer:', {
+    // Debug Log (ERWEITERT)
+    if (process.env.NODE_ENV === 'development' && layerData.visible) {
+        console.log('🏔️ TalLayer FIXED:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
-            translateY: layerData.translateY.toFixed(1) + 'vh'
+            translateY: layerData.translateY.toFixed(1) + 'vh',
+            atEndPosition: layerData.atEndPosition,
+            source: 'FIXED visibility logic'
         });
     }
 
@@ -67,24 +82,27 @@ const TalLayer = ({ scrollProgress, config }) => {
 
     return (
         <ErrorBoundary>
-            {/* Debug Anzeige (FIXED POSITION) */}
+            {/* Debug Anzeige (ERWEITERT MIT FIX-INFO) */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
                         position: 'fixed',
-                        top: '170px',  // ✅ Unter Forest (120px + 50px)
+                        top: '170px',
                         left: '20px',
-                        background: 'rgba(165, 42, 42, 0.9)',  // ✅ Braun-Rot für Tal
+                        background: 'rgba(165, 42, 42, 0.9)',
                         color: 'white',
                         padding: '8px',
                         borderRadius: '4px',
                         fontSize: '10px',
                         fontFamily: 'monospace',
                         zIndex: 9999,
+                        border: '2px solid #FFD700', // ✅ Goldener Rahmen für "Fixed"
                         pointerEvents: 'none'
                     }}
                 >
-                    🏔️ TAL: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    🏔️ TAL ✅ FIXED: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    <br />
+                    {layerData.atEndPosition ? '🔒 AT END POSITION' : '🎬 ANIMATING'}
                 </div>
             )}
 
@@ -101,6 +119,9 @@ const TalLayer = ({ scrollProgress, config }) => {
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden'
                 }}
+                data-tal-layer="fixed"
+                data-at-end={layerData.atEndPosition}
+                data-scroll-progress={(scrollProgress * 100).toFixed(1)}
             >
                 <SafeImage
                     src="/Parallax/Dritter_Hintergrund.png"
