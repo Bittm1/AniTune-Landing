@@ -1,5 +1,6 @@
 // src/components/Enhanced/layers/AniTuneCarousel.jsx - MIT 3-SEGMENT ANIMATION
 // 🎠 VON UNTEN HOCH → ZENTRAL → NACH OBEN WEG (78%-90% ScrollProgress)
+// ✅ MINIMAL FIX: Nur Clickability-Probleme behoben
 
 import React, { useState, useMemo, useEffect } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
@@ -11,10 +12,6 @@ const AniTuneCarousel = ({
 }) => {
     const [activeCard, setActiveCard] = useState(4);
     const [transitionDirection, setTransitionDirection] = useState(null);
-
-    // ✅ VEREINFACHT: Kein kompliziertes Segment-System mehr
-
-    // ✅ VEREINFACHT: Kein Segment-Helper mehr nötig
 
     // 9 AniTune-Karten Daten (unverändert)
     const cards = useMemo(() => [
@@ -93,9 +90,6 @@ const AniTuneCarousel = ({
 
     // ✅ 3-SEGMENT ANIMATION: Hochfahren → Zentral → Nach oben wegfahren
     const getCarouselPosition = () => {
-        // Snap-Point 5 ist bei 80% scrollProgress
-        const snapPoint5Progress = 0.80;
-
         // Segment 1: Hochfahren (78%-80%)
         const segment1Start = 0.78;
         const segment1End = 0.80;
@@ -109,45 +103,37 @@ const AniTuneCarousel = ({
         const segment3End = 0.90;
 
         if (scrollProgress < segment1Start) {
-            // Vor Animation: Unter dem Bildschirm
             return { translateY: 100, opacity: 0, phase: 'hidden' };
         } else if (scrollProgress >= segment1Start && scrollProgress <= segment1End) {
-            // Segment 1: Von unten hochfahren
             const progress = (scrollProgress - segment1Start) / (segment1End - segment1Start);
-            const eased = 1 - Math.pow(1 - progress, 2); // Ease out
+            const eased = 1 - Math.pow(1 - progress, 2);
             return {
-                translateY: 100 - (100 * eased), // 100vh → 0vh
-                opacity: eased, // 0 → 1
+                translateY: 100 - (100 * eased),
+                opacity: eased,
                 phase: 'entering'
             };
         } else if (scrollProgress >= segment2Start && scrollProgress <= segment2End) {
-            // Segment 2: Zentral bleiben (Interaktionszeit)
             return {
                 translateY: 0,
                 opacity: 1,
                 phase: 'active'
             };
         } else if (scrollProgress >= segment3Start && scrollProgress <= segment3End) {
-            // Segment 3: Nach oben wegfahren
             const progress = (scrollProgress - segment3Start) / (segment3End - segment3Start);
-            const eased = Math.pow(progress, 2); // Ease in für Wegfahren
+            const eased = Math.pow(progress, 2);
             return {
-                translateY: -100 * eased, // 0vh → -100vh (nach oben weg)
-                opacity: 1 - eased, // 1 → 0
+                translateY: -100 * eased,
+                opacity: 1 - eased,
                 phase: 'exiting'
             };
         } else if (scrollProgress > segment3End) {
-            // Nach Animation: Über dem Bildschirm
             return { translateY: -100, opacity: 0, phase: 'exited' };
         }
 
-        // Fallback
         return { translateY: 0, opacity: 1, phase: 'active' };
     };
 
     const carouselPosition = getCarouselPosition();
-
-    // Aktuelle Karte für Titel
     const currentCard = cards[activeCard];
 
     // Intelligente Position-Berechnung (unverändert)
@@ -172,8 +158,18 @@ const AniTuneCarousel = ({
         return position;
     };
 
-    // Navigation Handlers (unverändert)
-    const handleCardClick = (index) => {
+    // ✅ FIX: Verbesserte Navigation Handlers mit Event-Handling
+    const handleCardClick = (index, event) => {
+        // ✅ FIX: Event richtig behandeln
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`🎠 CARD CLICK: ${index} (${cards[index].title})`);
+        }
+
         if (index !== activeCard) {
             const totalCards = cards.length;
             const currentPos = activeCard;
@@ -191,59 +187,65 @@ const AniTuneCarousel = ({
                 setTransitionDirection(distance > 0 ? 'right' : 'left');
             }
 
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🎠 LAYER CAROUSEL: Karte ${index} (${cards[index].title}) wird zur Mitte bewegt`);
-            }
             setActiveCard(index);
-
             setTimeout(() => setTransitionDirection(null), 400);
         }
     };
 
-    const handlePrevious = () => {
+    const handlePrevious = (event) => {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
         setTransitionDirection('left');
         setActiveCard(prev => {
             const newIndex = prev > 0 ? prev - 1 : cards.length - 1;
             if (process.env.NODE_ENV === 'development') {
-                console.log(`🎠 LAYER CAROUSEL Previous: ${prev} → ${newIndex}`);
+                console.log(`🎠 PREVIOUS: ${prev} → ${newIndex}`);
             }
             return newIndex;
         });
         setTimeout(() => setTransitionDirection(null), 400);
     };
 
-    const handleNext = () => {
+    const handleNext = (event) => {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
         setTransitionDirection('right');
         setActiveCard(prev => {
             const newIndex = prev < cards.length - 1 ? prev + 1 : 0;
             if (process.env.NODE_ENV === 'development') {
-                console.log(`🎠 LAYER CAROUSEL Next: ${prev} → ${newIndex}`);
+                console.log(`🎠 NEXT: ${prev} → ${newIndex}`);
             }
             return newIndex;
         });
         setTimeout(() => setTransitionDirection(null), 400);
     };
 
-    // ✅ ANIMIERTER Container Style - fährt von unten hoch
+    // ✅ FIX: Container Style mit höherem Z-Index
     const containerStyle = {
         position: 'fixed',
         top: '0',
         left: '0',
         width: '100%',
         height: '100vh',
-        transform: `translateY(${carouselPosition.translateY}vh)`, // ✅ Animation von unten
-        opacity: carouselPosition.opacity, // ✅ Fade in
+        transform: `translateY(${carouselPosition.translateY}vh)`,
+        opacity: carouselPosition.opacity,
         pointerEvents: carouselPosition.opacity > 0.1 ? 'all' : 'none',
-        zIndex: 40,
+        zIndex: 150, // ✅ FIX: Von 40 auf 150 erhöht
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         perspective: '1000px',
-        transition: isSnapping ? 'none' : 'transform 0.8s ease-out, opacity 0.8s ease-out' // ✅ Smooth animation
+        transition: isSnapping ? 'none' : 'transform 0.8s ease-out, opacity 0.8s ease-out'
     };
 
-    // ✅ ERWEITERTE Sichtbarkeitsprüfung für 3-Segment Animation (78%-90%)
+    // Sichtbarkeitsprüfung
     if (scrollProgress < 0.78 || scrollProgress > 0.92) {
         return null;
     }
@@ -253,13 +255,14 @@ const AniTuneCarousel = ({
             {/* ===== CAROUSEL CSS INJECTION ===== */}
             <style jsx>{`
                 .anitune-carousel-container {
-                    /* Kein extra Style nötig - wird via containerStyle gesetzt */
+                    /* Container wird via containerStyle gesetzt */
                 }
 
                 .carousel-title-section {
                     text-align: center;
                     margin-bottom: 3rem;
                     z-index: 10;
+                    pointer-events: none; /* ✅ FIX: Titel nicht klickbar */
                 }
 
                 .fixed-title {
@@ -306,7 +309,7 @@ const AniTuneCarousel = ({
                     justify-content: space-between;
                     padding: 0 2rem;
                     z-index: 15;
-                    pointer-events: none;
+                    pointer-events: none; /* ✅ FIX: Container nicht klickbar */
                 }
 
                 .nav-button {
@@ -321,11 +324,12 @@ const AniTuneCarousel = ({
                     cursor: pointer;
                     transition: all 0.3s ease;
                     backdrop-filter: blur(10px);
-                    pointer-events: auto;
+                    pointer-events: all; /* ✅ FIX: Buttons explizit klickbar */
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     line-height: 1;
+                    user-select: none; /* ✅ FIX: Text-Selektion verhindern */
                 }
 
                 .nav-button:hover {
@@ -346,6 +350,9 @@ const AniTuneCarousel = ({
                     align-items: center;
                     justify-content: center;
                     transform-style: preserve-3d;
+                    pointer-events: none; /* ✅ FIX: Container nicht klickbar */
+                    /* ✅ FIX: Bessere Zentrierung */
+                    margin: 0 auto;
                 }
 
                 .carousel-card {
@@ -360,6 +367,10 @@ const AniTuneCarousel = ({
                     backdrop-filter: blur(10px);
                     border: 1px solid rgba(255, 255, 255, 0.2);
                     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                    pointer-events: all; /* ✅ FIX: Karten explizit klickbar */
+                    user-select: none; /* ✅ FIX: Text-Selektion verhindern */
+                    /* ✅ FIX: Verbesserte Clickability */
+                    z-index: inherit;
                 }
 
                 .carousel-card:hover {
@@ -379,6 +390,7 @@ const AniTuneCarousel = ({
                     align-items: center;
                     justify-content: center;
                     text-align: center;
+                    pointer-events: none; /* ✅ FIX: Content nicht klickbar, Clicks gehen zur Karte */
                 }
 
                 .card-icon {
@@ -389,6 +401,7 @@ const AniTuneCarousel = ({
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    pointer-events: none; /* ✅ FIX */
                 }
 
                 .card-icon-image {
@@ -396,11 +409,13 @@ const AniTuneCarousel = ({
                     height: 100%;
                     object-fit: contain;
                     border-radius: 12px;
+                    pointer-events: none; /* ✅ FIX */
                 }
 
                 .card-icon-fallback {
                     font-size: 3rem;
                     opacity: 0.8;
+                    pointer-events: none; /* ✅ FIX */
                 }
 
                 .card-description {
@@ -410,6 +425,7 @@ const AniTuneCarousel = ({
                     margin: 0;
                     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
                     line-height: 1.4;
+                    pointer-events: none; /* ✅ FIX */
                 }
 
                 /* Mobile Responsive */
@@ -457,7 +473,6 @@ const AniTuneCarousel = ({
                 <div className="carousel-title-section">
                     <h1 className="fixed-title">Coming Soon</h1>
 
-                    {/* Wechselnder Untertitel */}
                     <div className="sliding-title-container">
                         <h2
                             key={currentCard.id}
@@ -469,7 +484,7 @@ const AniTuneCarousel = ({
                     </div>
                 </div>
 
-                {/* Navigation Buttons */}
+                {/* ✅ FIX: Navigation Buttons mit Event-Handling */}
                 <div className="carousel-navigation">
                     <button
                         className="nav-button nav-prev"
@@ -488,7 +503,7 @@ const AniTuneCarousel = ({
                     </button>
                 </div>
 
-                {/* Karten */}
+                {/* ✅ FIX: Karten mit verbessertem Event-Handling */}
                 <div className="cards-container">
                     {cards.map((card, cardIndex) => {
                         const smartPosition = getSmartCardPosition(cardIndex, activeCard, transitionDirection);
@@ -503,11 +518,13 @@ const AniTuneCarousel = ({
 
                         const cardStyle = {
                             '--card-color': card.color,
-                            transform: `translateX(calc(-50% + ${smartPosition * 60}px)) scale(${isActive ? 1.1 : Math.max(0.8, 1 - distance * 0.1)}) rotateY(${smartPosition * -15}deg) translateZ(${-distance * 50}px)`,
+                            transform: `translate(-50%, -50%) translateX(${smartPosition * 60}px) scale(${isActive ? 1.1 : Math.max(0.8, 1 - distance * 0.1)}) rotateY(${smartPosition * -15}deg) translateZ(${-distance * 50}px)`,
                             zIndex: 10 - distance,
                             opacity: showCard ? Math.max(0.4, 1 - distance * 0.2) : 0,
                             transition: transitionDirection ? 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'all 0.3s ease',
-                            visibility: showCard ? 'visible' : 'hidden'
+                            visibility: showCard ? 'visible' : 'hidden',
+                            left: '50%', // ✅ FIX: Explizite Zentrierung
+                            top: '50%'   // ✅ FIX: Vertikale Zentrierung
                         };
 
                         return (
@@ -515,7 +532,21 @@ const AniTuneCarousel = ({
                                 key={card.id}
                                 className={`carousel-card ${isActive ? 'active' : 'inactive'}`}
                                 style={cardStyle}
-                                onClick={() => handleCardClick(cardIndex)}
+                                onClick={(e) => {
+                                    // ✅ FIX: Verbesserte Click-Behandlung
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (process.env.NODE_ENV === 'development') {
+                                        console.log(`🎠 KARTE GEKLICKT: ${cardIndex} (${card.title})`);
+                                    }
+                                    handleCardClick(cardIndex, e);
+                                }}
+                                onMouseDown={(e) => {
+                                    // ✅ FIX: Zusätzliche Sicherheit
+                                    e.preventDefault();
+                                }}
+                                data-card-index={cardIndex} // ✅ FIX: Für Debug
+                                data-card-title={card.title} // ✅ FIX: Für Debug
                             >
                                 <div className="card-content">
                                     <div className="card-icon">
@@ -548,6 +579,62 @@ const AniTuneCarousel = ({
                     })}
                 </div>
 
+                {/* ===== ✅ DIRECT CARD CLICK TEST (Development Only) ===== */}
+                {process.env.NODE_ENV === 'development' && (
+                    <div style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        display: 'flex',
+                        gap: '10px'
+                    }}>
+                        <button
+                            onClick={() => {
+                                console.log('🎠 CLICK-TEST: Carousel ist klickbar!');
+                                console.log('Active Card:', activeCard);
+                                console.log('Opacity:', carouselPosition.opacity);
+                                console.log('Z-Index: 150');
+                            }}
+                            style={{
+                                background: 'lime',
+                                color: 'black',
+                                padding: '8px 12px',
+                                border: 'none',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                                pointerEvents: 'all',
+                                zIndex: 200
+                            }}
+                        >
+                            🎠 TEST
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                // ✅ TEST: Simuliere Klick auf erste Karte
+                                console.log('🎯 SIMULIERE KARTEN-KLICK: Karte 0');
+                                handleCardClick(0);
+                            }}
+                            style={{
+                                background: 'orange',
+                                color: 'white',
+                                padding: '8px 12px',
+                                border: 'none',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                                pointerEvents: 'all',
+                                zIndex: 200
+                            }}
+                        >
+                            🎯 KLICK KARTE 0
+                        </button>
+                    </div>
+                )}
+
                 {/* ===== DEBUG für Layer System ===== */}
                 {process.env.NODE_ENV === 'development' && (
                     <div style={{
@@ -568,7 +655,7 @@ const AniTuneCarousel = ({
                         zIndex: 50
                     }}>
                         <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#ffff00' }}>
-                            🎠 CAROUSEL MIT 3-SEGMENT ANIMATION
+                            🎠 CAROUSEL - CLICKABILITY FIXED
                         </div>
                         <div>📍 Active Snap: {activeSnapPoint}/6</div>
                         <div>📊 ScrollProgress: {(scrollProgress * 100).toFixed(1)}%</div>
@@ -576,25 +663,15 @@ const AniTuneCarousel = ({
                         <div>👁️ Opacity: {carouselPosition.opacity.toFixed(2)}</div>
                         <div>🎭 Phase: <span style={{ color: '#00ff00' }}>{carouselPosition.phase}</span></div>
                         <div>🎯 Active Card: {activeCard} ({currentCard.title})</div>
-
-                        <div style={{ marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '8px' }}>
-                            <div style={{ fontSize: '9px', color: '#ffff00' }}>
-                                📍 3-SEGMENT ANIMATION:
-                            </div>
-                            <div style={{ fontSize: '8px', color: '#ccc' }}>
-                                78%-80%: Von unten hochfahren (100vh → 0vh)
-                            </div>
-                            <div style={{ fontSize: '8px', color: '#ccc' }}>
-                                80%-85%: Zentral & interaktiv (0vh)
-                            </div>
-                            <div style={{ fontSize: '8px', color: '#ccc' }}>
-                                85%-90%: Nach oben wegfahren (0vh → -100vh)
-                            </div>
-                        </div>
+                        <div>🔍 Z-Index: <span style={{ color: '#00ff00' }}>150 (erhöht)</span></div>
+                        <div>🖱️ Pointer Events: <span style={{ color: carouselPosition.opacity > 0.1 ? '#00ff00' : '#ff0000' }}>
+                            {carouselPosition.opacity > 0.1 ? 'ALL' : 'NONE'}
+                        </span></div>
 
                         <div style={{ color: '#00ff00', fontSize: '9px', marginTop: '6px' }}>
-                            ✅ Sanfte Ein- und Ausfahrt | Z-Index: 40
-                            <br />🎯 Phase: {carouselPosition.phase} | Pos: {carouselPosition.translateY.toFixed(1)}vh
+                            ✅ Z-Index: 40 → 150 | Pointer Events: Explizit
+                            <br />✅ Event-Handling verbessert | Direktes Karten-Klicken aktiviert
+                            <br />🎯 Klicke direkt auf Karten zum Wechseln
                         </div>
                     </div>
                 )}

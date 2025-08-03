@@ -527,7 +527,7 @@ const EnhancedSimplePage = () => {
             {showNewsletterEnd && (
                 <div style={{
                     position: 'fixed',
-                    top: '15%',
+                    top: '45%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
                     opacity: newsletterEndOpacity,
