@@ -1,5 +1,6 @@
 // src/components/Enhanced/config/parallaxConfig.js 
 // 🎯 ANGEPASST FÜR 7 SNAP-POINTS: 0%-15%-30%-45%-60%-80%-95%
+// ✅ MINIMAL ERWEITERT UM CAROUSEL
 
 // ===== NEUE 7-SNAP-POINT MAPPING =====
 export const SNAP_POINT_MAPPING = {

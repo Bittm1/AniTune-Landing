@@ -1,5 +1,5 @@
-// src/components/Enhanced/EnhancedSimplePage.jsx - FIXED LAYER SYSTEM
-// ✅ 7 SNAP-POINTS + LAYER BLEIBEN SICHTBAR + LOCK-SCROLL SYSTEM
+// src/components/Enhanced/EnhancedSimplePage.jsx - FIXED LAYER SYSTEM + CAROUSEL 3-SEGMENT
+// ✅ 7 SNAP-POINTS + LAYER BLEIBEN SICHTBAR + LOCK-SCROLL SYSTEM + CAROUSEL EIN/AUS ANIMATION
 // 🔧 Development Mode + Snap-Point basierte Layer-Logik
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -7,6 +7,7 @@ import EnhancedTitleLayer from './TitleLayer';
 import EnhancedAudioLayer from './AudioLayer';
 import LockScrollLayer from './LockScrollLayer';
 import CentralDebugPanel from './CentralDebugPanel';
+import EnhancedAniTuneCarousel from './layers/AniTuneCarousel'; // ✅ NEU: Carousel Import
 import BackgroundLayer from './layers/BackgroundLayer';
 import RoadLayer from './layers/RoadLayer';
 import DogLayer from './layers/DogLayer';
@@ -20,7 +21,7 @@ import CloudLayer from './layers/CloudLayer';
 import WolkenHintenLayer from './layers/WolkenHintenLayer';
 import MengeLayer from './layers/MengeLayer';
 import Newsletter from '../Newsletter/Newsletter';
-import { LAYER_CONFIG, isLayerActiveAtSnapPoint } from './config/parallaxConfig'; // ✅ WICHTIGER IMPORT
+import { LAYER_CONFIG, isLayerActiveAtSnapPoint } from './config/parallaxConfig';
 import {
     SNAP_POINTS,
     getSnapPointByIndex,
@@ -537,6 +538,15 @@ const EnhancedSimplePage = () => {
                 }}>
                     <Newsletter />
                 </div>
+            )}
+
+            {/* ===== 🎠 ANITUNE CAROUSEL (NEU) - 3-SEGMENT ANIMATION BEI SNAP 5 ===== */}
+            {(activeSnapPoint === 5 || (scrollProgress >= 0.78 && scrollProgress <= 0.92)) && (
+                <EnhancedAniTuneCarousel
+                    scrollProgress={scrollProgress}
+                    activeSnapPoint={activeSnapPoint}
+                    isSnapping={isAnimating}
+                />
             )}
 
             {/* ===== TITLES (ERWEITERT MIT CALLBACK + REF) ===== */}
