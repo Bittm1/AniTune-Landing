@@ -32,7 +32,7 @@ import {
 
 const EnhancedSimplePage = () => {
     // ===== 🔧 DEVELOPMENT MODE CONTROL =====
-    const [developmentMode, setDevelopmentMode] = useState(true); // ✅ Start mit Dev Mode für Layer-Positionierung
+    const [developmentMode, setDevelopmentMode] = useState(false); // ✅ Start mit Dev Mode für Layer-Positionierung
 
     // ===== EXISTING STATES =====
     const [scrollProgress, setScrollProgress] = useState(0);
