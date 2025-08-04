@@ -1,9 +1,9 @@
 // src/components/Enhanced/CentralDebugPanel.jsx
-// 🔍 ZENTRALES DEBUG-PANEL - Alles auf einen Blick + Development Mode
-// ✅ Ersetzt alle anderen Debug-Panels + Dev Mode Toggle
+// 🔍 ZENTRALES DEBUG-PANEL - Alles auf einen Blick + Development Mode + Device-Debug
+// ✅ Ersetzt alle anderen Debug-Panels + Dev Mode Toggle + Device-Fender
 // ⚠️ KEIN CAROUSEL IMPORT - Debug Panel importiert keine anderen Komponenten!
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 const CentralDebugPanel = ({
@@ -36,6 +36,64 @@ const CentralDebugPanel = ({
     portalContainer = null
 }) => {
 
+    // ===== 📱 DEVICE DEBUG HELPER (INLINE) =====
+    const getDeviceDebugInfo = () => {
+        if (typeof window === 'undefined') {
+            return {
+                type: 'desktop',
+                width: 1920,
+                height: 1080,
+                touch: false,
+                multiplier: 1.0,
+                emoji: '🖥️'
+            };
+        }
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const isTouchDevice = 'ontouchstart' in window;
+
+        let deviceType;
+        let multiplier;
+        let emoji;
+
+        if (width <= 767 && isTouchDevice) {
+            deviceType = 'mobile';
+            multiplier = 0.7;
+            emoji = '📱';
+        } else if (width >= 1440) {
+            deviceType = 'large';
+            multiplier = 1.2;
+            emoji = '🖥️+';
+        } else {
+            deviceType = 'desktop';
+            multiplier = 1.0;
+            emoji = '🖥️';
+        }
+
+        return {
+            type: deviceType,
+            width,
+            height,
+            touch: isTouchDevice,
+            multiplier,
+            emoji
+        };
+    };
+
+    // ===== 📱 DEVICE DEBUG STATE =====
+    const [deviceInfo, setDeviceInfo] = useState(() => getDeviceDebugInfo());
+
+    // Update device info on resize
+    useEffect(() => {
+        const updateDeviceInfo = () => {
+            setDeviceInfo(getDeviceDebugInfo());
+        };
+
+        window.addEventListener('resize', updateDeviceInfo, { passive: true });
+        return () => window.removeEventListener('resize', updateDeviceInfo);
+    }, []);
+
     if (!portalContainer || process.env.NODE_ENV !== 'development') {
         return null;
     }
@@ -48,6 +106,16 @@ const CentralDebugPanel = ({
     const showNewsletterStart = scrollProgress <= 0.15;
     const showNewsletterEnd = scrollProgress >= 0.90;
     const showRoad = scrollProgress >= 0.30;
+
+    // ===== 📱 DEVICE DEBUG COLORS =====
+    const getDeviceColor = (type) => {
+        switch (type) {
+            case 'mobile': return '#ff6b6b';   // Rot
+            case 'desktop': return '#4dabf7';  // Blau  
+            case 'large': return '#51cf66';    // Grün
+            default: return '#868e96';         // Grau
+        }
+    };
 
     return createPortal(
         <div
@@ -82,6 +150,86 @@ const CentralDebugPanel = ({
                 paddingBottom: '8px'
             }}>
                 🎯 ANITUNE DEBUG CENTRAL - 7 SNAP-POINTS + CAROUSEL
+            </div>
+
+            {/* ===== 📱 DEVICE DEBUG FENDER (NEU) ===== */}
+            <div style={{
+                marginBottom: '12px',
+                border: `2px solid ${getDeviceColor(deviceInfo.type)}`,
+                borderRadius: '6px',
+                padding: '10px',
+                background: `linear-gradient(135deg, ${getDeviceColor(deviceInfo.type)}22 0%, ${getDeviceColor(deviceInfo.type)}11 100%)`
+            }}>
+                <div style={{
+                    color: getDeviceColor(deviceInfo.type),
+                    fontWeight: 'bold',
+                    marginBottom: '6px',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}>
+                    {deviceInfo.emoji} DEVICE DEBUG FENDER:
+                    <span style={{
+                        background: getDeviceColor(deviceInfo.type),
+                        color: 'white',
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        textTransform: 'uppercase'
+                    }}>
+                        {deviceInfo.type}
+                    </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '10px' }}>
+                    <div>
+                        <div>📐 Größe: <span style={{ color: '#ffff00' }}>{deviceInfo.width}×{deviceInfo.height}</span></div>
+                        <div>🎛️ Multiplier: <span style={{ color: '#ffff00' }}>{deviceInfo.multiplier}x</span></div>
+                    </div>
+                    <div>
+                        <div>👆 Touch: {deviceInfo.touch ?
+                            <span style={{ color: '#90EE90' }}>✅ YES</span> :
+                            <span style={{ color: '#ff6b6b' }}>❌ NO</span>
+                        }</div>
+                        <div>🎯 Type: <span style={{ color: getDeviceColor(deviceInfo.type) }}>{deviceInfo.type.toUpperCase()}</span></div>
+                    </div>
+                </div>
+
+                {/* Device-spezifische Hinweise */}
+                <div style={{
+                    marginTop: '6px',
+                    fontSize: '9px',
+                    opacity: 0.8,
+                    fontStyle: 'italic',
+                    color: '#ccc'
+                }}>
+                    {deviceInfo.type === 'mobile' && '📱 Mobile: Kompakte Layer, Touch-Optimiert'}
+                    {deviceInfo.type === 'desktop' && '🖥️ Desktop: Standard-Layout, Optimale Performance'}
+                    {deviceInfo.type === 'large' && '🖥️+ Large: Erweiterte Layer, Maximale Details'}
+                </div>
+
+                {/* Live Resize Button */}
+                <button
+                    onClick={() => {
+                        setDeviceInfo(getDeviceDebugInfo());
+                        console.log('📱 DEVICE INFO UPDATED:', getDeviceDebugInfo());
+                    }}
+                    style={{
+                        marginTop: '6px',
+                        padding: '3px 6px',
+                        fontSize: '8px',
+                        background: getDeviceColor(deviceInfo.type),
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                        opacity: 0.8
+                    }}
+                >
+                    🔄 Refresh Device
+                </button>
             </div>
 
             {/* ===== 🔧 DEVELOPMENT MODE TOGGLE ===== */}
@@ -206,6 +354,7 @@ const CentralDebugPanel = ({
                 <button
                     onClick={() => {
                         console.log('🔍 FULL DEBUG DUMP:');
+                        console.log('Device:', deviceInfo);
                         console.log('Navigation:', { activeSnapPoint, scrollProgress, isAnimating, fps });
                         console.log('Lock-Scroll:', { isLocked, showScrollIndicator, isAudioPlaying, audioPlayingSnapPoint });
                         console.log('Audio:', { backgroundMusicPlaying, backgroundMusicVolume, themeMusicPlaying, themeMusicVolume });
@@ -233,6 +382,7 @@ const CentralDebugPanel = ({
                         console.log('Lock aktiv:', isLocked);
                         console.log('Audio spielt:', isAudioPlaying);
                         console.log('Dev Mode:', developmentMode);
+                        console.log('Device:', deviceInfo.type, `${deviceInfo.width}×${deviceInfo.height}`);
                     }}
                     style={{
                         padding: '4px 8px',
@@ -258,7 +408,7 @@ const CentralDebugPanel = ({
                 color: '#90EE90'
             }}>
                 ✅ 7-Snap-Point System + Lock-Scroll + Carousel Integration
-                <br />🔧 Development Mode + Zentrales Debug-Panel
+                <br />🔧 Development Mode + Device Debug Fender + Zentrales Debug-Panel
             </div>
         </div>,
         portalContainer

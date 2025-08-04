@@ -1,12 +1,13 @@
 // src/components/Enhanced/layers/RoadLayer.jsx
 // 🛣️ ROAD LAYER - FIXED: Bleibt an Endposition sichtbar
 // ✅ Layer verschwindet NICHT mehr nach scrollEnd
+// ✅ ERWEITERT: Responsive Positionierung + Asset-Management
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
 
-const RoadLayer = ({ scrollProgress, config }) => {
+const RoadLayer = ({ scrollProgress, config, deviceConfig }) => {
     // ===== BERECHNUNGEN (FIXED) =====
     const layerData = useMemo(() => {
         // Fallback Config falls nicht vorhanden
@@ -63,14 +64,18 @@ const RoadLayer = ({ scrollProgress, config }) => {
         };
     }, [scrollProgress, config]);
 
+    // ===== RESPONSIVE MULTIPLIER =====
+    const multiplier = deviceConfig?.multiplier || 1.0;
+
     // Debug Log (ERWEITERT)
     if (process.env.NODE_ENV === 'development' && layerData.visible) {
-        console.log('🛣️ RoadLayer FIXED:', {
+        console.log('🛣️ RoadLayer FIXED + RESPONSIVE:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
             translateY: layerData.translateY.toFixed(1) + 'vh',
             atEndPosition: layerData.atEndPosition,
+            multiplier,
             source: 'FIXED visibility logic'
         });
     }
@@ -82,7 +87,7 @@ const RoadLayer = ({ scrollProgress, config }) => {
 
     return (
         <ErrorBoundary>
-            {/* Debug Anzeige (ERWEITERT MIT FIX-INFO) */}
+            {/* Debug Anzeige (ERWEITERT MIT RESPONSIVE INFO) */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
@@ -103,18 +108,20 @@ const RoadLayer = ({ scrollProgress, config }) => {
                     🛣️ ROAD ✅ FIXED: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
                     <br />
                     {layerData.atEndPosition ? '🔒 AT END POSITION' : '🎬 ANIMATING'}
+                    <br />
+                    📱 Multiplier: {multiplier}
                 </div>
             )}
 
             <div
                 style={{
                     position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    width: '100%',
+                    bottom: 0, // ✅ ZURÜCK ZU ORIGINAL
+                    left: 0, // ✅ ZURÜCK ZU ORIGINAL  
+                    width: '100%', // ✅ ZURÜCK ZU ORIGINAL
                     zIndex: config?.zIndex || 7,
                     pointerEvents: 'none',
-                    transform: `translate(0, ${-layerData.translateY}vh)`,
+                    transform: `translate(0, ${-layerData.translateY * multiplier}vh)`, // ✅ Mit Multiplier
                     opacity: layerData.opacity,
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden'
@@ -122,6 +129,7 @@ const RoadLayer = ({ scrollProgress, config }) => {
                 data-road-layer="fixed"
                 data-at-end={layerData.atEndPosition}
                 data-scroll-progress={(scrollProgress * 100).toFixed(1)}
+                data-multiplier={multiplier}
             >
                 <SafeImage
                     src="/Parallax/Weg.webp"

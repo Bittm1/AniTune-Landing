@@ -1,13 +1,23 @@
 // src/components/Enhanced/layers/WaldHintenLayer.jsx
 // 🌲 WALD HINTEN LAYER - FIXED: Bleibt an Endposition sichtbar
 // ✅ calculateLayerPosition + FIXED visibility logic
+// ✅ ERWEITERT: Responsive Positionierung + Asset-Management
 
 import React, { useMemo } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import SafeImage from '../../Parallax/Elements/SafeImage';
-import { calculateLayerPosition } from '../config/parallaxConfig';
+import { calculateLayerPosition, getResponsivePositioning, getResponsiveSize } from '../config/parallaxConfig'; // ✅ NEU: Responsive Helpers
 
 const WaldHintenLayer = React.memo(({ scrollProgress, config, deviceConfig }) => {
+    // ===== RESPONSIVE POSITIONING =====
+    const responsivePos = useMemo(() => {
+        return getResponsivePositioning('waldHinten') || {};
+    }, []);
+
+    const responsiveSize = useMemo(() => {
+        return getResponsiveSize('waldHinten') || {};
+    }, []);
+
     // ===== ZENTRALE BERECHNUNG (FIXED) =====
     const layerData = useMemo(() => {
         if (!config?.active || !config?.movement) {
@@ -40,14 +50,15 @@ const WaldHintenLayer = React.memo(({ scrollProgress, config, deviceConfig }) =>
 
     // Performance Debug (ERWEITERT)
     if (process.env.NODE_ENV === 'development' && layerData.visible) {
-        console.log('🌲 WaldHintenLayer FIXED:', {
+        console.log('🌲 WaldHintenLayer FIXED + RESPONSIVE:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             opacity: layerData.opacity.toFixed(2),
             translateY: layerData.translateY.toFixed(1),
             scale: layerData.scale.toFixed(2),
             multiplier,
+            responsivePos,
             atEndPosition: layerData.atEndPosition,
-            source: 'calculateLayerPosition() + FIXED visibility'
+            source: 'calculateLayerPosition() + FIXED visibility + responsive'
         });
     }
 
@@ -62,23 +73,24 @@ const WaldHintenLayer = React.memo(({ scrollProgress, config, deviceConfig }) =>
                 className="wald-hinten-layer"
                 style={{
                     position: 'fixed',
-                    bottom: '0%',
-                    left: '50%',
-                    transform: `translate(-50%, ${-layerData.translateY * multiplier}vh) scale(${layerData.scale})`,
+                    bottom: responsivePos.bottom || '0%', // ✅ NEU: Responsive Bottom
+                    left: responsivePos.left || '50%', // ✅ NEU: Responsive Left
+                    width: responsiveSize.width || '100vw', // ✅ NEU: Responsive Width
+                    height: responsiveSize.height || 'auto', // ✅ NEU: Responsive Height
+                    transform: `translate(-50%, ${-layerData.translateY * multiplier}vh) scale(${layerData.scale})`, // ✅ Mit Multiplier
                     opacity: layerData.opacity,
                     zIndex: config?.zIndex || 5,
-                    width: '100vw',
-                    height: 'auto',
                     // Performance optimizations
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden',
                     transformStyle: 'preserve-3d',
                     pointerEvents: 'none'
                 }}
-                data-layer="wald-hinten-fixed"
+                data-layer="wald-hinten-fixed-responsive"
                 data-at-end={layerData.atEndPosition}
                 data-scroll-progress={(scrollProgress * 100).toFixed(1)}
                 data-opacity={layerData.opacity.toFixed(2)}
+                data-multiplier={multiplier}
             >
                 <SafeImage
                     src="/Parallax/zweiter_Hintergrund.webp"
@@ -92,12 +104,12 @@ const WaldHintenLayer = React.memo(({ scrollProgress, config, deviceConfig }) =>
                     }}
                     onError={() => {
                         if (process.env.NODE_ENV === 'development') {
-                            console.warn('🚨 WaldHintenLayer: Image failed to load');
+                            console.warn('🚨 WaldHintenLayer: Image failed to load: /Parallax/zweiter_Hintergrund.webp');
                         }
                     }}
                 />
 
-                {/* ===== DEVELOPMENT DEBUG INFO (FIXED VERSION) ===== */}
+                {/* ===== DEVELOPMENT DEBUG INFO (FIXED + RESPONSIVE VERSION) ===== */}
                 {process.env.NODE_ENV === 'development' && layerData.opacity > 0.3 && (
                     <div
                         style={{
@@ -112,20 +124,21 @@ const WaldHintenLayer = React.memo(({ scrollProgress, config, deviceConfig }) =>
                             fontFamily: 'monospace',
                             lineHeight: '1.3',
                             zIndex: 1,
-                            border: '2px solid #FFD700', // ✅ Goldener Rahmen für "Fixed"
+                            border: '2px solid #00ff88', // ✅ Grüner Rahmen für "Responsive"
                             maxWidth: '200px'
                         }}
                     >
                         <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                            🌲 WALD HINTEN ✅ FIXED
+                            🌲 WALD HINTEN ✅ FIXED + RESPONSIVE
                         </div>
                         <div>Opacity: {layerData.opacity.toFixed(2)}</div>
                         <div>TranslateY: {layerData.translateY.toFixed(1)}vh</div>
                         <div>Scale: {layerData.scale.toFixed(2)}</div>
+                        <div>Multiplier: {multiplier}</div>
                         <div>Status: {layerData.atEndPosition ? '🔒 AT END' : '🎬 ANIMATING'}</div>
                         <div style={{ fontSize: '9px', opacity: 0.8, marginTop: '4px' }}>
                             calculateLayerPosition()<br />
-                            FIXED visibility logic
+                            FIXED visibility + responsive
                         </div>
                     </div>
                 )}

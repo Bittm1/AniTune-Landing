@@ -1,6 +1,6 @@
 // src/components/Enhanced/config/parallaxConfig.js 
 // 🎯 ANGEPASST FÜR 7 SNAP-POINTS: 0%-15%-30%-45%-60%-80%-95%
-// ✅ MINIMAL ERWEITERT UM CAROUSEL
+// ✅ VOLLSTÄNDIG RESPONSIVE - ALLE LAYER MIT RESPONSIVE OPTIONEN
 
 // ===== NEUE 7-SNAP-POINT MAPPING =====
 export const SNAP_POINT_MAPPING = {
@@ -13,11 +13,10 @@ export const SNAP_POINT_MAPPING = {
     6: { progress: 0.95, label: 'Newsletter CTA' }           // 95% (VERSCHOBEN: war Index 5)
 };
 
-// ===== LAYER MOVEMENT KONFIGURATION (ANGEPASST) =====
-// Alle Scroll-Bereiche wurden entsprechend der neuen Snap-Points angepasst!
+// ===== LAYER MOVEMENT KONFIGURATION (✅ ALLE LAYER MIT RESPONSIVE OPTIONEN) =====
 
 export const LAYER_CONFIG = {
-    // ===== BACKGROUND LAYER (unverändert) =====
+    // ===== BACKGROUND LAYER (✅ NEU: Responsive Scale) =====
     background: {
         active: true,
         movement: {
@@ -26,10 +25,25 @@ export const LAYER_CONFIG = {
             scrollStart: 0.0,
             scrollEnd: 1.0
         },
+        // ✅ NEU: Responsive Scale-Multiplier
+        responsive: {
+            mobile: {
+                scaleMultiplier: 0.8,  // Etwas weniger Zoom auf Mobile
+                offsetY: 20           // Leichte Y-Verschiebung
+            },
+            desktop: {
+                scaleMultiplier: 1.0,  // Original Werte
+                offsetY: 0
+            },
+            large: {
+                scaleMultiplier: 1.1,  // Etwas mehr Zoom auf großen Screens
+                offsetY: -10
+            }
+        },
         zIndex: 1
     },
 
-    // ===== STARFIELD LAYER (unverändert) =====
+    // ===== STARFIELD LAYER (✅ NEU: Responsive Opacity & Speed) =====
     starfield: {
         active: true,
         movement: {
@@ -38,10 +52,28 @@ export const LAYER_CONFIG = {
             opacity: 0.8,
             speed: 0.5
         },
+        // ✅ NEU: Responsive Starfield-Parameter
+        responsive: {
+            mobile: {
+                opacityMultiplier: 0.6,  // Weniger intensiv auf Mobile
+                speedMultiplier: 0.7,    // Langsamere Animation
+                density: 0.8             // Weniger Sterne
+            },
+            desktop: {
+                opacityMultiplier: 1.0,  // Original Werte
+                speedMultiplier: 1.0,
+                density: 1.0
+            },
+            large: {
+                opacityMultiplier: 1.2,  // Intensiver auf großen Screens
+                speedMultiplier: 1.3,    // Schnellere Animation
+                density: 1.4             // Mehr Sterne
+            }
+        },
         zIndex: 2
     },
 
-    // ===== BERGE LAYER (ANGEPASST: 60% statt 75%) =====
+    // ===== BERGE LAYER (✅ NEU: Responsive Positioning) =====
     berge: {
         active: true,
         movement: {
@@ -52,10 +84,28 @@ export const LAYER_CONFIG = {
             opacityStart: 1.0,
             opacityEnd: 1.0
         },
+        // ✅ NEU: Responsive Positionierung
+        responsive: {
+            mobile: {
+                positionMultiplier: 1.2,  // Stärkere Bewegung auf Mobile
+                offsetX: -5,              // Leichte Links-Verschiebung
+                offsetY: 15               // Etwas tiefer
+            },
+            desktop: {
+                positionMultiplier: 1.0,  // Original Werte (-100 bis 0)
+                offsetX: 0,
+                offsetY: 0
+            },
+            large: {
+                positionMultiplier: 0.8,  // Sanftere Bewegung auf großen Screens
+                offsetX: 5,               // Leichte Rechts-Verschiebung
+                offsetY: -10              // Etwas höher
+            }
+        },
         zIndex: 3
     },
 
-    // ===== TAL LAYER (ANGEPASST: 45% statt 55%) =====
+    // ===== TAL LAYER (✅ NEU: Responsive Positioning) =====
     tal: {
         active: true,
         movement: {
@@ -66,10 +116,28 @@ export const LAYER_CONFIG = {
             opacityStart: 1.0,
             opacityEnd: 1.0
         },
+        // ✅ NEU: Responsive Positionierung
+        responsive: {
+            mobile: {
+                positionMultiplier: 1.3,  // Stärkere Bewegung
+                offsetX: 0,
+                offsetY: 20               // Tiefer positioniert
+            },
+            desktop: {
+                positionMultiplier: 1.0,  // Original Werte (-60 bis 0)
+                offsetX: 0,
+                offsetY: 0
+            },
+            large: {
+                positionMultiplier: 0.8,  // Sanftere Bewegung
+                offsetX: 0,
+                offsetY: -15              // Höher positioniert
+            }
+        },
         zIndex: 4
     },
 
-    // ===== WALD HINTEN LAYER (ANGEPASST: 45% statt 55%) =====
+    // ===== WALD HINTEN LAYER (✅ NEU: Responsive Positioning) =====
     waldHinten: {
         active: true,
         movement: {
@@ -80,10 +148,28 @@ export const LAYER_CONFIG = {
             opacityStart: 1.0,
             opacityEnd: 1.0
         },
+        // ✅ NEU: Responsive Positionierung
+        responsive: {
+            mobile: {
+                positionMultiplier: 1.2,  // Stärkere Bewegung
+                offsetX: -10,             // Links-Verschiebung
+                offsetY: 25               // Tiefer
+            },
+            desktop: {
+                positionMultiplier: 1.0,  // Original Werte (-95 bis 0)
+                offsetX: 0,
+                offsetY: 0
+            },
+            large: {
+                positionMultiplier: 0.9,  // Etwas sanftere Bewegung
+                offsetX: 8,               // Rechts-Verschiebung
+                offsetY: -12              // Höher
+            }
+        },
         zIndex: 5
     },
 
-    // ===== FOREST LAYER (ANGEPASST: 30% statt 35%) =====
+    // ===== FOREST LAYER (✅ NEU: Responsive Positioning) =====
     forest: {
         active: true,
         movement: {
@@ -94,10 +180,28 @@ export const LAYER_CONFIG = {
             opacityStart: 1.0,
             opacityEnd: 1.0
         },
+        // ✅ NEU: Responsive Positionierung
+        responsive: {
+            mobile: {
+                positionMultiplier: 1.4,  // Deutlich stärkere Bewegung auf Mobile
+                offsetX: -8,              // Links-Verschiebung
+                offsetY: 18               // Tiefer
+            },
+            desktop: {
+                positionMultiplier: 1.0,  // Original Werte (-55 bis 0)
+                offsetX: 0,
+                offsetY: 0
+            },
+            large: {
+                positionMultiplier: 0.7,  // Sanftere Bewegung auf großen Screens
+                offsetX: 12,              // Rechts-Verschiebung
+                offsetY: -8               // Höher
+            }
+        },
         zIndex: 6
     },
 
-    // ===== ROAD LAYER (unverändert bei 15%) =====
+    // ===== ROAD LAYER (✅ NEU: Responsive Positioning) =====
     road: {
         active: true,
         movement: {
@@ -108,10 +212,31 @@ export const LAYER_CONFIG = {
             opacityStart: 1,
             opacityEnd: 1
         },
+        // ✅ NEU: Responsive Positionierung
+        responsive: {
+            mobile: {
+                positionMultiplier: 1.2,  // Stärkere Straßen-Bewegung
+                offsetX: 0,               // Zentriert bleiben
+                offsetY: 12,              // Etwas tiefer
+                scaleMultiplier: 0.9      // Etwas kleiner auf Mobile
+            },
+            desktop: {
+                positionMultiplier: 1.0,  // Original Werte (-40 bis 0)
+                offsetX: 0,
+                offsetY: 0,
+                scaleMultiplier: 1.0
+            },
+            large: {
+                positionMultiplier: 0.8,  // Sanftere Bewegung
+                offsetX: 0,
+                offsetY: -5,              // Etwas höher
+                scaleMultiplier: 1.1      // Etwas größer auf großen Screens
+            }
+        },
         zIndex: 7
     },
 
-    // ===== DOG LAYER (unverändert bei 15%) =====
+    // ===== DOG LAYER (BESTEHENDES RESPONSIVE SYSTEM BEIBEHALTEN) =====
     dog: {
         active: true,
         movement: {
@@ -122,18 +247,38 @@ export const LAYER_CONFIG = {
             opacityStart: 1.0,
             opacityEnd: 1.0
         },
-        position: {
-            left: '50.8%'
+        // ✅ BESTEHENDES SYSTEM: Responsive Positionierung
+        positioning: {
+            mobile: {
+                left: '48%'
+            },
+            desktop: {
+                left: '50.8%'
+            },
+            large: {
+                left: '52%'
+            }
         },
+        // ✅ BESTEHENDES SYSTEM: Responsive Größen
         size: {
-            width: '5vw',
-            maxWidth: '250px',
+            mobile: {
+                width: '8vw',
+                maxWidth: '120px'
+            },
+            desktop: {
+                width: '5vw',
+                maxWidth: '250px'
+            },
+            large: {
+                width: '4vw',
+                maxWidth: '300px'
+            },
             height: 'auto'
         },
         zIndex: 8
     },
 
-    // ===== MENGE LAYER (für Newsletter Phase) =====
+    // ===== MENGE LAYER (BESTEHENDES RESPONSIVE SYSTEM BEIBEHALTEN) =====
     menge: {
         active: true,
         movement: {
@@ -144,18 +289,38 @@ export const LAYER_CONFIG = {
             opacityStart: 1.0,
             opacityEnd: 1.0,
         },
-        position: {
-            left: '55%'
+        // ✅ BESTEHENDES SYSTEM: Responsive Positionierung
+        positioning: {
+            mobile: {
+                left: '50%'
+            },
+            desktop: {
+                left: '55%'
+            },
+            large: {
+                left: '58%'
+            }
         },
+        // ✅ BESTEHENDES SYSTEM: Responsive Größen
         size: {
-            width: '90vw',
-            maxWidth: '850px',
+            mobile: {
+                width: '95vw',
+                maxWidth: '400px'
+            },
+            desktop: {
+                width: '90vw',
+                maxWidth: '850px'
+            },
+            large: {
+                width: '85vw',
+                maxWidth: '1200px'
+            },
             height: 'auto'
         },
         zIndex: 9
     },
 
-    // ===== LOGO LAYER (unverändert) =====
+    // ===== LOGO LAYER (BESTEHENDES RESPONSIVE SYSTEM BEIBEHALTEN) =====
     logo: {
         active: true,
         movement: {
@@ -166,10 +331,25 @@ export const LAYER_CONFIG = {
             opacityStart: 1.0,
             opacityEnd: 0.0
         },
+        // ✅ BESTEHENDES SYSTEM: Responsive Positionierung
+        positioning: {
+            mobile: {
+                top: '25%',
+                left: '50%'
+            },
+            desktop: {
+                top: '33%',
+                left: '50%'
+            },
+            large: {
+                top: '40%',
+                left: '50%'
+            }
+        },
         zIndex: 20
     },
 
-    // ===== 📧 NEWSLETTER LAYER (BLEIBT bei 95%, aber Index 6) =====
+    // ===== 📧 NEWSLETTER LAYER (✅ NEU: Responsive Positioning) =====
     newsletter: {
         active: true,
         movement: {
@@ -180,10 +360,31 @@ export const LAYER_CONFIG = {
             opacityStart: 0.0,   // Fade in
             opacityEnd: 1.0      // Voll sichtbar
         },
+        // ✅ NEU: Responsive Newsletter-Positionierung
+        responsive: {
+            mobile: {
+                positionMultiplier: 1.2,  // Stärkere Bewegung auf Mobile
+                offsetX: 0,
+                offsetY: 20,              // Etwas tiefer starten
+                scaleMultiplier: 0.8      // Kleinere Newsletter-Form
+            },
+            desktop: {
+                positionMultiplier: 1.0,  // Original Werte (100 bis -40)
+                offsetX: 0,
+                offsetY: 0,
+                scaleMultiplier: 1.0
+            },
+            large: {
+                positionMultiplier: 0.8,  // Sanftere Bewegung
+                offsetX: 0,
+                offsetY: -20,             // Höher starten
+                scaleMultiplier: 1.2      // Größere Newsletter-Form
+            }
+        },
         zIndex: 60  // Hoch über allem
     },
 
-    // ===== CLOUD LAYERS (ANGEPASST: 60% statt 75%) =====
+    // ===== CLOUD LAYERS (BESTEHENDES RESPONSIVE SYSTEM BEIBEHALTEN) =====
     leftCloud: {
         active: true,
         movement: {
@@ -196,8 +397,17 @@ export const LAYER_CONFIG = {
             scaleStart: 1.7,
             scaleEnd: 1.7
         },
-        position: {
-            bottom: '43%'
+        // ✅ BESTEHENDES SYSTEM: Responsive Positionierung
+        positioning: {
+            mobile: {
+                bottom: '50%'
+            },
+            desktop: {
+                bottom: '43%'
+            },
+            large: {
+                bottom: '40%'
+            }
         },
         zIndex: 12
     },
@@ -214,13 +424,22 @@ export const LAYER_CONFIG = {
             scaleStart: 1.5,
             scaleEnd: 1.5
         },
-        position: {
-            bottom: '44%'
+        // ✅ BESTEHENDES SYSTEM: Responsive Positionierung
+        positioning: {
+            mobile: {
+                bottom: '52%'
+            },
+            desktop: {
+                bottom: '44%'
+            },
+            large: {
+                bottom: '41%'
+            }
         },
         zIndex: 15
     },
 
-    // ===== WOLKEN HINTEN LAYERS (ANGEPASST: 60% statt 75%) =====
+    // ===== WOLKEN HINTEN LAYERS (BESTEHENDES RESPONSIVE SYSTEM BEIBEHALTEN) =====
     leftCloudHinten: {
         active: true,
         movement: {
@@ -233,8 +452,17 @@ export const LAYER_CONFIG = {
             scaleStart: 1.20,
             scaleEnd: 1.20
         },
-        position: {
-            bottom: '65%'
+        // ✅ BESTEHENDES SYSTEM: Responsive Positionierung
+        positioning: {
+            mobile: {
+                bottom: '70%'
+            },
+            desktop: {
+                bottom: '65%'
+            },
+            large: {
+                bottom: '62%'
+            }
         },
         zIndex: 15
     },
@@ -251,22 +479,36 @@ export const LAYER_CONFIG = {
             scaleStart: 1.40,
             scaleEnd: 1.40
         },
-        position: {
-            bottom: '65%'
+        // ✅ BESTEHENDES SYSTEM: Responsive Positionierung
+        positioning: {
+            mobile: {
+                bottom: '72%'
+            },
+            desktop: {
+                bottom: '65%'
+            },
+            large: {
+                bottom: '62%'
+            }
         },
         zIndex: 12
     }
 };
 
-// ===== RESPONSIVE KONFIGURATION (unverändert) =====
+// ===== RESPONSIVE KONFIGURATION (✅ ERWEITERT AUF 3 DEVICE-TYPES) =====
 export const RESPONSIVE_CONFIG = {
+    mobile: {
+        multiplier: 0.7,
+        titleFontSize: '1.8rem'
+    },
     desktop: {
         multiplier: 1.0,
         titleFontSize: '2.5rem'
     },
-    mobile: {
-        multiplier: 0.7,
-        titleFontSize: '1.8rem'
+    // ✅ NEU: Large Screen Support
+    large: {
+        multiplier: 1.2,
+        titleFontSize: '3rem'
     }
 };
 
@@ -311,7 +553,7 @@ export const SNAP_POINT_LAYERS = {
     6: ['background', 'starfield', 'road', 'dog', 'forest', 'tal', 'waldHinten', 'berge', 'leftCloud', 'rightCloud', 'leftCloudHinten', 'rightCloudHinten', 'menge', 'newsletter'] // ✅ MENGE + Newsletter CTA
 };
 
-// ===== HELPER FUNCTIONS (erweitert für 7 Snap-Points) =====
+// ===== HELPER FUNCTIONS (✅ ERWEITERT: Beide Responsive-Systeme unterstützt) =====
 
 /**
  * Berechnet Position basierend auf scrollProgress und Layer-Config
@@ -343,6 +585,79 @@ export function calculateLayerPosition(scrollProgress, layerConfig) {
         opacity: interpolate(movement.opacityStart || 1, movement.opacityEnd || 1, progress),
         scale: interpolate(movement.scaleStart || 1, movement.scaleEnd || 1, progress)
     };
+}
+
+/**
+ * ✅ BESTEHENDES SYSTEM: Holt responsive Positionierung für einen Layer (positioning-Objekt)
+ */
+export function getResponsivePositioning(layerName, deviceType = null) {
+    const layer = LAYER_CONFIG[layerName];
+    if (!layer || !layer.positioning) {
+        return {};
+    }
+
+    const device = deviceType || getDeviceType();
+    return layer.positioning[device] || layer.positioning.desktop || {};
+}
+
+/**
+ * ✅ BESTEHENDES SYSTEM: Holt responsive Größen für einen Layer (size-Objekt)
+ */
+export function getResponsiveSize(layerName, deviceType = null) {
+    const layer = LAYER_CONFIG[layerName];
+    if (!layer || !layer.size) {
+        return {};
+    }
+
+    const device = deviceType || getDeviceType();
+
+    // Kombiniere device-spezifische und allgemeine Größen
+    const deviceSize = layer.size[device] || {};
+    const generalSize = { height: layer.size.height }; // z.B. height: 'auto'
+
+    return { ...generalSize, ...deviceSize };
+}
+
+/**
+ * ✅ NEUES SYSTEM: Holt responsive Parameter für einen Layer (responsive-Objekt)
+ */
+export function getResponsiveParameters(layerName, deviceType = null) {
+    const layer = LAYER_CONFIG[layerName];
+    if (!layer || !layer.responsive) {
+        return {};
+    }
+
+    const device = deviceType || getDeviceType();
+    return layer.responsive[device] || layer.responsive.desktop || {};
+}
+
+/**
+ * ✅ UNIVERSAL: Kombiniert beide Responsive-Systeme für einen Layer
+ */
+export function getLayerResponsiveConfig(layerName, deviceType = null) {
+    return {
+        positioning: getResponsivePositioning(layerName, deviceType),
+        size: getResponsiveSize(layerName, deviceType),
+        parameters: getResponsiveParameters(layerName, deviceType)
+    };
+}
+
+/**
+ * ✅ NEU: Device-Type ermitteln (3-stufig)
+ */
+export function getDeviceType() {
+    if (typeof window === 'undefined') return 'desktop';
+
+    const width = window.innerWidth;
+    const isTouchDevice = 'ontouchstart' in window;
+
+    if (width <= 767 && isTouchDevice) {
+        return 'mobile';
+    } else if (width >= 1440) {
+        return 'large';
+    } else {
+        return 'desktop';
+    }
 }
 
 /**
@@ -396,13 +711,33 @@ export function validateAllConfigs() {
 }
 
 /**
- * Device-spezifische Konfiguration ermitteln
+ * Device-spezifische Konfiguration ermitteln (erweitert)
  */
 export function getDeviceConfig() {
     if (typeof window === 'undefined') return RESPONSIVE_CONFIG.desktop;
 
-    const isMobile = window.innerWidth < 768 && 'ontouchstart' in window;
-    return isMobile ? RESPONSIVE_CONFIG.mobile : RESPONSIVE_CONFIG.desktop;
+    const deviceType = getDeviceType();
+    return RESPONSIVE_CONFIG[deviceType] || RESPONSIVE_CONFIG.desktop;
+}
+
+/**
+ * ✅ NEU: Zeigt alle Layer mit ihren Responsive-Typen
+ */
+export function getLayerResponsiveTypes() {
+    const layerTypes = {};
+
+    Object.keys(LAYER_CONFIG).forEach(layerName => {
+        const layer = LAYER_CONFIG[layerName];
+        const types = [];
+
+        if (layer.positioning) types.push('positioning');
+        if (layer.size) types.push('size');
+        if (layer.responsive) types.push('parameters');
+
+        layerTypes[layerName] = types.length > 0 ? types : ['none'];
+    });
+
+    return layerTypes;
 }
 
 // ===== DEBUG CONFIG (erweitert) =====
@@ -416,9 +751,10 @@ export const DEBUG_CONFIG = {
 
 // ===== DEVELOPMENT DEBUG =====
 if (DEBUG_CONFIG.enabled) {
-    console.log('🎯 7-SNAP-POINT PARALLAX CONFIG GELADEN:');
+    console.log('🎯 7-SNAP-POINT PARALLAX CONFIG GELADEN (✅ VOLLSTÄNDIG RESPONSIVE):');
     console.log('📊 Snap-Point Mapping:', SNAP_POINT_MAPPING);
     console.log('🌟 Layer Config Keys:', Object.keys(LAYER_CONFIG));
+    console.log('📱 Device Type:', getDeviceType());
     console.log('✅ Config Valid:', validateAllConfigs());
 
     // Zeige Layer-Verteilung pro Snap-Point
@@ -426,4 +762,17 @@ if (DEBUG_CONFIG.enabled) {
     for (let i = 0; i <= 6; i++) {
         console.log(`  Snap ${i} (${(SNAP_POINT_MAPPING[i]?.progress * 100).toFixed(0)}%): ${getActiveLayersForSnapPoint(i).length} Layer`);
     }
+
+    // ✅ NEU: Zeige alle responsive Layer mit ihren Typen
+    console.log('📱 RESPONSIVE LAYER-ÜBERSICHT:');
+    const responsiveTypes = getLayerResponsiveTypes();
+    Object.entries(responsiveTypes).forEach(([layerName, types]) => {
+        if (types[0] !== 'none') {
+            console.log(`  ${layerName}: ✅ ${types.join(', ')}`);
+        } else {
+            console.log(`  ${layerName}: ❌ Keine responsive Optionen`);
+        }
+    });
+
+    console.log(`📱 RESPONSIVE STATISTIK: ${Object.values(responsiveTypes).filter(types => types[0] !== 'none').length}/${Object.keys(LAYER_CONFIG).length} Layer haben responsive Optionen`);
 }

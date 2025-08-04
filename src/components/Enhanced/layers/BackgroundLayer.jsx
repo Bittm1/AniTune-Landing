@@ -22,7 +22,7 @@ const BackgroundLayer = ({
     }
 
     // ===== KONFIGURATION =====
-    const imageSrc = '/Parallax/Himmel.webp'; // Direkter Pfad erstmal
+    const imageSrc = '/Parallax/Himmel.webp';
     const fallbackSrc = '/Parallax/Logo.png';
     const zIndex = config.zIndex || 1;
 

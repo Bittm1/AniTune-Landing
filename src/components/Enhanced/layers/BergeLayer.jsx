@@ -1,12 +1,23 @@
 // src/components/Enhanced/layers/BergeLayer.jsx
 // ⛰️ BERGE LAYER - FIXED: Bleibt an Endposition sichtbar
 // ✅ Layer verschwindet NICHT mehr nach scrollEnd
+// ✅ ERWEITERT: Responsive Positionierung + Asset-Management
 
 import React, { useMemo } from 'react';
 import SafeImage from '../../Parallax/Elements/SafeImage';
 import ErrorBoundary from '../../ErrorBoundary';
+import { getResponsivePositioning, getResponsiveSize } from '../config/parallaxConfig'; // ✅ NEU: Responsive Helpers
 
-const BergeLayer = ({ scrollProgress, config }) => {
+const BergeLayer = ({ scrollProgress, config, deviceConfig }) => {
+    // ===== RESPONSIVE POSITIONING =====
+    const responsivePos = useMemo(() => {
+        return getResponsivePositioning('berge') || {};
+    }, []);
+
+    const responsiveSize = useMemo(() => {
+        return getResponsiveSize('berge') || {};
+    }, []);
+
     // ===== BERECHNUNGEN (FIXED) =====
     const layerData = useMemo(() => {
         // Fallback Config falls nicht vorhanden
@@ -63,15 +74,20 @@ const BergeLayer = ({ scrollProgress, config }) => {
         };
     }, [scrollProgress, config]);
 
+    // ===== RESPONSIVE MULTIPLIER =====
+    const multiplier = deviceConfig?.multiplier || 1.0;
+
     // Debug Log (ERWEITERT)
     if (process.env.NODE_ENV === 'development' && layerData.visible) {
-        console.log('⛰️ BergeLayer FIXED:', {
+        console.log('⛰️ BergeLayer FIXED + RESPONSIVE:', {
             scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
             visible: layerData.visible,
             opacity: layerData.opacity.toFixed(3),
             translateY: layerData.translateY.toFixed(1) + 'vh',
             atEndPosition: layerData.atEndPosition,
-            source: 'FIXED visibility logic'
+            responsivePos,
+            multiplier,
+            source: 'FIXED visibility + responsive positioning'
         });
     }
 
@@ -82,7 +98,7 @@ const BergeLayer = ({ scrollProgress, config }) => {
 
     return (
         <ErrorBoundary>
-            {/* Debug Anzeige (ERWEITERT MIT FIX-INFO) */}
+            {/* Debug Anzeige (ERWEITERT MIT RESPONSIVE INFO) */}
             {process.env.NODE_ENV === 'development' && (
                 <div
                     style={{
@@ -96,32 +112,35 @@ const BergeLayer = ({ scrollProgress, config }) => {
                         fontSize: '10px',
                         fontFamily: 'monospace',
                         zIndex: 9999,
-                        border: '2px solid #FFD700', // ✅ Goldener Rahmen für "Fixed"
+                        border: '2px solid #00ff88', // ✅ Grüner Rahmen für "Responsive"
                         pointerEvents: 'none'
                     }}
                 >
-                    ⛰️ BERGE ✅ FIXED: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
+                    ⛰️ BERGE ✅ FIXED + RESPONSIVE: {layerData.opacity.toFixed(2)} opacity, {layerData.translateY.toFixed(1)}vh
                     <br />
                     {layerData.atEndPosition ? '🔒 AT END POSITION' : '🎬 ANIMATING'}
+                    <br />
+                    📱 Multiplier: {multiplier}
                 </div>
             )}
 
             <div
                 style={{
                     position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    width: '100%',
+                    bottom: responsivePos.bottom || 0, // ✅ NEU: Responsive Bottom-Position
+                    left: responsivePos.left || 0, // ✅ NEU: Responsive Left-Position  
+                    width: responsiveSize.width || '100%', // ✅ NEU: Responsive Width
                     zIndex: config?.zIndex || 3,
                     pointerEvents: 'none',
-                    transform: `translate(0, ${-layerData.translateY}vh)`,
+                    transform: `translate(0, ${-layerData.translateY * multiplier}vh)`, // ✅ Mit Multiplier
                     opacity: layerData.opacity,
                     willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden'
                 }}
-                data-berge-layer="fixed"
+                data-berge-layer="fixed-responsive"
                 data-at-end={layerData.atEndPosition}
                 data-scroll-progress={(scrollProgress * 100).toFixed(1)}
+                data-multiplier={multiplier}
             >
                 <SafeImage
                     src="/Parallax/Vierter_Hintergrund.png"
