@@ -8,7 +8,6 @@ import './SimplePage.css';
 const SimplePage = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [hasSubscribed, setHasSubscribed] = useState(false);
-    const [showImpressum, setShowImpressum] = useState(false);
 
     // Mobile Detection
     useEffect(() => {
@@ -143,46 +142,15 @@ const SimplePage = () => {
 
             </div>
 
-            {/* IMPRESSUM FOOTER */}
+            {/* IMPRESSUM BUTTON - EINFACH UND SICHER */}
             <footer className="impressum-footer">
                 <button
                     className="impressum-link"
-                    onClick={() => setShowImpressum(true)}
+                    onClick={() => alert('Impressum:\n\nAngaben gemäß § 5 DDG (Digitale-Dienste-Gesetz):\n\nMichael Schernthaner\nBruchsaler Straße 12\n10715 Berlin\n\nKontakt:\nTelefon: +49 17636155061\nE-Mail: admin@anitune.com')}
                 >
                     Impressum
                 </button>
             </footer>
-
-            {/* IMPRESSUM MODAL */}
-            {showImpressum && (
-                <div className="impressum-modal">
-                    <div className="impressum-overlay" onClick={() => setShowImpressum(false)} />
-                    <div className="impressum-content">
-                        <div className="impressum-header">
-                            <h2>Impressum</h2>
-                            <button
-                                className="close-button"
-                                onClick={() => setShowImpressum(false)}
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        <div className="impressum-body">
-                            <h3>Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz):</h3>
-                            <div className="impressum-section">
-                                <strong>Michael Schernthaner</strong><br />
-                                Bruchsaler Straße 12<br />
-                                10715 Berlin
-                            </div>
-                            <div className="impressum-section">
-                                <h4>Kontakt:</h4>
-                                <strong>Telefon:</strong> +49 17636155061<br />
-                                <strong>E-Mail:</strong> <a href="mailto:admin@anitune.com">admin@anitune.com</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
         </div>
     );
