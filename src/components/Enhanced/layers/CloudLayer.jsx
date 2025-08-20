@@ -158,7 +158,7 @@ const CloudLayer = React.memo(({
                         style={{
                             position: 'absolute',
                             bottom: rightConfig?.position?.bottom || '44%',
-                            right: '5%',
+                            right: '0%',
                             transform: `translateX(${-rightCloudData.translateY * multiplier}vw) scale(${rightCloudData.scale * multiplier})`,
                             opacity: rightCloudData.opacity,
                             willChange: 'transform, opacity',
