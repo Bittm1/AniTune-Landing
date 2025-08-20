@@ -446,7 +446,7 @@ export const LAYER_CONFIG = {
             scrollStart: 0.45,  // NEU: Snap 4 (60% statt 75%)
             scrollEnd: 0.6,
             posStart: -140,
-            posEnd: 0,
+            posEnd: -10,
             opacityStart: 1.0,
             opacityEnd: 1.0,
             scaleStart: 1.20,
@@ -464,7 +464,7 @@ export const LAYER_CONFIG = {
                 bottom: '62%'
             }
         },
-        zIndex: 15
+        zIndex: 1.5
     },
 
     rightCloudHinten: {
@@ -473,7 +473,7 @@ export const LAYER_CONFIG = {
             scrollStart: 0.45,  // NEU: Snap 4 (60% statt 75%)
             scrollEnd: 0.6,
             posStart: -140,
-            posEnd: 10,
+            posEnd: 0,
             opacityStart: 1.0,
             opacityEnd: 1.0,
             scaleStart: 1.40,
@@ -491,7 +491,7 @@ export const LAYER_CONFIG = {
                 bottom: '62%'
             }
         },
-        zIndex: 12
+        zIndex: 2
     }
 };
 
