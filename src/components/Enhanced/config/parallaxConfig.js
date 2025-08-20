@@ -394,8 +394,8 @@ export const LAYER_CONFIG = {
             posEnd: 5,
             opacityStart: 1.0,
             opacityEnd: 1.0,
-            scaleStart: 1.7,
-            scaleEnd: 1.7
+            scaleStart: 1.5,
+            scaleEnd: 1.5
         },
         // ✅ BESTEHENDES SYSTEM: Responsive Positionierung
         positioning: {
@@ -403,13 +403,13 @@ export const LAYER_CONFIG = {
                 bottom: '50%'
             },
             desktop: {
-                bottom: '43%'
+                bottom: '60%'
             },
             large: {
-                bottom: '40%'
+                bottom: '50%'
             }
         },
-        zIndex: 12
+        zIndex: 2
     },
 
     rightCloud: {
@@ -421,8 +421,8 @@ export const LAYER_CONFIG = {
             posEnd: 5,
             opacityStart: 1.0,
             opacityEnd: 1.0,
-            scaleStart: 1.5,
-            scaleEnd: 1.5
+            scaleStart: 1.3,
+            scaleEnd: 1.3
         },
         // ✅ BESTEHENDES SYSTEM: Responsive Positionierung
         positioning: {
@@ -430,13 +430,13 @@ export const LAYER_CONFIG = {
                 bottom: '52%'
             },
             desktop: {
-                bottom: '44%'
+                bottom: '50%'
             },
             large: {
-                bottom: '41%'
+                bottom: '47%'
             }
         },
-        zIndex: 15
+        zIndex: 2
     },
 
     // ===== WOLKEN HINTEN LAYERS (BESTEHENDES RESPONSIVE SYSTEM BEIBEHALTEN) =====
@@ -485,7 +485,7 @@ export const LAYER_CONFIG = {
                 bottom: '72%'
             },
             desktop: {
-                bottom: '65%'
+                bottom: '80%'
             },
             large: {
                 bottom: '62%'

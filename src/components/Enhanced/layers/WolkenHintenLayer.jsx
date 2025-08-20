@@ -1,11 +1,10 @@
 // src/components/Enhanced/layers/WolkenHintenLayer.jsx
-// ☁️ WOLKEN HINTEN LAYER - FIXED: Bleibt an Endposition sichtbar
-// ✅ calculateLayerPosition + FIXED visibility logic
+// ☁️ WOLKEN HINTEN LAYER - Mit Config-Integration für responsive Positionierung
 
 import React, { useMemo } from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import SafeImage from '../../Parallax/Elements/SafeImage';
-import { calculateLayerPosition } from '../config/parallaxConfig';
+import { calculateLayerPosition, getResponsivePositioning } from '../config/parallaxConfig';
 import { elementSizes } from '../../Parallax/config/constants';
 
 const WolkenHintenLayer = React.memo(({
@@ -14,24 +13,31 @@ const WolkenHintenLayer = React.memo(({
     rightConfig,
     deviceConfig
 }) => {
+    // ===== DEVICE TYPE ERMITTELN =====
+    const deviceType = useMemo(() => {
+        if (deviceConfig?.deviceType) return deviceConfig.deviceType;
+        if (deviceConfig?.isMobile) return 'mobile';
+        if (typeof window !== 'undefined' && window.innerWidth >= 1440) return 'large';
+        return 'desktop';
+    }, [deviceConfig]);
+
+    // ===== RESPONSIVE POSITIONING AUS CONFIG =====
+    const leftPositioning = getResponsivePositioning('leftCloudHinten', deviceType);
+    const rightPositioning = getResponsivePositioning('rightCloudHinten', deviceType);
+
     // ===== LEFT CLOUD DATA (FIXED) =====
     const leftCloudData = useMemo(() => {
         if (!leftConfig?.active || !leftConfig?.movement) {
             return { visible: false };
         }
 
-        // ✅ Nutzt zentrale Funktion
         const position = calculateLayerPosition(scrollProgress, leftConfig);
-
-        // ===== 🔧 FIXED SICHTBARKEITS-CHECK =====
         const { scrollStart } = leftConfig.movement;
-        // ✅ VORHER: scrollProgress >= scrollStart && scrollProgress <= scrollEnd
-        // ✅ NACHHER: Nur scrollStart prüfen - Layer bleibt IMMER sichtbar ab scrollStart
         const visible = scrollProgress >= scrollStart;
 
         return {
             opacity: position.opacity,
-            translateY: position.position, // position = translateY
+            translateY: position.position,
             scale: position.scale,
             visible,
             atEndPosition: scrollProgress > leftConfig.movement.scrollEnd
@@ -44,18 +50,13 @@ const WolkenHintenLayer = React.memo(({
             return { visible: false };
         }
 
-        // ✅ Nutzt zentrale Funktion
         const position = calculateLayerPosition(scrollProgress, rightConfig);
-
-        // ===== 🔧 FIXED SICHTBARKEITS-CHECK =====
         const { scrollStart } = rightConfig.movement;
-        // ✅ VORHER: scrollProgress >= scrollStart && scrollProgress <= scrollEnd
-        // ✅ NACHHER: Nur scrollStart prüfen - Layer bleibt IMMER sichtbar ab scrollStart
         const visible = scrollProgress >= scrollStart;
 
         return {
             opacity: position.opacity,
-            translateY: position.position, // position = translateY
+            translateY: position.position,
             scale: position.scale,
             visible,
             atEndPosition: scrollProgress > rightConfig.movement.scrollEnd
@@ -76,26 +77,6 @@ const WolkenHintenLayer = React.memo(({
         };
     }, [deviceConfig]);
 
-    // Performance Debug (ERWEITERT)
-    if (process.env.NODE_ENV === 'development' && (leftCloudData.visible || rightCloudData.visible)) {
-        console.log('☁️ WolkenHintenLayer FIXED:', {
-            scrollProgress: (scrollProgress * 100).toFixed(1) + '%',
-            leftCloud: leftCloudData.visible ? {
-                opacity: leftCloudData.opacity.toFixed(2),
-                translateY: leftCloudData.translateY.toFixed(1),
-                scale: leftCloudData.scale.toFixed(2),
-                atEnd: leftCloudData.atEndPosition
-            } : 'hidden',
-            rightCloud: rightCloudData.visible ? {
-                opacity: rightCloudData.opacity.toFixed(2),
-                translateY: rightCloudData.translateY.toFixed(1),
-                scale: rightCloudData.scale.toFixed(2),
-                atEnd: rightCloudData.atEndPosition
-            } : 'hidden',
-            source: 'calculateLayerPosition() + FIXED visibility'
-        });
-    }
-
     // Nicht rendern wenn beide Wolken unsichtbar
     if (!leftCloudData.visible && !rightCloudData.visible) {
         return null;
@@ -114,8 +95,6 @@ const WolkenHintenLayer = React.memo(({
                     zIndex: Math.max(leftConfig?.zIndex || 12, rightConfig?.zIndex || 12),
                     pointerEvents: 'none'
                 }}
-                data-layer="wolken-hinten-fixed"
-                data-scroll-progress={(scrollProgress * 100).toFixed(1)}
             >
                 {/* ===== LEFT CLOUD HINTEN ===== */}
                 {leftCloudData.visible && (
@@ -123,7 +102,7 @@ const WolkenHintenLayer = React.memo(({
                         className="left-cloud-hinten"
                         style={{
                             position: 'absolute',
-                            bottom: leftConfig?.position?.bottom || '65%',
+                            bottom: leftPositioning.bottom || '65%', // Config oder Fallback
                             left: '10%',
                             transform: `translateX(${leftCloudData.translateY * multiplier}vw) scale(${leftCloudData.scale * multiplier})`,
                             opacity: leftCloudData.opacity,
@@ -131,9 +110,6 @@ const WolkenHintenLayer = React.memo(({
                             backfaceVisibility: 'hidden',
                             transformStyle: 'preserve-3d'
                         }}
-                        data-cloud="left-hinten-fixed"
-                        data-at-end={leftCloudData.atEndPosition}
-                        data-opacity={leftCloudData.opacity.toFixed(2)}
                     >
                         <SafeImage
                             src="/Parallax/Wolken_Hinten_links.png"
@@ -157,7 +133,7 @@ const WolkenHintenLayer = React.memo(({
                         className="right-cloud-hinten"
                         style={{
                             position: 'absolute',
-                            bottom: rightConfig?.position?.bottom || '65%',
+                            bottom: rightPositioning.bottom || '65%', // Config oder Fallback
                             right: '10%',
                             transform: `translateX(${-rightCloudData.translateY * multiplier}vw) scale(${rightCloudData.scale * multiplier})`,
                             opacity: rightCloudData.opacity,
@@ -165,9 +141,6 @@ const WolkenHintenLayer = React.memo(({
                             backfaceVisibility: 'hidden',
                             transformStyle: 'preserve-3d'
                         }}
-                        data-cloud="right-hinten-fixed"
-                        data-at-end={rightCloudData.atEndPosition}
-                        data-opacity={rightCloudData.opacity.toFixed(2)}
                     >
                         <SafeImage
                             src="/Parallax/Wolken_Hinten_rechts.png"
@@ -184,36 +157,10 @@ const WolkenHintenLayer = React.memo(({
                         />
                     </div>
                 )}
-
-                {/* ===== DEBUG INFO (FIXED VERSION) ===== */}
-                {process.env.NODE_ENV === 'development' && (leftCloudData.visible || rightCloudData.visible) && (
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: '320px',
-                            left: '20px',
-                            background: 'rgba(135, 206, 250, 0.9)',
-                            color: 'white',
-                            padding: '8px',
-                            borderRadius: '4px',
-                            fontSize: '10px',
-                            fontFamily: 'monospace',
-                            zIndex: 9999,
-                            border: '2px solid #FFD700', // ✅ Goldener Rahmen für "Fixed"
-                            pointerEvents: 'none'
-                        }}
-                    >
-                        ☁️ WOLKEN HINTEN ✅ FIXED
-                        <br />
-                        Left: {leftCloudData.visible ? (leftCloudData.atEndPosition ? '🔒' : '🎬') : '❌'}
-                        Right: {rightCloudData.visible ? (rightCloudData.atEndPosition ? '🔒' : '🎬') : '❌'}
-                    </div>
-                )}
             </div>
         </ErrorBoundary>
     );
 });
 
 WolkenHintenLayer.displayName = 'WolkenHintenLayer';
-
 export default WolkenHintenLayer;
